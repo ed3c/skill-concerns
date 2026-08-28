@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "revision": "fixture-v1",
+  "environment": {
+    "kind": "hermetic-fixture",
+    "network": "disabled"
+  },
+  "changed_features": [
+    "workflow-retry"
+  ],
+  "journeys": [
+    {
+      "id": "api-success",
+      "feature": "workflow-retry",
+      "entry_point": "api-retry",
+      "transition_ids": [
+        "retry",
+        "complete"
+      ],
+      "expected_terminal": "completed",
+      "evidence": [
+        {
+          "kind": "observable",
+          "boundary": "external",
+          "assertion": "terminal response exposes completed"
+        },
+        {
+          "kind": "observable",
+          "boundary": "persisted",
+          "assertion": "a new process reads completed"
+        }
+      ],
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "cli-cancel",
+      "feature": "workflow-retry",
+      "entry_point": "cli-retry",
+      "transition_ids": [
+        "retry",
+        "cancel"
+      ],
+      "expected_terminal": "cancelled",
+      "evidence": [
+        {
+          "kind": "observable",
+          "boundary": "external",
+          "assertion": "command reports cancelled"
+        },
+        {
+          "kind": "observable",
+          "boundary": "persisted",
+          "assertion": "a new process reads cancelled"
+        }
+      ],
+      "verdict": "VERIFIED"
+    }
+  ],
+  "skips": []
+}

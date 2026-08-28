@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "minimum_admission_level": "L3_HERMETIC",
+    "allowed_kinds": [
+      "procedure-rich",
+      "domain-rich",
+      "composed"
+    ],
+    "main_contains_admitted_skills_only": true
+  },
+  "skills": [
+    {
+      "name": "feature-map-engineering",
+      "path": "skills/feature-map-engineering",
+      "kind": "procedure-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/feature-map-engineering/skill.json",
+      "source_lock": "intake/feature-map-engineering/source-lock.json",
+      "admission": "admissions/feature-map-engineering.json",
+      "evidence_ceiling": "L3_HERMETIC"
+    }
+  ]
+}
