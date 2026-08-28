@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "skill": "feature-map-engineering",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/feature-map-engineering/source-lock.json",
+    "sha256": "1213650e8b4ad0761e74925d953d0914e3892f6c646ef7f89507791c9af9dea5"
+  },
+  "subject_files": [
+    {
+      "path": "skills/feature-map-engineering/AGENTS.md",
+      "sha256": "3fe589975f698df1443121df6fb82d2067497cfc5dd469a721477ee0c753f7b8"
+    },
+    {
+      "path": "skills/feature-map-engineering/README.md",
+      "sha256": "3f459c1684f7638833c80e777a2b867898525c29ebfde77645cd47ad2daf728e"
+    },
+    {
+      "path": "skills/feature-map-engineering/SKILL.md",
+      "sha256": "103670f417bac932b4c34d431af848699a213b408e293ad24d7d3765158bf2d3"
+    },
+    {
+      "path": "skills/feature-map-engineering/evals/cases.json",
+      "sha256": "82a3b2817653c321f4e662af6989b13412f4a41a29255b1f54233f5f591e9139"
+    },
+    {
+      "path": "skills/feature-map-engineering/fixtures/valid/feature-map.json",
+      "sha256": "bbb42d791e6d8382abaacd4f2e5dffbcc141e0a7e6b377a8b39ef34b97e33f4d"
+    },
+    {
+      "path": "skills/feature-map-engineering/fixtures/valid/verification-plan.json",
+      "sha256": "855e2c5f3ee6b9472b95f5a40b0e2529cfcce50039a748b468a9f299efee5ac2"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/README.md",
+      "sha256": "1404fd7cd5f40c5662518db2a50494ec5917461956dc7e36642c85435437621d"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/coverage-model.md",
+      "sha256": "939db8461780e72b96940ee99504bebe338dcf8d19a5108d02a10f7934aacc05"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/evidence-contract.md",
+      "sha256": "e31f28fad171720c268e9fb6cbb70d92293124f09be7fcbac7833d4c5ff6857d"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/examples/agent-feature.md",
+      "sha256": "d8298e5fd3347011b63706ef4ec48ca12d8d446314f1f66ad8bb1f0a2545e3f4"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/examples/api-feature.md",
+      "sha256": "d995f53c7f4b3bb31b3aeaeef63761cc15222dba68f6985d02dd3602f49d2eaf"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/examples/cli-feature.md",
+      "sha256": "3b270854ae028c214807aac90bcb5550fe670a6780b7aab970f34db0a31862cf"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/examples/ui-feature.md",
+      "sha256": "594f091c06bb04b0aff6c005ce6509e883a9fd41085e3421e3837a2de768c735"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/exploration-policy.md",
+      "sha256": "3e9a2578de7d6abb5afd660d9535b4c18763ca44c0f63beb52c12acf6e535a82"
+    },
+    {
+      "path": "skills/feature-map-engineering/references/feature-schema.md",
+      "sha256": "204799704399887e66faedb974b7fbb03a9f527a2938617a827e4587f2309c79"
+    },
+    {
+      "path": "skills/feature-map-engineering/scripts/coverage_diff.py",
+      "sha256": "b0928e880c77259ebe979ef1aa67bc8f4ff8f3839e182458d07a88c6e7f934d4"
+    },
+    {
+      "path": "skills/feature-map-engineering/scripts/feature_map.py",
+      "sha256": "bbf9383328b2570d0c81c0fe740ecd5a2fed3639fd3808dcaeb74434b7e88ffc"
+    },
+    {
+      "path": "skills/feature-map-engineering/scripts/validate_feature_map.py",
+      "sha256": "aab771d05a83b01b2e31828e584b0dfdd6e4ff140db35ee5b48388645d4e7f21"
+    },
+    {
+      "path": "skills/feature-map-engineering/skill.json",
+      "sha256": "1179826fab066d2f3274fc3b27d17f7af7d8eeac0a7d991a84080f5c86652b79"
+    },
+    {
+      "path": "skills/feature-map-engineering/tests/test_feature_map.py",
+      "sha256": "a2758e9c3ecf53cfddd00b45adc17319034f662cd247e110f4407650dbdcdab0"
+    }
+  ],
+  "skill_tree_sha256": "278875380dde01f970ac7db7e0bcd24c4771bd22f087a8b4679c9365e881dea9",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
+    {
+      "path": "contracts/feature-map.schema.json",
+      "sha256": "83346f582c81022f511bd860b6b52dd2f21b2b313d77f5e489504d13835e7f43"
+    },
+    {
+      "path": "contracts/domain-adapter.schema.json",
+      "sha256": "971e17322fa7903d96b45d23839f1c9100e79ecda5130c5e7c2e24be93820345"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "skill": "feature-map-engineering",
+  "cases": [
+    {
+      "id": "positive-complete-feature-proof",
+      "control": "positive",
+      "expected": "PASS",
+      "asserts": [
+        "valid transition chains",
+        "terminal oracles",
+        "observable evidence",
+        "persistence evidence"
+      ]
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "control": "mutation",
+      "expected": "FAIL",
+      "error": "TERMINAL_WITHOUT_ORACLE"
+    },
+    {
+      "id": "static-only-false-proof",
+      "control": "hollow-proof",
+      "expected": "FAIL",
+      "error": "STATIC_ONLY_VERIFICATION"
+    },
+    {
+      "id": "skip-without-blocker",
+      "control": "mutation",
+      "expected": "FAIL",
+      "error": "SKIP_WITHOUT_BLOCKER"
+    },
+    {
+      "id": "changed-feature-without-proof",
+      "control": "hollow-route",
+      "expected": "FAIL",
+      "error": "CHANGED_FEATURE_WITHOUT_PROOF"
+    },
+    {
+      "id": "invalid-transition-chain",
+      "control": "mutation",
+      "expected": "FAIL",
+      "error": "JOURNEY_CHAIN_INVALID"
+    },
+    {
+      "id": "persistence-evidence-missing",
+      "control": "mutation",
+      "expected": "FAIL",
+      "error": "PERSISTENCE_PROOF_MISSING"
+    },
+    {
+      "id": "coverage-diff-detects-changed-edge",
+      "control": "positive",
+      "expected": "PASS",
+      "asserts": [
+        "requires_reverification"
+      ]
+    }
+  ]
+}

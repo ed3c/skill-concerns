@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "feature": "workflow-retry",
+  "actor": "operator",
+  "intent": "retry a failed workflow and observe its durable terminal state",
+  "entry_points": [
+    {
+      "id": "api-retry",
+      "state": "failed",
+      "description": "supported API retry operation"
+    },
+    {
+      "id": "cli-retry",
+      "state": "failed",
+      "description": "supported CLI retry command"
+    }
+  ],
+  "states": [
+    {
+      "id": "failed",
+      "description": "workflow is eligible for retry"
+    },
+    {
+      "id": "retrying",
+      "description": "retry attempt is active"
+    },
+    {
+      "id": "completed",
+      "description": "retry completed successfully"
+    },
+    {
+      "id": "cancelled",
+      "description": "retry was cancelled through a supported action"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "retry",
+      "from": "failed",
+      "action": "start retry",
+      "to": "retrying",
+      "reachable": true
+    },
+    {
+      "id": "complete",
+      "from": "retrying",
+      "action": "finish work",
+      "to": "completed",
+      "reachable": true
+    },
+    {
+      "id": "cancel",
+      "from": "retrying",
+      "action": "cancel retry",
+      "to": "cancelled",
+      "reachable": true
+    }
+  ],
+  "terminal_outcomes": [
+    {
+      "state": "completed",
+      "outcome": "success",
+      "reachable": true
+    },
+    {
+      "state": "cancelled",
+      "outcome": "cancel",
+      "reachable": true
+    }
+  ],
+  "observables": [
+    {
+      "id": "completed-status",
+      "state": "completed",
+      "kind": "observable",
+      "boundary": "external",
+      "assertion": "a new observer reads terminal state completed"
+    },
+    {
+      "id": "cancelled-status",
+      "state": "cancelled",
+      "kind": "observable",
+      "boundary": "external",
+      "assertion": "a new observer reads terminal state cancelled"
+    }
+  ],
+  "variants": [
+    "api",
+    "cli"
+  ],
+  "persistence": {
+    "required": true,
+    "boundary": "new process readback"
+  }
+}

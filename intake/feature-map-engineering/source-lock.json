@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "skill": "feature-map-engineering",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/feature-map-engineering/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/feature-map-engineering/SOURCE_PROPOSAL.md",
+      "sha256": "aa81df7436ec518b736427b27d9c26f27c157c000522a759cbdaa392f384b0be"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "https://github.com/ed3c/skills-shared",
+      "commit": "52b29b38ded9eaacbf7fb1bfa8ccf69ab37870b9",
+      "path": "skills/skill-refactor-proof-loop/AGENTS.md",
+      "blob_sha": "d6e6c737bcc3320c590a662b24fb154f7177644a"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared",
+      "commit": "52b29b38ded9eaacbf7fb1bfa8ccf69ab37870b9",
+      "path": "skills/skill-refactor-proof-loop/README.md",
+      "blob_sha": "c9f811ecc3e3224830d2895556f5d1af39b64c93"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared",
+      "commit": "52b29b38ded9eaacbf7fb1bfa8ccf69ab37870b9",
+      "path": "skills/skill-refactor-proof-loop/SKILL.md",
+      "blob_sha": "b8b94d558b2600e227e6cb08456206b0a819f1c2"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared",
+      "commit": "52b29b38ded9eaacbf7fb1bfa8ccf69ab37870b9",
+      "path": "skills/skill-refactor-proof-loop/cases.json",
+      "blob_sha": "e8f3bdb888e50b79d1c1755752d77924426e9e5d"
+    }
+  ]
+}

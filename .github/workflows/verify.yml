@@ -1,0 +1,26 @@
+name: Skill concern gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skill-concerns-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out exact subject
+        uses: actions/checkout@v4
+      - name: Show runtime
+        run: python3 --version
+      - name: Run complete admission suite
+        run: python3 scripts/run_all.py

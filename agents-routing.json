@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "root": "AGENTS.md",
+  "max_documents": 3,
+  "routes": {
+    "AGENTS.md": [
+      "skills/AGENTS.md"
+    ],
+    "skills/AGENTS.md": [
+      "skills/feature-map-engineering/AGENTS.md"
+    ],
+    "skills/feature-map-engineering/AGENTS.md": []
+  }
+}

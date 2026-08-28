@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ed3c/skill-concerns/contracts/admission.schema.json",
+  "title": "Content-bound Skill admission receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "skill",
+    "status",
+    "source_lock",
+    "subject_files",
+    "skill_tree_sha256",
+    "contract_files",
+    "controls",
+    "evidence_ceiling",
+    "not_claimed",
+    "authoring_command"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "skill": {
+      "type": "string"
+    },
+    "status": {
+      "const": "ADMITTED"
+    },
+    "source_lock": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "subject_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "skill_tree_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "contract_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "ABSENT",
+              "BLOCKED",
+              "NOT_EXERCISED",
+              "HUMAN_ADMIT_REQUIRED"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence_ceiling": {
+      "enum": [
+        "L0_SOURCE_FREEZE",
+        "L1_STRUCTURAL",
+        "L2_EXECUTABLE_CONTRACT",
+        "L3_HERMETIC",
+        "L4_MATCHED_LIVE_RUNTIME",
+        "L5_DELIVERY_AND_PRODUCTION"
+      ]
+    },
+    "not_claimed": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "L4_MATCHED_LIVE_RUNTIME",
+          "L5_DELIVERY_AND_PRODUCTION"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "authoring_command": {
+      "type": "string"
+    },
+    "hosted_evidence": {
+      "enum": [
+        "READ_FROM_GITHUB",
+        "NOT_EXERCISED"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

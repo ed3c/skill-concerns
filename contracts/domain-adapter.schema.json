@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ed3c/skill-concerns/contracts/domain-adapter.schema.json",
+  "title": "Feature-map domain adapter",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "feature_map_root",
+    "drivers",
+    "selectors",
+    "commands",
+    "assertion_helpers",
+    "runtime_setup",
+    "feature_flags",
+    "external_boundaries",
+    "proof_artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "feature_map_root": {
+      "type": "string"
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "selectors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assertion_helpers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_setup": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "feature_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

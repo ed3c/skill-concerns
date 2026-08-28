@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ed3c/skill-concerns/contracts/feature-map.schema.json",
+  "title": "FeatureMap IR",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "feature",
+    "actor",
+    "intent",
+    "entry_points",
+    "states",
+    "transitions",
+    "terminal_outcomes",
+    "observables",
+    "variants",
+    "persistence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "feature": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "entry_points": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "from",
+          "action",
+          "to",
+          "reachable"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "reachable": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "terminal_outcomes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "state",
+          "outcome",
+          "reachable"
+        ],
+        "properties": {
+          "state": {
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "success",
+              "cancel",
+              "error",
+              "empty",
+              "timeout",
+              "partial",
+              "blocked"
+            ]
+          },
+          "reachable": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "observables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "kind",
+          "boundary",
+          "assertion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "observable",
+              "trace",
+              "integration-test",
+              "unit-test",
+              "static-inspection"
+            ]
+          },
+          "boundary": {
+            "enum": [
+              "production-equivalent",
+              "external",
+              "persisted",
+              "internal",
+              "test-only"
+            ]
+          },
+          "assertion": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "persistence": {
+      "type": "object",
+      "required": [
+        "required",
+        "boundary"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "boundary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

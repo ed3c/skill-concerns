@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "name": "feature-map-engineering",
+  "version": "0.1.0",
+  "kind": "procedure-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "SKILL.md",
+    "references/README.md",
+    "references/feature-schema.md",
+    "references/coverage-model.md",
+    "references/evidence-contract.md",
+    "references/exploration-policy.md",
+    "references/examples/ui-feature.md",
+    "references/examples/api-feature.md",
+    "references/examples/cli-feature.md",
+    "references/examples/agent-feature.md"
+  ],
+  "domain_paths": [],
+  "execution_paths": [
+    "scripts/feature_map.py",
+    "scripts/validate_feature_map.py",
+    "scripts/coverage_diff.py"
+  ],
+  "test_paths": [
+    "tests/test_feature_map.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "references/README.md"
+  ],
+  "forbidden_domain_literals": [
+    "control-glass",
+    "workspace-sidebar",
+    "data-component=\"",
+    "cmd/ctrl+b"
+  ],
+  "shared_contracts": [
+    "../../contracts/feature-map.schema.json",
+    "../../contracts/domain-adapter.schema.json"
+  ]
+}
