@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "source_commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+  "feature": "supervised-issue-to-reconcile",
+  "feature_edges": [
+    {"transition_id": "dispatch-to-worktree", "code_nodes": ["cli-entry"], "required_journeys": ["issue-to-reconcile"]},
+    {"transition_id": "handoff-to-awaiting-land", "code_nodes": ["execute-handoff", "handoff-session"], "required_journeys": ["issue-to-reconcile"]},
+    {"transition_id": "read-provider-landing", "code_nodes": ["provider-readback"], "required_journeys": ["issue-to-reconcile"]},
+    {"transition_id": "provider-landed-to-reconciled", "code_nodes": ["reconcile-control", "pending-review-store"], "required_journeys": ["issue-to-reconcile"]}
+  ]
+}

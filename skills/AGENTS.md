@@ -1,6 +1,6 @@
 # AGENTS.md — admitted Skill collection contract
 
-<!-- agent-next: skills/feature-map-engineering/AGENTS.md -->
+<!-- agent-next: skills/feature-map-engineering/AGENTS.md, skills/control-noodle/AGENTS.md -->
 
 This is the second of exactly three Agent documents.
 
