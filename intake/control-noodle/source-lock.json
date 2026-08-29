@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "skill": "control-noodle",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/control-noodle/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/control-noodle/SOURCE_PROPOSAL.md",
+      "sha256": "8c34c0954641dd9492f810f1aba15d0e48349e70266e79a8979bf3d59cdc3ca1"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": "AGENTS.md",
+      "blob_sha": "7c441cf6119f3f42e2e30cf76fb45bf180f54345"
+    },
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": "README.md",
+      "blob_sha": "c694e7e0e98bfd28361303bcdecf25d5bf6127b5"
+    },
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": "contracts/system-v1.md",
+      "blob_sha": "2e8dd1e4f74de9555850344ffd4ec6f15fb396e2"
+    },
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": ".agents/skills/execute/SKILL.md",
+      "blob_sha": "12e73fee4dc18fba8e235a31593f97db0fef4f2b"
+    },
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": "noodles.py",
+      "blob_sha": "32e2480e8a2ca8130ebcfe7878981753224f3488"
+    },
+    {
+      "repository": "https://github.com/ed3c/noodles",
+      "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+      "path": "runtime_contract.py",
+      "blob_sha": "b405b763098e44b3662eec3bfbcdfc2023be8dfa"
+    }
+  ]
+}

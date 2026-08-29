@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "revision": "c820cacf92d4ad5ee033224d7a1d247f287642ed",
+  "environment": {
+    "kind": "hermetic-contract-fixture",
+    "runtime_available": true,
+    "live_runtime_exercised": false
+  },
+  "changed_features": ["supervised-issue-to-reconcile"],
+  "journeys": [
+    {
+      "id": "issue-to-reconcile",
+      "feature": "supervised-issue-to-reconcile",
+      "entry_point": "ready-issue",
+      "transition_ids": [
+        "dispatch-to-worktree",
+        "handoff-to-awaiting-land",
+        "read-provider-landing",
+        "provider-landed-to-reconciled"
+      ],
+      "expected_terminal": "reconciled",
+      "evidence": [
+        {
+          "kind": "integration-test",
+          "boundary": "test-only",
+          "assertion": "the hermetic fixture compiles the exact mapped journey and rejects planted mutations"
+        }
+      ],
+      "verdict": "NOT_VERIFIED"
+    }
+  ],
+  "skips": [
+    {
+      "id": "live-runtime-not-exercised",
+      "feature": "supervised-issue-to-reconcile",
+      "terminal": "reconciled",
+      "path": "live Issue-to-reconcile journey",
+      "blocker": {
+        "type": "runtime",
+        "dependency": "target-local live Noodle and provider lane",
+        "detail": "L3 admission does not operate the active upstream runtime"
+      },
+      "nearest_reachable_path": "hermetic composition, mapping, compiler, and proof-denominator validation",
+      "residual_uncertainty": "live control operations and provider readback remain unobserved"
+    }
+  ]
+}

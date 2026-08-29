@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "name": "control-noodle",
+  "version": "0.1.0",
+  "kind": "composed",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-control-policy.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "references/README.md",
+    "references/control-surface.md",
+    "domain/composition.json",
+    "domain/feature-map.json",
+    "domain/code-map.json",
+    "domain/feature-code-map.json",
+    "domain/domain-adapter.json"
+  ],
+  "execution_paths": [
+    "scripts/control_contract.py",
+    "scripts/validate_control_noodle.py"
+  ],
+  "test_paths": [
+    "tests/test_control_contract.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "references/README.md"
+  ],
+  "forbidden_domain_literals": [
+    "noodle",
+    "github",
+    "NOODLE_SESSION_ID",
+    "./noodles"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json",
+    "../../contracts/feature-map.schema.json",
+    "../../contracts/domain-adapter.schema.json",
+    "../../contracts/code-map.schema.json",
+    "../../contracts/feature-code-map.schema.json"
+  ]
+}

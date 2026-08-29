@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "feature_map_root": "domain/feature-map.json",
+  "drivers": ["noodles.py:execute_handoff", "noodles.py:reconcile_once"],
+  "selectors": ["Issue subject", "PR head SHA", "NOODLE_SESSION_ID", "order ID"],
+  "commands": ["./noodles issue handoff REPO#N --pr N", "./noodles reconcile"],
+  "assertion_helpers": ["provider_landed", "validate_handoff_session"],
+  "runtime_setup": ["pinned Noodle runtime", "target-local isolated worktree", "trusted provider workflows"],
+  "feature_flags": [],
+  "external_boundaries": ["Noodle control API", "GitHub exact-head landing"],
+  "proof_artifacts": ["trusted workflow receipt", "Issue closure readback", "control acknowledgement"]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "procedure_skill": "feature-map-engineering",
+  "procedure_version": "0.1.0",
+  "procedure_tree_sha256": "278875380dde01f970ac7db7e0bcd24c4771bd22f087a8b4679c9365e881dea9",
+  "domain_subject": {
+    "repository": "https://github.com/ed3c/noodles",
+    "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed"
+  }
+}

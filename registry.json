@@ -19,6 +19,16 @@
       "source_lock": "intake/feature-map-engineering/source-lock.json",
       "admission": "admissions/feature-map-engineering.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "control-noodle",
+      "path": "skills/control-noodle",
+      "kind": "composed",
+      "status": "ADMITTED",
+      "manifest": "skills/control-noodle/skill.json",
+      "source_lock": "intake/control-noodle/source-lock.json",
+      "admission": "admissions/control-noodle.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

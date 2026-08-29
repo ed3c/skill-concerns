@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "feature": "supervised-issue-to-reconcile",
+  "actor": "repository operator",
+  "intent": "move one admitted Issue through isolated execution, exact-head provider landing, and local machine reconciliation",
+  "entry_points": [
+    {
+      "id": "ready-issue",
+      "state": "ready_issue",
+      "description": "an exact Issue satisfies the Noodles scheduling contract"
+    }
+  ],
+  "states": [
+    {"id": "ready_issue", "description": "the Issue is ready for scheduling"},
+    {"id": "worktree_active", "description": "Noodle owns one isolated execution worktree"},
+    {"id": "awaiting_land", "description": "execution handed an exact PR head to the provider lane"},
+    {"id": "provider_landed", "description": "GitHub readback proves the exact subject landed"},
+    {"id": "reconciled", "description": "local main and Noodle machine state are reconciled"},
+    {"id": "provider_blocked", "description": "an unavailable provider prevents landing readback"}
+  ],
+  "transitions": [
+    {"id": "dispatch-to-worktree", "from": "ready_issue", "action": "schedule the admitted execute order", "to": "worktree_active", "reachable": true},
+    {"id": "handoff-to-awaiting-land", "from": "worktree_active", "action": "validate the PR and emit the blocking handoff", "to": "awaiting_land", "reachable": true},
+    {"id": "read-provider-landing", "from": "awaiting_land", "action": "read back exact-head merge and Issue closure", "to": "provider_landed", "reachable": true},
+    {"id": "provider-landed-to-reconciled", "from": "provider_landed", "action": "fast-forward local main and acknowledge Noodle control", "to": "reconciled", "reachable": true},
+    {"id": "record-provider-blocker", "from": "awaiting_land", "action": "record the unavailable provider dependency", "to": "provider_blocked", "reachable": false}
+  ],
+  "terminal_outcomes": [
+    {"state": "reconciled", "outcome": "success", "reachable": true},
+    {"state": "provider_blocked", "outcome": "blocked", "reachable": false}
+  ],
+  "observables": [
+    {
+      "id": "reconcile-readback",
+      "state": "reconciled",
+      "kind": "observable",
+      "boundary": "external",
+      "assertion": "provider receipt, default-branch ancestry, control acknowledgement, and backlog completion name the same subject"
+    }
+  ],
+  "variants": ["supervised", "github-provider"],
+  "persistence": {"required": true, "boundary": "new process reads landed Issue and reconciled local state"}
+}

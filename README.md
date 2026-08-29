@@ -145,6 +145,7 @@ eligible main content
 | Skill | Kind | Evidence ceiling | What is proven | Not proven |
 |---|---|---:|---|---|
 | `feature-map-engineering` | `procedure-rich` | `L3_HERMETIC` | anatomy, concern split, FeatureMap IR semantics, executable meta-assertions, positive and planted negative controls | matched live-agent uplift, product-specific adapter correctness, consumer integration, production behavior |
+| `control-noodle` | `composed` | `L3_HERMETIC` | exact procedure/domain composition, separate Feature and Code Maps, explicit mapping, change-to-journey compilation, and planted boundary/evidence mutations | live Noodle operation, upstream Issues #19/#20, provider landing, consumer integration, production behavior |
 
 Mutable hosted check status is read from the current commit/PR rather than copied into this README.
 

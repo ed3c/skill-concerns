@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "composed-control-positive", "control": "positive", "expected": "PASS"},
+    {"id": "source-commit-drift", "control": "mutation", "expected": "FAIL"},
+    {"id": "source-lock-domain-drift", "control": "mutation", "expected": "FAIL"},
+    {"id": "changed-code-node-unmapped", "control": "hollow-route", "expected": "FAIL"},
+    {"id": "mapping-code-node-unknown", "control": "mutation", "expected": "FAIL"},
+    {"id": "mapping-transition-unknown", "control": "mutation", "expected": "FAIL"},
+    {"id": "required-journey-missing", "control": "denominator", "expected": "FAIL"},
+    {"id": "static-only-verification", "control": "hollow-proof", "expected": "FAIL"},
+    {"id": "unavailable-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "unexercised-live-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "procedure-subject-drift", "control": "composition", "expected": "FAIL"},
+    {"id": "mutable-upstream-adapter", "control": "boundary", "expected": "FAIL"}
+  ]
+}

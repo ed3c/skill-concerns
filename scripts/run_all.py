@@ -19,7 +19,7 @@ def run(*args: str) -> None:
 
 
 def main() -> int:
-    run("-m", "compileall", "-q", "scripts", "tests", "skills/feature-map-engineering")
+    run("-m", "compileall", "-q", "scripts", "tests", "skills")
     run("scripts/check_agents_hops.py")
     run("scripts/check_skill_bundles.py")
     run("-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v")
@@ -29,6 +29,16 @@ def main() -> int:
         "discover",
         "-s",
         "skills/feature-map-engineering/tests",
+        "-p",
+        "test_*.py",
+        "-v",
+    )
+    run(
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "skills/control-noodle/tests",
         "-p",
         "test_*.py",
         "-v",
@@ -46,6 +56,27 @@ def main() -> int:
         "skills/feature-map-engineering/fixtures/valid/feature-map.json",
         "--new",
         "skills/feature-map-engineering/fixtures/valid/feature-map.json",
+    )
+    run(
+        "skills/control-noodle/scripts/validate_control_noodle.py",
+        "--composition",
+        "skills/control-noodle/domain/composition.json",
+        "--feature-map",
+        "skills/control-noodle/domain/feature-map.json",
+        "--code-map",
+        "skills/control-noodle/domain/code-map.json",
+        "--mapping",
+        "skills/control-noodle/domain/feature-code-map.json",
+        "--adapter",
+        "skills/control-noodle/domain/domain-adapter.json",
+        "--change-set",
+        "skills/control-noodle/fixtures/valid/change-set.json",
+        "--plan",
+        "skills/control-noodle/fixtures/valid/verification-plan.json",
+        "--procedure-admission",
+        "admissions/feature-map-engineering.json",
+        "--source-lock",
+        "intake/control-noodle/source-lock.json",
     )
     run("scripts/check_admissions.py")
     print("skill-concerns: PASS")

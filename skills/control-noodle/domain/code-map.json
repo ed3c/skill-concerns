@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "https://github.com/ed3c/noodles",
+    "commit": "c820cacf92d4ad5ee033224d7a1d247f287642ed"
+  },
+  "nodes": [
+    {"id": "cli-entry", "kind": "entrypoint", "path": "noodles.py", "symbol": "main"},
+    {"id": "issue-contract-parser", "kind": "function", "path": "noodles.py", "symbol": "parse_issue_contract"},
+    {"id": "execute-handoff", "kind": "function", "path": "noodles.py", "symbol": "execute_handoff"},
+    {"id": "handoff-session", "kind": "control-boundary", "path": "runtime_contract.py", "symbol": "emit_blocking_handoff"},
+    {"id": "provider-readback", "kind": "provider-boundary", "path": "noodles.py", "symbol": "provider_landed"},
+    {"id": "reconcile-control", "kind": "control-boundary", "path": "noodles.py", "symbol": "reconcile_once"},
+    {"id": "pending-review-store", "kind": "state-store", "path": ".noodle/pending-review.json", "symbol": "subject entry"}
+  ],
+  "edges": [
+    {"id": "cli-calls-handoff", "from": "cli-entry", "to": "execute-handoff", "relation": "dispatches"},
+    {"id": "handoff-blocks-session", "from": "execute-handoff", "to": "handoff-session", "relation": "emits blocking stage message"},
+    {"id": "reconcile-reads-provider", "from": "reconcile-control", "to": "provider-readback", "relation": "requires exact landing readback"},
+    {"id": "reconcile-updates-review", "from": "reconcile-control", "to": "pending-review-store", "relation": "releases contained order"}
+  ]
+}
