@@ -39,6 +39,9 @@ registry.json
 contracts/
   shared machine-readable shapes
 
+policy/
+  target-local GitHub boundary declaration; read back by admitted cross-repository executors, never an admission grant
+
 intake/
   frozen design briefs or Git source locks; never runtime state
 
