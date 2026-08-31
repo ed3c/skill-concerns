@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "control-code-intel",
+  "version": "0.1.0",
+  "kind": "domain-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-code-intel-policy.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "receipts.json",
+    "references/README.md",
+    "references/procedures.md",
+    "domain/code-intel-topology.json"
+  ],
+  "execution_paths": [
+    "scripts/code_intel_driver.py",
+    "scripts/validate_control_code_intel.py"
+  ],
+  "test_paths": [
+    "tests/test_control_code_intel.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "domain/code-intel-topology.json"
+  ],
+  "forbidden_domain_literals": [
+    "localhost:5432",
+    "/Users/neon/",
+    "nomic-embed-text"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json"
+  ]
+}

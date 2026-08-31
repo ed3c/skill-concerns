@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "skill": "control-code-intel",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/control-code-intel/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/control-code-intel/SOURCE_PROPOSAL.md",
+      "sha256": "041ceadeed389f03407d3c0c8722a12d07a681fef3d78d7f52efee24cb990306"
+    }
+  ],
+  "method_references": []
+}

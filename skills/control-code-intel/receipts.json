@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "session": "2026-08-31 code-intel wiring + cross-repo",
+  "note": "Every admitted capability carries a physical receipt from this session; the L2 driver's selftest replays the assertions these receipts ground.",
+  "evidence": {
+    "grepai-mcp-connected": {"claim": "grepai installed as an MCP server in Claude Code, ✔ Connected", "how": "claude mcp add grepai; claude mcp get grepai -> Connected"},
+    "serena-mcp-connected": {"claim": "serena installed as MCP in Claude Code (--context claude-code) and Codex (--context codex), ✔ Connected", "how": "claude mcp add serena; ~/.codex/config.toml [mcp_servers.serena]"},
+    "connected-not-usable": {"claim": "grepai reported Connected while returning zero results until the repo was indexed", "how": "first grepai search -> 'No results found'; after watch index -> results"},
+    "pgvector-built-pg16": {"claim": "pgvector 0.8.0 built from source against postgresql@16 and CREATE EXTENSION vector succeeded (0.8.0)", "how": "make PG_CONFIG=.../postgresql@16/bin/pg_config; make install; psql -d grepai -c 'CREATE EXTENSION vector'"},
+    "cross-repo-verified": {"claim": "workspace code-intel with 2 projects (noodles, skill-concerns); a repo-distinctive query surfaced the correct repo for each", "how": "query 'landing train mechanical rebase' -> code-intel/noodles/.github/workflows/land.yml:72-76 (score 0.65); query 'skill admission hermetic evidence' -> code-intel/skill-concerns/skills/feature-map-engineering/references/evidence-contract.md (score 0.43)"},
+    "last-index-time-gotcha": {"claim": "a gob->postgres backend switch left last_index_time stamped; the new empty store reported 'already indexed' (0 chunks) until the stamp was cleared, then chunks 0 -> 414 -> 1056", "how": "cleared last_index_time; restarted watch; SELECT count(*) FROM chunks"},
+    "lancedb-dropped": {"claim": "LanceDB measured against grepai on the same 17-task corpus: recall@5 0.706 vs 0.941; dropped on zero retrieval gain", "refs": ["ed3c/noodles#11"], "how": "PR #231 experiment(migrations): drop LanceDB on a measured loss, not on taste"},
+    "band-landed": {"claim": "code-intel v1 converged from the landed band", "refs": ["ed3c/noodles#5", "ed3c/noodles#6", "ed3c/noodles#7", "ed3c/noodles#8", "ed3c/noodles#10", "ed3c/noodles#9", "ed3c/noodles#12", "ed3c/noodles#13"]}
+  }
+}

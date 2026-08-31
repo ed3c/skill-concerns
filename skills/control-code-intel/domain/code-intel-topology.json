@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "layer": "L1 self-contained contract",
+  "converged_from": "ed3c/noodles#13 code-intelligence v1",
+  "tools": {
+    "grepai": {
+      "role": "semantic retrieval",
+      "authority": "P-class candidate (ranked, must be confirmed, never truth)",
+      "interfaces": ["mcp: grepai mcp-serve", "cli: grepai search --json"],
+      "pin": "grepai 0.30.0",
+      "backends": {
+        "gob": {"scope": "single repository", "infra": "none", "state_file": ".grepai/index.gob"},
+        "postgres+pgvector": {"scope": "multi repository (workspace)", "infra": "postgres + pgvector matching the pg major", "tables": ["documents", "chunks"]}
+      },
+      "embedder": "ollama nomic-embed-text (768 dim)",
+      "states": ["uninitialized", "initialized", "indexing", "indexed", "stale (source moved past last_index_time)"]
+    },
+    "serena": {
+      "role": "symbol navigation and bounded edit",
+      "authority": "L-class for structure (LSP-backed exact symbols), P-class for edit intent",
+      "interfaces": ["mcp: serena start-mcp-server --context {claude-code|codex}"],
+      "pin": "serena-agent 1.7.0",
+      "cross_repo": "dynamic via activate_project (zero extra cost)",
+      "operations": ["find_symbol", "find_referencing_symbols", "replace_symbol_body", "activate_project"]
+    },
+    "tree-sitter": {
+      "role": "structural byte-range readback",
+      "authority": "L-class (byte ranges cross-checked against the language AST)",
+      "interfaces": ["noodles structural probe"],
+      "evidence": "definition byte ranges verified against CPython ast for python candidates"
+    },
+    "scip": {
+      "role": "exact-commit index validation",
+      "authority": "L-class (reproducible at an exact commit)",
+      "interfaces": ["noodles scip probe"],
+      "pin": "scip-python at an exact commit"
+    },
+    "sqlite": {
+      "role": "exact-subject evidence ledger",
+      "authority": "R-class readback (a stored row is served only when subject + adapter + source digest + recorded path + recorded byte range all survive a direct re-read of current source bytes)",
+      "interfaces": ["noodles evidence ledger"]
+    }
+  },
+  "not_admitted": {
+    "lancedb": {
+      "reason": "measured zero retrieval gain vs grepai on the same 17-task corpus (recall@5 0.706 vs 0.941); only 11ms/query and 1.6MB overhead, relieved no failure mode",
+      "receipt": "lancedb-dropped",
+      "disposition": "DROP (honest negative, ed3c/noodles#11 / PR #231)"
+    }
+  },
+  "workspace_model": {
+    "container": "grepai workspace holds N projects over one Postgres+pgvector store",
+    "add": "grepai workspace add <name> <repo-path>",
+    "scoped_search": "grepai search Q --workspace <name> --project <repo>",
+    "cross_search": "grepai search Q --workspace <name>",
+    "path_prefix": "results are prefixed <workspace>/<project>/ so the source repo is explicit"
+  },
+  "invariants": [
+    "connected != usable: prove one real query before claiming a tool is in use",
+    "retrieval is a candidate, never truth; structural/ledger paths are re-verifiable against current bytes",
+    "cross-repo requires a version-matched pgvector; store init fails closed otherwise",
+    "a backend switch orphans last_index_time; clear it and confirm nonzero chunk count"
+  ]
+}
