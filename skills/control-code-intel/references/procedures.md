@@ -39,6 +39,28 @@ Exclude `.claude`, `.worktrees`, and remove stray nested `.grepai` roots inside
 worktree copies (they register as phantom projects and serve duplicate paths).
 ASSERT: search results cite the real repo path, not a worktree copy.
 
+## Index freshness has an owner (verified 2026-08-31)
+
+The index reflects local checkout bytes, not provider main; and a live index
+needs a live watcher. Both failure modes were caught physically: a query for
+a landed change missed because the local clone was days behind, and a
+4.5-hour-old watcher sat frozen (static chunk count) with nothing noticing.
+
+- Owner: a system service (launchd `com.neon.sync-code-intel`, every 15 min),
+  not any agent session. It fast-forwards each workspace repo's main checkout
+  (branch==main guard; git's own `merge --ff-only` machinery refuses when
+  local state is in the way — no blunt dirty-check), then restarts the
+  workspace watcher if `pgrep` finds none.
+- ASSERT freshness end-to-end, not by proxy: after a land, a query distinctive
+  to the landed change must return it. A running watcher pid is not freshness.
+
+## The status tool is not workspace-aware (verified 2026-08-31)
+
+`grepai_index_status` (and `grepai status`) reads the per-project context and
+reports 0 files while the workspace store is populated and serving results.
+Never judge workspace health from status: use a canary search with a known
+answer, or `SELECT count(*) FROM chunks` on the workspace store.
+
 ## Scoped vs cross-repo search
 
 - One repo: `grepai search Q --workspace <name> --project <repo>`.
