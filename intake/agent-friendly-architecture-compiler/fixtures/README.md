@@ -16,7 +16,9 @@ compliant render, or a source lock.
 | `architecture-context-pack.schema.json` | Compile-input schema: the machine contract for the Context Pack the compiler consumes. Not guarded output. | `3b36d9e85fda88eb94b9917be28234f48cf4dfeb` |
 
 Both blobs are byte-identical to their PR #77 originals (`git hash-object` on the copies
-reproduces the source blob SHAs above).
+reproduces the source blob SHAs above). The machine-checkable record of that identity is
+`../source-lock.json` (schema per `contracts/source-lock.schema.json`, same shape every other
+`intake/*` directory uses); this table is the human-readable summary, not the source of truth.
 
 ## Red-corpus receipt
 
@@ -35,6 +37,15 @@ exit=1, 22 findings
 The guard is a negative control: this template must stay red. If a change makes it green,
 either the template stopped being the pre-guard artifact or the guard stopped rejecting.
 
+**This is not currently self-enforcing.** `scripts/run_all.py` on this branch never calls
+`validate_rendered_contract.py` — that script lives only on the un-merged draft branch
+`agent/agent-friendly-architecture-compiler` (head `4d27bfa4edc34b32b4b088fd3df0b40ab2a420c0`
+at the time this fixture material was frozen). Nothing in this repository today would go red
+if the template above were edited to pass. The guard becomes self-enforcing only once issue
+#19 lands the compiler and its guard under `skills/`; until then the `exit=1, 22 findings`
+receipt above is a one-time snapshot, reproducible only by re-running that script against that
+branch while it still exists at that SHA, not a standing check.
+
 ## Non-claims
 
 - This is not an admission receipt and grants no admission.
@@ -42,3 +53,7 @@ either the template stopped being the pre-guard artifact or the guard stopped re
 - The template is not a specification of the compiler's product; the product contract lives
   with the candidate Skill.
 - No claim is made that any render derived from this template has ever passed the guard.
+- The schema's `$id` (`https://github.com/ed3c/ai-content-notes/schemas/...`) is a frozen byte
+  of the PR #77 original, not a live or resolvable URI — this directory holds frozen source
+  identities only (`../README.md`), so it is not rewritten to a `skill-concerns` URL here.
+  Whatever repository formally adopts this schema under issue #19 owns re-authoring `$id`.
