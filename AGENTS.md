@@ -132,7 +132,8 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `skills/<skill>/scripts/` | deterministic mechanisms |
 | `skills/<skill>/tests/` and `evals/` | positive and negative falsifiers |
 | `intake/<skill>/source-lock.json` | frozen source/proposal identity |
-| `scripts/admission_stamp.py` | the one stamp surface: each Skill's check table, and the refusal that keeps an unmeasured `PASS` out of a receipt |
+| `scripts/run_all.py` | `SKILL_CHECKS`: the single declaration of each Skill's check argv, and the suite that runs it |
+| `scripts/admission_stamp.py` | the one stamp surface: re-runs a Skill's `run_all.SKILL_CHECKS` row and refuses to write a receipt when any of it is red |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | GitHub Actions run | execution arrival for one checked-out commit |
 

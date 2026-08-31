@@ -25,7 +25,7 @@
     },
     {
       "path": "skills/control-noodle/domain/composition.json",
-      "sha256": "7f14f6456ecebffeebfcc2a17975d2766774b0672c52c0b81ab547b4082620e5"
+      "sha256": "a5c3c8a6b94fc83277e5ca11721127581dd130b0a64bd638d51fa8a7f290dee5"
     },
     {
       "path": "skills/control-noodle/domain/domain-adapter.json",
@@ -49,7 +49,7 @@
     },
     {
       "path": "skills/control-noodle/fixtures/valid/procedure-admission.json",
-      "sha256": "e8ad3f057b599785b243f9cf23cfee6a9d3603a408d7f8df8b46bd1f07a4d1cc"
+      "sha256": "8c404bf56aae38017465d300a549aba8eaf5d6b22ec441233b4da86c74e8ed50"
     },
     {
       "path": "skills/control-noodle/fixtures/valid/verification-plan.json",
@@ -88,7 +88,7 @@
       "sha256": "01f7f7917845a7e2130bcf48b83b07df741780e368405d6570e30c3a2f18dc26"
     }
   ],
-  "skill_tree_sha256": "7681b6dbda8869528162d14db6800ae826a9943a4f571541d499ac6ffa472cbc",
+  "skill_tree_sha256": "a3034d9f8e84db7f91082974f0ff01221f6c06d2c451912feb3d2b801840502a",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

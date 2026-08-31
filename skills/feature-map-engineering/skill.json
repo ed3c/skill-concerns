@@ -40,6 +40,9 @@
     "cmd/ctrl+b"
   ],
   "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json",
     "../../contracts/feature-map.schema.json",
     "../../contracts/domain-adapter.schema.json"
   ]

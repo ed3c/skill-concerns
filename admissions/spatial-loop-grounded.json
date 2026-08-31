@@ -81,18 +81,26 @@
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
-      "sha256": "b4e1bdd592c7d30cbcf6cda9513f0dae7ca8a3c623b656ffe5bbb6ca5cacdefe"
+      "sha256": "636b8662c00218625dcefde6358cb93ac6292952b603da40967fed02894d483c"
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
       "sha256": "770abf80b250f50311e19f851438703857685be24c721f317b27fb2d610e2191"
     }
   ],
-  "skill_tree_sha256": "e4f427d0ecad19472f1a5798fcbaa424fceaf6d4a61c40f707ac63276305fbaf",
+  "skill_tree_sha256": "e03c84725aa373518699229d492d32da420f4e86c38570b9678727845a4b9b9d",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
       "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
     }
   ],
   "controls": [
