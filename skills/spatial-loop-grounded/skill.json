@@ -38,6 +38,8 @@
     "launchctl"
   ],
   "shared_contracts": [
-    "../../contracts/skill-manifest.schema.json"
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json"
   ]
 }

@@ -85,15 +85,27 @@
     },
     {
       "path": "skills/feature-map-engineering/skill.json",
-      "sha256": "1179826fab066d2f3274fc3b27d17f7af7d8eeac0a7d991a84080f5c86652b79"
+      "sha256": "30b8bf7fb80f53e672d0b55e59b1888a46efcb9038fe7cc4f5327863872c0914"
     },
     {
       "path": "skills/feature-map-engineering/tests/test_feature_map.py",
       "sha256": "a2758e9c3ecf53cfddd00b45adc17319034f662cd247e110f4407650dbdcdab0"
     }
   ],
-  "skill_tree_sha256": "54ce6cb5f2cabc0845b1adaec549f379d94c98a830fec2e12336c89e46c9d42d",
+  "skill_tree_sha256": "ae37f619156a38a1e60aad36fcf25b070bd24549ff99abb6ace76806e1f0af95",
   "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
     {
       "path": "contracts/feature-map.schema.json",
       "sha256": "83346f582c81022f511bd860b6b52dd2f21b2b313d77f5e489504d13835e7f43"
@@ -178,6 +190,6 @@
     "L4_MATCHED_LIVE_RUNTIME",
     "L5_DELIVERY_AND_PRODUCTION"
   ],
-  "authoring_command": "python3 scripts/run_all.py",
+  "authoring_command": "python3 skills/feature-map-engineering/scripts/gen_admission.py",
   "hosted_evidence": "READ_FROM_GITHUB"
 }

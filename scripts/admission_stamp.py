@@ -8,8 +8,11 @@ Skill. Nothing used to execute before those rows were written, so the invariant
 `stamp()` re-runs the Skill's own declared checks -- the exact argv
 `scripts/run_all.py` executes for that Skill, validator plus unittest discovery
 -- in this process and REFUSES to write when any of them is red. The refusal is
-structural: `run_checks()` returns before `build_receipt()` is ever called, so a
-red tree cannot produce receipt bytes.
+structural for this path: `run_checks()` returns before `build_receipt()` is
+ever called, so going through this stamper on a red tree cannot produce receipt
+bytes. It does not follow a receipt from anywhere else -- nothing here stops a
+receipt from being hand-authored or copied in with matching digests; that gap
+is CI's to close, not this module's.
 
 `run_all.SKILL_CHECKS` is the single declaration of what a Skill's checks are, so
 the suite and the stamper cannot diverge. The table lives in the runner rather
@@ -112,7 +115,7 @@ def build_receipt(skill: str, root: Path) -> dict:
         "controls": controls,
         "evidence_ceiling": "L3_HERMETIC",
         "not_claimed": ["L4_MATCHED_LIVE_RUNTIME", "L5_DELIVERY_AND_PRODUCTION"],
-        "authoring_command": "python3 scripts/run_all.py",
+        "authoring_command": f"python3 skills/{skill}/scripts/gen_admission.py",
         "hosted_evidence": "READ_FROM_GITHUB",
     }
 

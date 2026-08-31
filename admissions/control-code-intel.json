@@ -61,18 +61,26 @@
     },
     {
       "path": "skills/control-code-intel/skill.json",
-      "sha256": "7371046a93ebed5a3294bac2be1df81d86e32dd81e56f8870a38c54a75ad86df"
+      "sha256": "d90d7bb4629c4bae9c59200616a3d28769f34dd762de5cbce219a04efd1cd5d6"
     },
     {
       "path": "skills/control-code-intel/tests/test_control_code_intel.py",
       "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
     }
   ],
-  "skill_tree_sha256": "2eabef0e410f9db0f10a01b2e2c634af205de98f352daa36897321bb2b753e9e",
+  "skill_tree_sha256": "a8c6005e479da4780893fb5d172377dd5b2103f4ec012a621fc265584d1d80cf",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
       "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
     }
   ],
   "controls": [
@@ -154,6 +162,6 @@
     "L4_MATCHED_LIVE_RUNTIME",
     "L5_DELIVERY_AND_PRODUCTION"
   ],
-  "authoring_command": "python3 scripts/run_all.py",
+  "authoring_command": "python3 skills/control-code-intel/scripts/gen_admission.py",
   "hosted_evidence": "READ_FROM_GITHUB"
 }
