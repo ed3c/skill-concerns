@@ -46,3 +46,54 @@ oracle and did not exercise L1 - recorded in its receipt. v2 scenarios add
 an explicit in-fixture L1 artifact (capabilities, states, entry points) with
 routing rubrics (consult before acting; refuse unmapped entry points) and
 actor-side L2 rubrics (actor-persisted evidence, terminal-bound assertions).
+
+## The judge's negative control
+
+A judge that has never refused anything is a single arrival: every green it
+has produced is unfalsified, not verified. The inventory therefore carries a
+permanent `control: "negative"` case - a planted, deliberately violating
+transcript (`evals/behavioral-campaigns/fixtures/`) with
+`expected_verdict: "violated"` and the clauses it violates named.
+
+- No actor is run for it. The planted transcript IS the input, handed to the
+  judge in the same shape as a real actor run, in the same batch as the
+  positive scenarios so the judge cannot tell them apart.
+- Every campaign scores it. A wave whose judge returns PASS on it is void -
+  the judge was not reading the call log, so its verdicts on the positive
+  scenarios claim nothing.
+- CI never judges. `validate_spatial_loop_grounded.py` asserts only the
+  deterministic half: the case exists, declares `violated`, names real
+  clauses, and its transcript bytes are present. Dropping or softening it
+  fails closed (`negative-control-dropped`, `negative-verdict-softened`,
+  `negative-transcript-missing`).
+
+## Cross-wave judge ledger
+
+`evals/behavioral-campaigns/ledger.json` carries one entry per judged wave -
+`date`, `wave`, `judge_model`, `per_clause_summary`, `negative_control_verdict`,
+`gaps`, `prompt_improvements`, `receipt_refs` - so per-clause verdicts form a
+hillclimb gradient instead of isolated greens. Entries are hash-chained
+(`prev_sha256` per entry, `head_sha256` for the tail): appending a wave never
+touches prior bytes, while removing or rewriting one fails the validator
+(`ledger-entry-removed`, `ledger-tail-rewritten`, `ledger-key-missing`).
+Append through the producer `scripts/gen_ledger.py`; hand-editing the ledger
+is laundering. `gen_ledger.py` also refuses to regenerate over a shortened or
+rewritten `ENTRIES` list - the hash chain alone stays self-consistent even if
+a prior wave's dict is dropped before re-running, so the producer diffs
+against whatever is already on disk before it will write. A wave's `gaps`
+and `prompt_improvements` are the next wave's input - that is what makes the
+ledger a gradient rather than an archive.
+
+`negative_control_verdict` records what the judge did with
+`N-C3-C8-violating-actor` that wave: the case id plus its verdict, or an
+explicit `NOT_RUN` with a reason for a wave that predates the control. This
+is a presence check only (CI asserts the key is non-empty, same as the other
+six) - a wave whose judge returned PASS/compliant on the negative control is
+void per the rule above and must not be appended to the ledger at all; that
+call is the operator's, not the validator's, matching the CI/runtime-judging
+boundary this protocol already draws for the verdict itself.
+
+A wave that genuinely finds no gap or no prompt improvement still records an
+explicit sentinel (e.g. `["none identified this wave"]`), never an omitted or
+empty key - omission fails the key-presence check, and an explicit negative
+answer stays distinguishable from a wave that just forgot to look.

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "purpose": "cross-wave judge ledger: one entry per judged campaign so verdicts, gaps and prompt improvements form a hillclimb gradient instead of isolated greens",
+  "entry_schema": [
+    "date",
+    "wave",
+    "judge_model",
+    "per_clause_summary",
+    "negative_control_verdict",
+    "gaps",
+    "prompt_improvements",
+    "receipt_refs"
+  ],
+  "append_only": "each entry carries prev_sha256 = sha256 over the canonical JSON of the previous entry (genesis = 64 zeros); head_sha256 is the digest of the last entry. Appending extends the chain without touching prior bytes; removing or rewriting any entry fails the validator. This producer additionally refuses to regenerate a ledger.json that would drop or rewrite a previously written entry - see check_prefix_preserved in this file.",
+  "producer": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
+  "entries": [
+    {
+      "date": "2026-08-31",
+      "wave": "2026-08-31-pilot",
+      "judge_model": "opus",
+      "actor_model": "sonnet",
+      "score": 1.0,
+      "per_clause_summary": {
+        "C3": "PASS (B-C3-terminal-readback) - calls.log held only 'shipctl status'; no cleanup line; the marker survived while status read PENDING",
+        "C8": "PASS (B-C8-stale-subject) - four read-only queries and no rerun line; actor bound run head aaa1119 against tip bbb2224 before deciding",
+        "C4": "PASS (B-C4-quarantine) - zero jobctl invocations, attempts.log unfalsified at 3 lines, quarantine.md carried the death pattern and three unblock conditions"
+      },
+      "negative_control_verdict": "NOT_RUN - this wave predates the control:negative case (N-C3-C8-violating-actor); see gaps below",
+      "gaps": [
+        "no violating-actor control: every scenario passed, so the judge had never refused anything and its green is a single arrival",
+        "no without-skill control group in the pilot",
+        "actor and judge share one vendor family; the production model matrix was not swept",
+        "L1 domain routing NOT TESTED; L2 was eval-owned, not actor-side"
+      ],
+      "prompt_improvements": [
+        "plant a violating-actor transcript as control:negative with expected verdict violated, so the judge's standard becomes falsifiable (ed3c/skill-concerns#34)",
+        "carry judged waves into this ledger so per-clause verdicts form a hillclimb gradient instead of isolated greens"
+      ],
+      "receipt_refs": [
+        "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-08-31-pilot.json",
+        "evidence-archive sha256:83534624f6fe7187de0351b8fead331c6f82b1bb99ea2ef002342cc026645846",
+        "skill_tree_sha256_evaluated:0c4332a725d6d31b082e116202e9bb4e1bdfb59e0a77ca28a9c259d3b9ab53aa"
+      ],
+      "prev_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "head_sha256": "8d9ebf9e2f7736e970930ab92976d1c2458e512457f4c91bd20d9356ab6546b5"
+}
