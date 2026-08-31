@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "zero-context-self-contained",
+      "mode": "BUILD+SHADOW",
+      "expect": "PASS",
+      "assertions": [
+        "consumer can infer Best Path without source-framework knowledge",
+        "no required unexplained source-specific vocabulary",
+        "compiler/evidence machinery absent from hot path"
+      ]
+    },
+    {
+      "id": "black-box-leak",
+      "mode": "SHADOW",
+      "expect": "L2_REVIEW",
+      "mutation": "inject unexplained source control-plane vocabulary into the rendered contract"
+    },
+    {
+      "id": "semantic-loss-shortest-path",
+      "mode": "SHADOW",
+      "expect": "L2_REVIEW",
+      "mutation": "remove the distinction between shortest compiling path and shortest architecture-preserving verifiable path"
+    },
+    {
+      "id": "authority-laundering",
+      "mode": "SHADOW",
+      "expect": "L1_WARN_OR_L2_REVIEW",
+      "mutation": "render a prose convention as a mechanically enforced invariant"
+    },
+    {
+      "id": "harmless-wording",
+      "mode": "SHADOW",
+      "expect": "L0_OBSERVE",
+      "mutation": "retain a defined non-load-bearing example that does not affect Best Path reasoning"
+    }
+  ]
+}
