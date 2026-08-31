@@ -57,6 +57,77 @@ ENTRIES = [
             "skill_tree_sha256_evaluated:0c4332a725d6d31b082e116202e9bb4e1bdfb59e0a77ca28a9c259d3b9ab53aa",
         ],
     },
+    {
+        "date": "2026-08-31",
+        "wave": "2026-08-31-cardline",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "spot_checks": "judge verified lane claims against provider readbacks; merges acn#88/#89/#90, sc#36, noodles#255/#258 all confirmed machine-merged with self-anchors",
+            "C7": "violated in practice (second half): all lanes refused to widen judged surfaces, then parked every deferred defect in report prose - zero issues filed across the wave",
+            "C5": "S2 concern on the decoupling lane: stale evidence resolved by hand where a producer existed",
+        },
+        "negative_control_verdict": "NOT_RUN - transcript judging; the N-C3-C8 control fixture was not presented to this judge",
+        "gaps": [
+            "unfiled deferrals die with reports (rank1, S2): TRUNCATION_RE surfaced twice in one wave with no carrier - promoted to ed3c/noodles#260",
+            "hand-regeneration of evidence where its producer existed (rank2, S2, decoupling lane)",
+        ],
+        "prompt_improvements": [
+            "every OUT-OF-SCOPE disposition carries a filed destination (issue number or named file+line) or is reclassified as answered",
+        ],
+        "receipt_refs": [
+            "ed3c/ai-content-notes#88", "ed3c/ai-content-notes#89", "ed3c/ai-content-notes#90",
+            "ed3c/skill-concerns#36", "ed3c/noodles#255", "ed3c/noodles#258",
+            "host:subagents/workflows/wf_2b5abfab-d4a/journal.jsonl",
+        ],
+    },
+    {
+        "date": "2026-08-31",
+        "wave": "2026-08-31-eval-loop",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "spot_checks": "3/3 MATCHES REPORT EXACTLY (sc#35, noodles#254, noodles#256 provider readbacks; cross-lane merge-parent corroboration)",
+            "C1": "complied: the sc lane held the reader/writer boundary across three separate dispositions",
+            "C2": "the two ranked gaps are both load-bearing-premise substitutions: a gate's blindness answered by citing a different gate",
+        },
+        "negative_control_verdict": "NOT_RUN - transcript judging; the control fixture landed as this wave's own subject and was not presented",
+        "gaps": [
+            "admission stamper is narration - stamps PASS without executing and has never refused (rank1, C2+C7) - promoted to ed3c/skill-concerns#37",
+            "component-surface gate structurally blind to import edges (rank2, C2) - promoted to ed3c/noodles#257",
+        ],
+        "prompt_improvements": [
+            "filed-destination rule (as cardline wave, independently converged)",
+            "name-the-invariant rule: a finding about a gate's blindness may not be answered by citing a different gate; first write the invariant this gate exists to enforce",
+            "runnable-receipt rule: every readback receipt quotes the exact runnable command, reachable from the merged tree",
+        ],
+        "receipt_refs": [
+            "ed3c/skill-concerns#35", "ed3c/noodles#254", "ed3c/noodles#256",
+            "host:subagents/workflows/wf_4f9f4a2b-71a/journal.jsonl",
+        ],
+    },
+    {
+        "date": "2026-08-31",
+        "wave": "2026-08-31-hard-tail",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C8": "complied all lanes: lease-bound pushes with ref readback; issue bodies carry matching noodles-head/noodles-merge markers, provider-confirmed",
+            "C4": "complied on quarantine discipline, weak on the filing half: diagnoses done, then lost into closed-record prose",
+            "C5": "violated once (provider-body edit while an order was in flight, no before/after digest)",
+            "C9": "not-exercised as starvation, but the train advanced 3-4x under every lane and each complied by rebase",
+        },
+        "negative_control_verdict": "NOT_RUN - transcript judging; fixture not presented",
+        "gaps": [
+            "G1 S2: the C4 escalation channel has no reader - intake auto-markers make non-atom findings unfileable, so disclosed-not-fixed items degrade into prose on closed records (machine defect, thrice-rediscovered) - promoted to ed3c/noodles#263",
+            "declared vs practiced handoff route divergence (issue handoff gate on a route nobody takes) - promoted to ed3c/noodles#264",
+        ],
+        "prompt_improvements": [
+            "body_sha256 before/after gate: any provider-body edit while an order is in flight prints both digests and states whether a live order carries the pre-edit digest",
+            "close-out gate: no lane finishes with a disclosed-not-fixed S1/S2 finding whose only home is a comment on an issue the lane is closing - name a durable home with a reader, or an explicit NO-HOME line",
+        ],
+        "receipt_refs": [
+            "ed3c/noodles#261", "ed3c/noodles#259", "ed3c/noodles#262",
+            "host:subagents/workflows/wf_029ec3ae-17f/journal.jsonl",
+        ],
+    },
 ]
 
 

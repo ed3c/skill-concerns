@@ -33,7 +33,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ledger.json",
-      "sha256": "b42c69a090fa9ed81aa639b7d3d5258fa8b47fe931421f0eba4df4e16108d175"
+      "sha256": "a9b9f70184971b0aec73bfcec2c9588c6a3476c32ab501f29f4dac4c486184fe"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
@@ -69,7 +69,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
-      "sha256": "d6173250c8dda35312b16502bbb5a699d8631e8f2a8ad9e592b0aba0a5df6bf2"
+      "sha256": "366228893b72703e81ccb948cfed82092c92f437b07f30519000d8100cf4a5b0"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
@@ -85,10 +85,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "04965ad337d91a8af06fad85bfceaadc297304ea16b8e93546ca39be3f642f6e"
+      "sha256": "770abf80b250f50311e19f851438703857685be24c721f317b27fb2d610e2191"
     }
   ],
-  "skill_tree_sha256": "e591eb7c8a8334209ebc63d1089a5805ed3d8152ab3b8d49a7b6f038a446e4fc",
+  "skill_tree_sha256": "445fea9963743791f0da82b25e808c8ff3b8facd28455dc28d131c7f8d68ab9a",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
