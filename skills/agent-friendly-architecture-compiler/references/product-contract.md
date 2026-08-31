@@ -2,9 +2,47 @@
 
 The final product is a self-contained Markdown architecture contract for a zero-context coding LLM.
 
+This reference uses `P0/P1/P2` for rendered-product compilation stages. `L0/L1/L2` are reserved for the Skill concern stack:
+
+```text
+L0 PROCEDURAL SKILL
+L1 DOMAIN KNOWLEDGE
+L2 EXECUTION + ASSERTIONS
+
+P0 Semantic Kernel
+P1 Self-contained Contract
+P2 Best Path Procedure
+```
+
+The rendered product is derived from the Skill stack; it is not the Skill stack itself.
+
+## P0 — Semantic Kernel
+
+Preserve the source-independent architectural pressure that changes how a consumer should reason.
+
+Examples:
+- local Agents imitate nearby precedent;
+- the conventional path should require fewer decisions than a shortcut;
+- deterministic invariants belong at the strongest practical enforcement layer;
+- durable truth should have one obvious writer;
+- isolated extension surfaces are safer than shared-root branching;
+- repeated deterministic review failures should migrate into mechanisms.
+
+## P1 — Self-contained Contract
+
+Render P0 into ordinary architecture language. Define every concept required for Best Path inference in-place.
+
+For a reusable domain-decoupled product, P1 must not require prior knowledge of a source project, private role names, internal control planes, evidence enums, compiler schemas, graph systems, or other black boxes.
+
+For a Domain-rich product, a domain primitive may remain only when the same rendered contract explains what it is, what it owns, what operations are allowed, what constraints apply, and how it changes the Best Path.
+
+## P2 — Best Path Procedure
+
+Convert P1 into an actionable repository-change decision rule. The consumer must be able to choose the smallest architecture-preserving, mechanically verifiable path without compiler metadata.
+
 ## Required semantic sections
 
-The rendered contract must directly explain:
+The rendered contract should directly explain:
 
 1. Context Model — what local information an Agent usually has and how that shapes behavior.
 2. Core Architecture Rules — conventional path, mechanical rejection, single writer, isolated extension surfaces, explicit exceptions.
@@ -17,18 +55,14 @@ The rendered contract must directly explain:
 9. Implementation Procedure — concrete repository-change decision sequence.
 10. Best Path Decision Rule — maximize local obviousness, precedent, isolation, ownership, mechanical enforcement, verifiability; minimize new concepts, shared-root edits, manual registration, duplicate state, implicit exceptions, prose-only invariants, and human-only verification.
 
-## Forbidden hot-path dependencies
+## Evidence boundary
 
-A rendered reusable contract fails self-containedness when ordinary understanding requires any unexplained source-specific framework or compiler vocabulary. Examples include project names, private role names, evidence-level enums, context-pack schemas, evidence manifest formats, graph systems, or verification frameworks that are not themselves necessary architecture primitives.
+Evidence comes from L1 domain knowledge and L2 execution/assertions and protects compilation, but evidence syntax should not dominate consumption. Claim IDs, receipts, schemas, manifests, and audit syntax remain sidecar concerns unless a Domain-rich consumer genuinely needs one as an executable primitive.
 
-Source-specific examples may be used only when they are clearly examples and can be deleted without changing the contract's meaning.
-
-## Evidence rule
-
-Evidence protects generation but should not dominate consumption. Material rules must be conservatively supported by the compilation evidence, but claim IDs and authority syntax are sidecar concerns unless the user explicitly requests an audit projection.
+The rendered product may never state a stronger rule than the underlying evidence permits.
 
 ## Compression law
 
 Shortening is allowed only when it does not remove a load-bearing invariant, exception, failure condition, or distinction whose absence changes plausible Best Path inference.
 
-A shorter contract that causes a stronger unsupported instruction is worse than a longer self-contained one.
+A shorter contract that creates a stronger unsupported instruction is worse than a longer self-contained one.
