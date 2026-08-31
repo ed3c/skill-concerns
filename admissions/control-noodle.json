@@ -9,7 +9,7 @@
   "subject_files": [
     {"path": "skills/control-noodle/AGENTS.md", "sha256": "1bd8dc642bc91b9d507ec44df1a683b87bacb5c5d46ef020d35f41b333dc4c86"},
     {"path": "skills/control-noodle/README.md", "sha256": "c96ecff80cfa8654dd7098abf3a167b6af9c7d33dbf123a122954bcc62ad9214"},
-    {"path": "skills/control-noodle/SKILL.md", "sha256": "efa5a1d2e9166af47f9078bdc5924fb6520ae0171a0a068472f7abab02b00a1a"},
+    {"path": "skills/control-noodle/SKILL.md", "sha256": "deeabea22a7f1899c8868f4bfdc63cdc8fbf8c2ad366dcfbe9fdf93fc1db2835"},
     {"path": "skills/control-noodle/domain/code-map.json", "sha256": "4727143b364b0dc94a4cc19382d0c3e803ed133c0fced6a2f5162f755292ff7f"},
     {"path": "skills/control-noodle/domain/composition.json", "sha256": "447d0b37f6edf4df221660a19f297a9181a48ce23604ca362559995e80a024cd"},
     {"path": "skills/control-noodle/domain/domain-adapter.json", "sha256": "9a976943c7150b530a907eef7966a6f7bc40d54c21649bc48c921b72d8fdb22d"},
@@ -27,7 +27,7 @@
     {"path": "skills/control-noodle/skill.json", "sha256": "62e4ae3bcc58b3f864e7be5de7291870deba805f6549bc5adde247e16b270b50"},
     {"path": "skills/control-noodle/tests/test_control_contract.py", "sha256": "01f7f7917845a7e2130bcf48b83b07df741780e368405d6570e30c3a2f18dc26"}
   ],
-  "skill_tree_sha256": "969111ff62cc68a1df82e036f2fe892e4ab9a850bbf2020f0f4253f6db866581",
+  "skill_tree_sha256": "9790c6e59b92c48457d5d43c1e9c13ce2f6e93095022a50eb917ca16a9bf7aff",
   "contract_files": [
     {"path": "contracts/skill-manifest.schema.json", "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"},
     {"path": "contracts/source-lock.schema.json", "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"},
