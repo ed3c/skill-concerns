@@ -19,8 +19,9 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from admission_stamp import REFUSAL, SKILL_CHECKS  # noqa: E402
+from admission_stamp import REFUSAL  # noqa: E402
 from common import load_json  # noqa: E402
+from run_all import SKILL_CHECKS  # noqa: E402
 
 # The plant: this Skill's `test_hollow_topology_removed_fails` asserts the
 # validator names a missing topology file. Renaming the diagnostic defuses that

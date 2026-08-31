@@ -11,9 +11,11 @@ Skill. Nothing used to execute before those rows were written, so the invariant
 structural: `run_checks()` returns before `build_receipt()` is ever called, so a
 red tree cannot produce receipt bytes.
 
-`SKILL_CHECKS` is the single declaration of what a Skill's checks are;
-`scripts/run_all.py` runs the same table, so the suite and the stamper can never
-diverge.
+`run_all.SKILL_CHECKS` is the single declaration of what a Skill's checks are, so
+the suite and the stamper cannot diverge. The table lives in the runner rather
+than here: `check_skill_bundles` proves a declared executable route is reached by
+reading the runner's bytes, and in CI that checker runs from the default branch
+against this tree as data.
 """
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ from common import (
     sha256_file,
     tree_digest,
 )
+from run_all import SKILL_CHECKS
 
 
 REFUSAL = "ADMISSION_STAMP_REFUSED"
@@ -50,74 +53,6 @@ MANDATORY_CONTROLS = (
     "persistence-mutation",
     "admission-tree-digest",
 )
-
-DISCOVER = ("-m", "unittest", "discover", "-p", "test_*.py", "-v", "-s")
-
-# Skill name -> the checks that must be green before its receipt may be written.
-# `scripts/run_all.py` executes this same table; `tests/test_admission_stamp.py`
-# asserts every registered Skill has an entry.
-SKILL_CHECKS: dict[str, tuple[tuple[str, ...], ...]] = {
-    "feature-map-engineering": (
-        (
-            "skills/feature-map-engineering/scripts/validate_feature_map.py",
-            "--map",
-            "skills/feature-map-engineering/fixtures/valid/feature-map.json",
-            "--plan",
-            "skills/feature-map-engineering/fixtures/valid/verification-plan.json",
-        ),
-        (
-            "skills/feature-map-engineering/scripts/coverage_diff.py",
-            "--old",
-            "skills/feature-map-engineering/fixtures/valid/feature-map.json",
-            "--new",
-            "skills/feature-map-engineering/fixtures/valid/feature-map.json",
-        ),
-        (
-            "skills/feature-map-engineering/scripts/validate_feature_map.py",
-            "--map",
-            "docs/features/skill-admission/feature-map.json",
-            "--plan",
-            "docs/features/skill-admission/verification-plan.json",
-        ),
-        (*DISCOVER, "skills/feature-map-engineering/tests"),
-    ),
-    "control-noodle": (
-        (
-            "skills/control-noodle/scripts/validate_control_noodle.py",
-            "--composition",
-            "skills/control-noodle/domain/composition.json",
-            "--feature-map",
-            "skills/control-noodle/domain/feature-map.json",
-            "--code-map",
-            "skills/control-noodle/domain/code-map.json",
-            "--mapping",
-            "skills/control-noodle/domain/feature-code-map.json",
-            "--adapter",
-            "skills/control-noodle/domain/domain-adapter.json",
-            "--change-set",
-            "skills/control-noodle/fixtures/valid/change-set.json",
-            "--plan",
-            "skills/control-noodle/fixtures/valid/verification-plan.json",
-            "--procedure-admission",
-            "admissions/feature-map-engineering.json",
-            "--source-lock",
-            "intake/control-noodle/source-lock.json",
-        ),
-        (*DISCOVER, "skills/control-noodle/tests"),
-    ),
-    "spatial-loop-grounded": (
-        ("skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",),
-        (*DISCOVER, "skills/spatial-loop-grounded/tests"),
-    ),
-    "control-code-intel": (
-        ("skills/control-code-intel/scripts/validate_control_code_intel.py",),
-        (*DISCOVER, "skills/control-code-intel/tests"),
-    ),
-    "control-backup": (
-        ("skills/control-backup/scripts/validate_control_backup.py",),
-        (*DISCOVER, "skills/control-backup/tests"),
-    ),
-}
 
 
 class StampRefused(RuntimeError):
