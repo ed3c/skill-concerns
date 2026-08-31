@@ -49,7 +49,7 @@
     },
     {
       "path": "skills/control-code-intel/scripts/gen_admission.py",
-      "sha256": "aa9961e94d9d8c50761f722d05dccf3b3c6b3a06df0cb342b4e99fc54d8541f7"
+      "sha256": "64d9dd6d8a549bed74e389e02e6af8b0071324bbb9b4f41097d0d2fc3d090b5e"
     },
     {
       "path": "skills/control-code-intel/scripts/gen_source_lock.py",
@@ -68,19 +68,11 @@
       "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
     }
   ],
-  "skill_tree_sha256": "4e6fb7bda4eab6ffc31e55fe28602f64a5fd7fec8327510954b74bffab9287b5",
+  "skill_tree_sha256": "2eabef0e410f9db0f10a01b2e2c634af205de98f352daa36897321bb2b753e9e",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
       "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
-    },
-    {
-      "path": "contracts/source-lock.schema.json",
-      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
-    },
-    {
-      "path": "contracts/admission.schema.json",
-      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
     }
   ],
   "controls": [

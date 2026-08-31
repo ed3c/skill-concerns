@@ -76,6 +76,10 @@
       "sha256": "bbf9383328b2570d0c81c0fe740ecd5a2fed3639fd3808dcaeb74434b7e88ffc"
     },
     {
+      "path": "skills/feature-map-engineering/scripts/gen_admission.py",
+      "sha256": "a6c59a5c0cd2f06518806f65a37c0f82f26b4b8237f1362c727f0f809f9c5de1"
+    },
+    {
       "path": "skills/feature-map-engineering/scripts/validate_feature_map.py",
       "sha256": "aab771d05a83b01b2e31828e584b0dfdd6e4ff140db35ee5b48388645d4e7f21"
     },
@@ -88,20 +92,8 @@
       "sha256": "a2758e9c3ecf53cfddd00b45adc17319034f662cd247e110f4407650dbdcdab0"
     }
   ],
-  "skill_tree_sha256": "278875380dde01f970ac7db7e0bcd24c4771bd22f087a8b4679c9365e881dea9",
+  "skill_tree_sha256": "54ce6cb5f2cabc0845b1adaec549f379d94c98a830fec2e12336c89e46c9d42d",
   "contract_files": [
-    {
-      "path": "contracts/skill-manifest.schema.json",
-      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
-    },
-    {
-      "path": "contracts/source-lock.schema.json",
-      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
-    },
-    {
-      "path": "contracts/admission.schema.json",
-      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
-    },
     {
       "path": "contracts/feature-map.schema.json",
       "sha256": "83346f582c81022f511bd860b6b52dd2f21b2b313d77f5e489504d13835e7f43"
@@ -158,6 +150,26 @@
     },
     {
       "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "positive-complete-feature-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-without-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "invalid-transition-chain",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-evidence-missing",
+      "state": "PASS"
+    },
+    {
+      "id": "coverage-diff-detects-changed-edge",
       "state": "PASS"
     }
   ],

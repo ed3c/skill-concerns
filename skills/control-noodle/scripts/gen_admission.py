@@ -6,4 +6,4 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from admission_stamp import stamp  # noqa: E402
 
-raise SystemExit(stamp("control-code-intel"))
+raise SystemExit(stamp("control-noodle"))
