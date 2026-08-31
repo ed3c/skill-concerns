@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "name": "agent-friendly-architecture-compiler",
+  "version": "0.1.0",
+  "kind": "procedure-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "SKILL.md",
+    "README.md",
+    "references/product-contract.md"
+  ],
+  "domain_paths": [],
+  "execution_paths": [
+    "scripts/validate_rendered_contract.py"
+  ],
+  "test_paths": [
+    "tests/test_rendered_contract.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "references/product-contract.md"
+  ],
+  "forbidden_domain_literals": [
+    "Noodle-owned",
+    "noodles-component",
+    "P/L/R/N",
+    "FeatureMap",
+    "Spatial Loop"
+  ],
+  "shared_contracts": []
+}
