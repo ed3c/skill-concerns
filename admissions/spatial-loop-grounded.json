@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "skill": "spatial-loop-grounded",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/spatial-loop-grounded/source-lock.json",
+    "sha256": "8affcef85f1a838599d1c1d93c33b210acf49fb01b22db82dd8f8f90b75eed5a"
+  },
+  "subject_files": [
+    {
+      "path": "skills/spatial-loop-grounded/AGENTS.md",
+      "sha256": "2b6309bddf05e02069905076ae2728d5afbf7d0aedb68899866e4bece9fe48a4"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/README.md",
+      "sha256": "4fbf7fe924b2ba816f4592bf45e0c046336c44db8c19c0916b95993c4e359b8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/SKILL.md",
+      "sha256": "58b7e945eb969ec3723373db2caf61f513865e419c625378960110e01357ab6d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-08-31-pilot.json",
+      "sha256": "d3f48d39f109852ba276f47b1c98892a491dacdea7ba1dc2b3b43ab801cfff46"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral.json",
+      "sha256": "39d9f5fad1cffaf277ef26a8f18777a3d87b8856b3c953df9c4212ba26fc14c3"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/cases.json",
+      "sha256": "73971fc8fcc06e7ffaaf4bf2b6549df0b744226116f67dbf4581d2955d7480a7"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/receipts.json",
+      "sha256": "c5b49de77f185cb7cecef2dc90d7a926e701c88c42a0b89c13ec9618a19292e9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
+      "sha256": "57c9557edf91715229cfd9f9cefef596c16ae4ab51a74b037c4474a853eda388"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/bind_evidence_archive.py",
+      "sha256": "7daa4435167c760fb58e6eeb2fc762cc4e13485ca6d6832215a934a274eec8e1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/gen_admission.py",
+      "sha256": "fd4b29dcff3f9ec214abfdd3e20e500b25cb52b1b3f8c93210383afa7b591a17"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/gen_campaign_receipt.py",
+      "sha256": "6c039e2f9b9e178d05d9c56e27b98c287f8378d92d5c9853e45276ee5c569fda"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
+      "sha256": "5e21c09269cdfb0ab68ddb6a670742b36521d3c1edfad07db08e9aef73cb3eb5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
+      "sha256": "5af351a625e7faef7a1d5d4d91184884162740e824262ec0f92d513c25ae0db2"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/skill.json",
+      "sha256": "e76b2d6ad4dc745e44823731b9db9cd35c7ad04742a2a88904121b5603e88d2b"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
+      "sha256": "7b6122a40771c9b8d4b611e9f0a6b96a96e621398c6c0362016cb94f1e02a42b"
+    }
+  ],
+  "skill_tree_sha256": "82f22c970d1405f265634fabb103ee00fb0b78a0c602918bbc44ec0cd97f3f22",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "grounded-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "clause-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "trigger-form-degraded",
+      "state": "PASS"
+    },
+    {
+      "id": "evidence-unbound",
+      "state": "PASS"
+    },
+    {
+      "id": "receipt-without-refs",
+      "state": "PASS"
+    },
+    {
+      "id": "provenance-erased",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

@@ -1,0 +1,78 @@
+"""Eval harness for spatial-loop-grounded: positive control + hollow mutations.
+
+Each mutation models a way the skill could silently degrade; every one must
+FAIL the validator. This suite is the hillclimb gate for evals/cases.json.
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SKILL_ROOT / "scripts"))
+
+from validate_spatial_loop_grounded import validate  # noqa: E402
+
+
+def mutated_copy() -> tuple[tempfile.TemporaryDirectory, Path]:
+    temp = tempfile.TemporaryDirectory(prefix="slg-eval-")
+    root = Path(temp.name) / "skill"
+    shutil.copytree(SKILL_ROOT, root, ignore=shutil.ignore_patterns("__pycache__"))
+    return temp, root
+
+
+class SpatialLoopGroundedEvals(unittest.TestCase):
+    def test_positive_control_passes(self) -> None:
+        self.assertEqual(validate(SKILL_ROOT), [])
+
+    def mutate_skill(self, old: str, new: str) -> tuple[tempfile.TemporaryDirectory, Path]:
+        temp, root = mutated_copy()
+        path = root / "SKILL.md"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+        return temp, root
+
+    def test_hollow_removed_clause_fails(self) -> None:
+        temp, root = self.mutate_skill("## C4. Repeated failure escalates", "## dropped. Repeated failure escalates")
+        self.addCleanup(temp.cleanup)
+        self.assertTrue(any("at least 8 clauses" in e for e in validate(root)), validate(root))
+
+    def test_hollow_removed_action_fails(self) -> None:
+        temp, root = self.mutate_skill("- Action: the monitor consumes", "- Note: the monitor consumes")
+        self.addCleanup(temp.cleanup)
+        self.assertTrue(any("C1" in e and "Action" in e for e in validate(root)), validate(root))
+
+    def test_hollow_unbound_evidence_fails(self) -> None:
+        temp, root = self.mutate_skill("- evidence: poison-pill", "- evidence: unproven-story")
+        self.addCleanup(temp.cleanup)
+        errors = validate(root)
+        self.assertTrue(any("unproven-story" in e for e in errors), errors)
+        self.assertTrue(any("poison-pill" in e and "bound to no clause" in e for e in errors), errors)
+
+    def test_hollow_receipt_without_refs_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "receipts.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["evidence"]["poison-pill"]["refs"] = []
+        path.write_text(json.dumps(data), encoding="utf-8")
+        self.assertTrue(any("poison-pill" in e and "refs" in e for e in validate(root)), validate(root))
+
+    def test_hollow_provenance_removed_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "SKILL.md"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("skills-shared", text)
+        path.write_text(text.replace("skills-shared", "elsewhere"), encoding="utf-8")
+        self.assertTrue(any("provenance" in e for e in validate(root)), validate(root))
+
+
+if __name__ == "__main__":
+    unittest.main()

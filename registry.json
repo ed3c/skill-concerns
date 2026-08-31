@@ -29,6 +29,16 @@
       "source_lock": "intake/control-noodle/source-lock.json",
       "admission": "admissions/control-noodle.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "spatial-loop-grounded",
+      "path": "skills/spatial-loop-grounded",
+      "kind": "procedure-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/spatial-loop-grounded/skill.json",
+      "source_lock": "intake/spatial-loop-grounded/source-lock.json",
+      "admission": "admissions/spatial-loop-grounded.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

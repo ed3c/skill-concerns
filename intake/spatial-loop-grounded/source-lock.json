@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "skill": "spatial-loop-grounded",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/spatial-loop-grounded/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/spatial-loop-grounded/SOURCE_PROPOSAL.md",
+      "sha256": "b77fbfdb779a1f3186f22462a470908e043ea087732180b438958f253cc61c15"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "https://github.com/ed3c/skills-shared.git",
+      "commit": "637d46fd951f9568fe3b31d644e3b9c90d9cadd4",
+      "path": "skills/spatial-loop-systems-engineering/SKILL.md",
+      "blob_sha": "fd79f738372f963b0d1af4296158776bca04e950"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared.git",
+      "commit": "637d46fd951f9568fe3b31d644e3b9c90d9cadd4",
+      "path": "skills/spatial-loop-systems-engineering/evals.json",
+      "blob_sha": "2b76a30f93851997194c8f0cbc5dee364e3ec09a"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared.git",
+      "commit": "637d46fd951f9568fe3b31d644e3b9c90d9cadd4",
+      "path": "skills/spatial-loop-systems-engineering/AGENTS.md",
+      "blob_sha": "88ba2978a2d4f56c5a61c0183951ab5ca7f3f33b"
+    },
+    {
+      "repository": "https://github.com/ed3c/skills-shared.git",
+      "commit": "637d46fd951f9568fe3b31d644e3b9c90d9cadd4",
+      "path": "skills/spatial-loop-systems-engineering/README.md",
+      "blob_sha": "c7ef9055d46c53a1825a10c157e596f0834b4a07"
+    }
+  ]
+}
