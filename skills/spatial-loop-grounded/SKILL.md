@@ -23,12 +23,33 @@ Every clause is trigger-shaped: **Signal** (when to think of it) →
 **Action** (what to do) → **Why** (the receipt that proves it) →
 `evidence:` (ids resolved against receipts.json).
 
+## Concern layers and roles
+
+Three METHOD layers — a different axis from the Compilation stages C0/C1/C2
+and from Shadow severity S0/S1/S2; the numbering schemes must never be mixed:
+
+- L0 procedural — [`references/portable-supervision-kernel.md`](references/portable-supervision-kernel.md):
+  the clause kernels, domain-free, one per clause.
+- L1 domain knowledge — [`domain/machine-topology.json`](domain/machine-topology.json):
+  the machine primitives the clauses' receipts depend on, each self-defined
+  (what it is, who owns it, what it writes); rely only on primitives defined
+  there, never on undocumented organizational knowledge.
+- L2 execution + assertions — [`scripts/validate_spatial_loop_grounded.py`](scripts/validate_spatial_loop_grounded.py)
+  and the behavioral eval campaigns under [`evals/`](evals/): form, binding,
+  and behavior are asserted, not narrated.
+
+Roles: **BUILD** executes under these clauses (quarantine packets,
+salvage-first teardown, terminal readback before consequence). **SHADOW**
+supervises reader-only per C1 and reports at stage boundaries with severities
+S0 observe / S1 warn / S2 review; a signal that cannot wait for a boundary
+goes to the escalation channel, never into steering.
+
 ## C1. Monitor is a reader, never a writer
 
 - Signal: any supervising role (shadow architect, fleet monitor, reviewer agent) is being designed or is about to intervene.
 - Action: the monitor consumes the SAME skill bytes as the actor (read-only, digest-bound), steers only at material stage boundaries, in receipt-quote + question form; signals that cannot wait for a boundary go to the escalation channel or a wall, never to steering. N/P-class judgments never gate; landing authority stays with the trusted verifier.
 - Why: a full session of operator-as-monitor caught scope drift and red-test exits minutes in, while every attempted correctness shortcut through the reader was rejected; the monitor contract survived plurality and pstack-interaction review.
-- evidence: monitor-contract, monitor-clauses
+- evidence: monitor-contract, monitor-clauses, monitor-efficacy
 
 ## C2. Count decompression layers before any claim
 
@@ -80,7 +101,28 @@ Every clause is trigger-shaped: **Signal** (when to think of it) →
 - Why: the stale-rerun hazard and the watched-wrong-workflow incident were both position-selection failures; the identity-bound forms of the same commands have not misfired since.
 - evidence: exact-subject, stale-rerun-guard
 
+## C9. An oldest-first queue starves behind a permanently failing head
+
+- Signal: a mechanical queue serves oldest-eligible-first, and its current head keeps re-entering eligibility (rebases clean, goes behind again after every advance) while never reaching its terminal (verification stays red without owner action).
+- Action: park the head honestly by correcting its state to what it mechanically is (blocked, not ready-to-land) so selection skips it; then cure the selection rule itself with its own atom (skip a head whose current identity already carries a completed failure); never hand-serve the starved items as the standing fix.
+- Why: an oldest-first landing rebaser re-selected the same clean-rebasing, verify-failing head after every land — main advanced, the head went behind again, got re-picked — and every newer ready item starved; parking the head to blocked freed the queue within one cycle and the selection-rule cure was filed as its own atom.
+- evidence: train-starvation
+
+## C10. No completion notification means still running
+
+- Signal: dispatched background work looks dead — no result artifact, no process found, no progress visible — and manual takeover of its outputs is about to start.
+- Action: treat the harness completion notification as the only death certificate; missing artifacts, absence from process lists, and silence are all consistent with still-running. If intervention already happened, lease-guarded writes are what keep the still-running owner and the intervenor from destroying each other's work.
+- Why: a dispatch run was declared crashed on three absence signals and its branches were hand-landed — while it was still running; lease discipline plus patch-id deduplication absorbed the collision and the run's own agents landed improved versions on top of the manual rebase.
+- evidence: still-running-not-crashed
+
+## C11. Exit-code residue is not current state
+
+- Signal: a scheduler or launcher displays a nonzero last-exit status for a job, and the job is about to be declared unhealthy (or healthy, on a zero).
+- Action: judge health only from the job's terminal log line plus direct readback of the artifact the job exists to produce; a residual status describes one past run, and a later successful run may not clear it.
+- Why: a launcher listed exit 1 for a nightly job while the job's own log ended with a full-success line and both of its produced artifacts read back complete — the residue came from an earlier attempt that a later run had already superseded.
+- evidence: exit-residue
+
 ## Non-claims
 
 - This skill does not restate the upstream spatial-loop body (ICPG, complexity classes, constraint compiler); consult upstream for method, this skill for what survived contact.
-- Receipts prove the clauses fired in ONE environment (ed3c/noodles, 2026-08-30/31); portability beyond machine-ceremony repositories is a hypothesis until new receipts exist.
+- Receipts prove the clauses fired in one repository-machine environment (ed3c/noodles, 2026-08-30/31), plus one host-scheduler receipt for C11 — a second environment class. Portability beyond these carries new receipts or stays a hypothesis.

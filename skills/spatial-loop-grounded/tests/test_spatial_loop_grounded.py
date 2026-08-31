@@ -41,7 +41,12 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
     def test_hollow_removed_clause_fails(self) -> None:
         temp, root = self.mutate_skill("## C4. Repeated failure escalates", "## dropped. Repeated failure escalates")
         self.addCleanup(temp.cleanup)
-        self.assertTrue(any("at least 8 clauses" in e for e in validate(root)), validate(root))
+        errors = validate(root)
+        # the kernel/clause count tie catches the drop even above the floor of 8
+        self.assertTrue(
+            any("kernel/clause count mismatch" in e or "at least 8 clauses" in e for e in errors),
+            errors,
+        )
 
     def test_hollow_removed_action_fails(self) -> None:
         temp, root = self.mutate_skill("- Action: the monitor consumes", "- Note: the monitor consumes")
@@ -63,6 +68,30 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         data["evidence"]["poison-pill"]["refs"] = []
         path.write_text(json.dumps(data), encoding="utf-8")
         self.assertTrue(any("poison-pill" in e and "refs" in e for e in validate(root)), validate(root))
+
+    def test_hollow_topology_removed_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        (root / "domain" / "machine-topology.json").unlink()
+        self.assertTrue(any("machine-topology.json missing" in e for e in validate(root)), validate(root))
+
+    def test_hollow_kernel_dropped_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "references" / "portable-supervision-kernel.md"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("- K9 ", text)
+        path.write_text(text.replace("- K9 ", "- dropped ", 1), encoding="utf-8")
+        self.assertTrue(any("kernel/clause count mismatch" in e for e in validate(root)), validate(root))
+
+    def test_hollow_empty_host_ref_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "receipts.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["evidence"]["exit-residue"]["refs"] = ["host:"]
+        path.write_text(json.dumps(data), encoding="utf-8")
+        self.assertTrue(any("exit-residue" in e and "refs" in e for e in validate(root)), validate(root))
 
     def test_hollow_provenance_removed_fails(self) -> None:
         temp, root = mutated_copy()

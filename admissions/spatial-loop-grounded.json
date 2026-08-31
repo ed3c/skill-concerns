@@ -13,11 +13,15 @@
     },
     {
       "path": "skills/spatial-loop-grounded/README.md",
-      "sha256": "4fbf7fe924b2ba816f4592bf45e0c046336c44db8c19c0916b95993c4e359b8a"
+      "sha256": "bc38b22c6ac671704c112f48791dd0cca2f0c543ed7745fd7f8a66efa1f6e6ba"
     },
     {
       "path": "skills/spatial-loop-grounded/SKILL.md",
-      "sha256": "58b7e945eb969ec3723373db2caf61f513865e419c625378960110e01357ab6d"
+      "sha256": "9dfb3ae73239203563bed231d9838217d83b7e664e18c0fcf814a2d815891c5d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/domain/machine-topology.json",
+      "sha256": "648ee373f462ff20903331b7407682335db20e388a32f017afcee4f8305d0f89"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-08-31-pilot.json",
@@ -29,11 +33,15 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "73971fc8fcc06e7ffaaf4bf2b6549df0b744226116f67dbf4581d2955d7480a7"
+      "sha256": "fc0b30adb7e7ce941032634fed7e514edb883f2f8d97e8494ef39a894cffbc6b"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
-      "sha256": "c5b49de77f185cb7cecef2dc90d7a926e701c88c42a0b89c13ec9618a19292e9"
+      "sha256": "d608824a1d436ae0909005cfd52e1476626dfd70fb89cc25ced82b6f6a940e33"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/references/portable-supervision-kernel.md",
+      "sha256": "dc3f587000b002eadb01fad91deef181b9e74a0b9612708163157f211a9494f4"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -57,18 +65,18 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "5af351a625e7faef7a1d5d4d91184884162740e824262ec0f92d513c25ae0db2"
+      "sha256": "04fc9b5ce75855b6afa7aaf281cbebbcd9cd304a2d6277e0a4ef97ec016c2e17"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
-      "sha256": "e76b2d6ad4dc745e44823731b9db9cd35c7ad04742a2a88904121b5603e88d2b"
+      "sha256": "b4e1bdd592c7d30cbcf6cda9513f0dae7ca8a3c623b656ffe5bbb6ca5cacdefe"
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "7b6122a40771c9b8d4b611e9f0a6b96a96e621398c6c0362016cb94f1e02a42b"
+      "sha256": "eb06013ac8e43c1db6ccfeaa4c85da07bc3370db036c1b06a8a15c9b90927ed8"
     }
   ],
-  "skill_tree_sha256": "82f22c970d1405f265634fabb103ee00fb0b78a0c602918bbc44ec0cd97f3f22",
+  "skill_tree_sha256": "1fed271a89bf06e7e7d4b89a8269fa70b46d3e55090d93567f668d511ad0b799",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -154,6 +162,18 @@
     },
     {
       "id": "provenance-erased",
+      "state": "PASS"
+    },
+    {
+      "id": "topology-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "kernel-dropped",
+      "state": "PASS"
+    },
+    {
+      "id": "host-ref-empty",
       "state": "PASS"
     }
   ],

@@ -33,7 +33,7 @@
     {
       "name": "spatial-loop-grounded",
       "path": "skills/spatial-loop-grounded",
-      "kind": "procedure-rich",
+      "kind": "domain-rich",
       "status": "ADMITTED",
       "manifest": "skills/spatial-loop-grounded/skill.json",
       "source_lock": "intake/spatial-loop-grounded/source-lock.json",

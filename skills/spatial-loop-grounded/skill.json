@@ -1,15 +1,18 @@
 {
   "schema_version": 1,
   "name": "spatial-loop-grounded",
-  "version": "0.1.0",
-  "kind": "procedure-rich",
+  "version": "0.2.0",
+  "kind": "domain-rich",
   "entrypoint": "SKILL.md",
   "portable_core_paths": [
-    "SKILL.md",
-    "receipts.json",
-    "README.md"
+    "references/portable-supervision-kernel.md"
   ],
-  "domain_paths": [],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "receipts.json",
+    "domain/machine-topology.json"
+  ],
   "execution_paths": [
     "scripts/validate_spatial_loop_grounded.py"
   ],
@@ -22,13 +25,17 @@
     "README.md",
     "SKILL.md",
     "skill.json",
-    "receipts.json"
+    "receipts.json",
+    "domain/machine-topology.json"
   ],
   "forbidden_domain_literals": [
     "gpt-5.6",
     "localhost:3210",
     "/Users/neon/",
-    "ed3c-noodles-protection-audit"
+    "ed3c-noodles-protection-audit",
+    "noodles",
+    "ed3c/",
+    "launchctl"
   ],
   "shared_contracts": [
     "../../contracts/skill-manifest.schema.json"
