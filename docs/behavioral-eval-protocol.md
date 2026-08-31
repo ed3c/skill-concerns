@@ -34,3 +34,15 @@ only the second justifies trusting a skill in real work.
   repository.
 - A campaign receipt binds to the skill tree sha it evaluated; receipts for
   older trees are history, not current claims.
+
+## Three-layer conformance (v2)
+
+The repository's L0/L1/L2 architecture applies to campaigns, and the two
+skill modes are layer bundles of one method, never two independent
+approaches: procedure-rich = L0 only; domain-rich = L1(+L2); composed = all
+three. A campaign must declare which layers each scenario exercises and may
+claim only those. The 2026-08-31 pilot exercised L0 with an eval-owned L2
+oracle and did not exercise L1 - recorded in its receipt. v2 scenarios add
+an explicit in-fixture L1 artifact (capabilities, states, entry points) with
+routing rubrics (consult before acting; refuse unmapped entry points) and
+actor-side L2 rubrics (actor-persisted evidence, terminal-bound assertions).
