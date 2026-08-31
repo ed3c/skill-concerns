@@ -8,7 +8,16 @@ from pathlib import Path
 import re
 from typing import Any
 
+from admission_stamp import SKILL_CHECKS
 from common import REPO_ROOT, load_json, print_result, safe_repo_path
+
+
+# Every argv token the runner and the admission stamper actually execute. A
+# declared route is reachable only when the suite runs it or a test imports it;
+# a mention in prose or in a comment no longer counts.
+EXECUTED_ARGV = {
+    token for checks in SKILL_CHECKS.values() for argv in checks for token in argv
+}
 
 
 REQUIRED_MANIFEST_KEYS = {
@@ -124,11 +133,6 @@ def check(root: Path = REPO_ROOT) -> list[str]:
         for path in skills_dir.iterdir()
         if path.is_dir()
     }
-
-    runner_text = ""
-    runner = root / "scripts" / "run_all.py"
-    if runner.is_file():
-        runner_text = runner.read_text(encoding="utf-8")
 
     for row in rows:
         if not isinstance(row, dict):
@@ -266,7 +270,8 @@ def check(root: Path = REPO_ROOT) -> list[str]:
         )
         for relative in execution:
             stem = Path(relative).stem
-            if stem not in test_text and relative not in runner_text:
+            route = f"{skill_path_value}/{relative}"
+            if stem not in test_text and route not in EXECUTED_ARGV:
                 errors.append(f"EXECUTABLE_ROUTE_HOLLOW:{name}:{relative}")
 
         if isinstance(eval_inventory, str) and (skill_root / eval_inventory).is_file():

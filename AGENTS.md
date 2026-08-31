@@ -132,6 +132,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `skills/<skill>/scripts/` | deterministic mechanisms |
 | `skills/<skill>/tests/` and `evals/` | positive and negative falsifiers |
 | `intake/<skill>/source-lock.json` | frozen source/proposal identity |
+| `scripts/admission_stamp.py` | the one stamp surface: each Skill's check table, and the refusal that keeps an unmeasured `PASS` out of a receipt |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | GitHub Actions run | execution arrival for one checked-out commit |
 
@@ -162,7 +163,7 @@ Stop with `FAIL`, `ABSENT`, or `BLOCKED` when:
 3. Keep portable procedure, domain knowledge, execution mechanics, and proof artifacts in separate declared paths.
 4. Add positive and planted negative controls before admission.
 5. Run `python3 scripts/run_all.py`.
-6. Create or update the content-bound admission receipt only after the candidate bytes are final.
+6. Once the candidate bytes are final, stamp the receipt with that Skill's `scripts/gen_admission.py`. Sequencing is not carried here: the stamper re-runs the Skill's own validator and test discovery and refuses to write while any of them is red.
 7. Run the complete suite again.
 8. Publish a PR whose body names the exact evidence ceiling and all unexercised higher layers.
 9. Merge only the exact checked head that passed required repository gates.
