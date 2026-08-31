@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "feature": "skill-admission",
+  "actor": "skill author (human or agent)",
+  "intent": "take a candidate skill from intake to an admitted, eval-gated bundle on main through the machine ceremony",
+  "entry_points": [
+    {
+      "id": "intake-proposal",
+      "state": "candidate",
+      "description": "a SOURCE_PROPOSAL.md under intake/<skill>/ plus a skill bundle under skills/<skill>/ on a branch"
+    }
+  ],
+  "states": [
+    {
+      "id": "candidate",
+      "description": "bundle exists on a branch; nothing binds its bytes and main knows nothing about it"
+    },
+    {
+      "id": "source-locked",
+      "description": "intake/<skill>/source-lock.json binds the proposal bytes by sha256"
+    },
+    {
+      "id": "receipted",
+      "description": "admissions/<skill>.json binds subject-file hashes and the skill tree digest (content-bound receipt)"
+    },
+    {
+      "id": "registered",
+      "description": "registry.json, agents-routing.json and the skills hub route the skill"
+    },
+    {
+      "id": "verified",
+      "description": "python3 scripts/run_all.py passes with the skill's validator and tests wired in"
+    },
+    {
+      "id": "admitted",
+      "description": "the bundle is on main: machine-merged PR (app/github-actions) with the Refs issue closed"
+    },
+    {
+      "id": "rejected",
+      "description": "the full-suite gate fails closed on the candidate with a named error code; main is untouched"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "lock",
+      "from": "candidate",
+      "to": "source-locked",
+      "action": "generate the source lock binding the proposal sha256",
+      "reachable": true
+    },
+    {
+      "id": "receipt",
+      "from": "source-locked",
+      "to": "receipted",
+      "action": "generate the admission receipt with subject-file hashes and tree digest",
+      "reachable": true
+    },
+    {
+      "id": "register",
+      "from": "receipted",
+      "to": "registered",
+      "action": "add the registry entry, routing leaf and hub agent-next",
+      "reachable": true
+    },
+    {
+      "id": "validate",
+      "from": "registered",
+      "to": "verified",
+      "action": "run the full-suite gate (scripts/run_all.py) to PASS",
+      "reachable": true
+    },
+    {
+      "id": "land",
+      "from": "verified",
+      "to": "admitted",
+      "action": "open a PR whose body is exactly 'Refs ed3c/skill-concerns#N' and let trusted verify plus the land workflow merge it",
+      "reachable": true
+    },
+    {
+      "id": "refuse",
+      "from": "registered",
+      "to": "rejected",
+      "action": "the full-suite gate exits non-zero with a named error code",
+      "reachable": true
+    }
+  ],
+  "terminal_outcomes": [
+    {
+      "state": "admitted",
+      "outcome": "success",
+      "reachable": true
+    },
+    {
+      "state": "rejected",
+      "outcome": "error",
+      "reachable": true
+    }
+  ],
+  "observables": [
+    {
+      "id": "admitted-provider-readback",
+      "state": "admitted",
+      "kind": "observable",
+      "boundary": "external",
+      "assertion": "the provider reads the PR as MERGED by app/github-actions and the Refs issue as CLOSED"
+    },
+    {
+      "id": "admitted-main-readback",
+      "state": "admitted",
+      "kind": "observable",
+      "boundary": "persisted",
+      "assertion": "a fresh checkout of main carries the skill bundle, its ADMITTED registry entry and an admission receipt whose tree digest recomputes from the checked-out bytes"
+    },
+    {
+      "id": "rejected-gate-readback",
+      "state": "rejected",
+      "kind": "observable",
+      "boundary": "production-equivalent",
+      "assertion": "the same scripts/run_all.py gate the hosted verify executes exits non-zero printing the exact error code"
+    }
+  ],
+  "variants": [
+    "domain-rich",
+    "procedure-rich",
+    "composed"
+  ],
+  "persistence": {
+    "required": true,
+    "boundary": "fresh checkout of main readback"
+  }
+}

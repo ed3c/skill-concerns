@@ -80,6 +80,13 @@ def main() -> int:
         "skills/feature-map-engineering/fixtures/valid/feature-map.json",
     )
     run(
+        "skills/feature-map-engineering/scripts/validate_feature_map.py",
+        "--map",
+        "docs/features/skill-admission/feature-map.json",
+        "--plan",
+        "docs/features/skill-admission/verification-plan.json",
+    )
+    run(
         "skills/control-noodle/scripts/validate_control_noodle.py",
         "--composition",
         "skills/control-noodle/domain/composition.json",

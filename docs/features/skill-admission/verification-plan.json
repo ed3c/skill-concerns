@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "revision": "2026-08-31-control-code-intel",
+  "environment": {
+    "kind": "live-machine",
+    "repository": "ed3c/skill-concerns",
+    "observed": "2026-08-31"
+  },
+  "changed_features": [
+    "skill-admission"
+  ],
+  "journeys": [
+    {
+      "id": "admit-control-code-intel",
+      "feature": "skill-admission",
+      "entry_point": "intake-proposal",
+      "transition_ids": [
+        "lock",
+        "receipt",
+        "register",
+        "validate",
+        "land"
+      ],
+      "expected_terminal": "admitted",
+      "evidence": [
+        {
+          "kind": "observable",
+          "boundary": "external",
+          "assertion": "PR #22 reads MERGED with mergedBy app/github-actions and issue #21 reads CLOSED via the provider API"
+        },
+        {
+          "kind": "observable",
+          "boundary": "persisted",
+          "assertion": "main at b3984f2e3818 carries skills/control-code-intel, its ADMITTED registry entry, and admissions/control-code-intel.json whose skill_tree_sha256 recomputes from the checked-out bytes (asserted by scripts/check_admissions.py)"
+        }
+      ],
+      "verdict": "VERIFIED"
+    },
+    {
+      "id": "reject-invalid-source-lock",
+      "feature": "skill-admission",
+      "entry_point": "intake-proposal",
+      "transition_ids": [
+        "lock",
+        "receipt",
+        "register",
+        "refuse"
+      ],
+      "expected_terminal": "rejected",
+      "evidence": [
+        {
+          "kind": "observable",
+          "boundary": "production-equivalent",
+          "assertion": "scripts/run_all.py exited non-zero printing METHOD_REFERENCE_HEX_INVALID:0:commit against the control-code-intel candidate whose source lock carried null method-reference hashes (observed 2026-08-31, before the fix)"
+        },
+        {
+          "kind": "observable",
+          "boundary": "persisted",
+          "assertion": "main taken at that moment carried no control-code-intel registry entry or bundle; the rejected candidate never reached main"
+        }
+      ],
+      "verdict": "VERIFIED"
+    }
+  ],
+  "skips": []
+}
