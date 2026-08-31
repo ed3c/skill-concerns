@@ -2,8 +2,9 @@
   "schema_version": 1,
   "cases": [
     {
-      "id": "zero-context-self-contained",
-      "mode": "BUILD+SHADOW",
+      "id": "domain-decoupled-zero-context",
+      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "roles": ["BUILD", "SHADOW"],
       "expect": "PASS",
       "assertions": [
         "consumer can infer Best Path without source-framework knowledge",
@@ -12,26 +13,48 @@
       ]
     },
     {
-      "id": "black-box-leak",
-      "mode": "SHADOW",
+      "id": "domain-rich-defined-primitives",
+      "skill_mode": "DOMAIN_RICH",
+      "roles": ["BUILD", "SHADOW"],
+      "expect": "PASS",
+      "assertions": [
+        "domain primitives are defined in-place",
+        "domain nouns change the Best Path rather than merely leaking source vocabulary",
+        "consumer needs no undocumented organizational knowledge"
+      ]
+    },
+    {
+      "id": "domain-decoupled-black-box-leak",
+      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "roles": ["SHADOW"],
       "expect": "L2_REVIEW",
       "mutation": "inject unexplained source control-plane vocabulary into the rendered contract"
     },
     {
+      "id": "domain-rich-hidden-primitive",
+      "skill_mode": "DOMAIN_RICH",
+      "roles": ["SHADOW"],
+      "expect": "L2_REVIEW",
+      "mutation": "retain a domain-specific noun required by the Best Path without defining its architectural responsibility"
+    },
+    {
       "id": "semantic-loss-shortest-path",
-      "mode": "SHADOW",
+      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "roles": ["SHADOW"],
       "expect": "L2_REVIEW",
       "mutation": "remove the distinction between shortest compiling path and shortest architecture-preserving verifiable path"
     },
     {
       "id": "authority-laundering",
-      "mode": "SHADOW",
+      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "roles": ["SHADOW"],
       "expect": "L1_WARN_OR_L2_REVIEW",
       "mutation": "render a prose convention as a mechanically enforced invariant"
     },
     {
       "id": "harmless-wording",
-      "mode": "SHADOW",
+      "skill_mode": "DOMAIN_RICH",
+      "roles": ["SHADOW"],
       "expect": "L0_OBSERVE",
       "mutation": "retain a defined non-load-bearing example that does not affect Best Path reasoning"
     }
