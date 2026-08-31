@@ -17,6 +17,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
 from validate_spatial_loop_grounded import entry_digest, validate  # noqa: E402
+from gen_ledger import check_prefix_preserved  # noqa: E402
 
 BEHAVIORAL = Path("evals/behavioral.json")
 LEDGER = Path("evals/behavioral-campaigns/ledger.json")
@@ -183,6 +184,23 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         rewrite_json(root / LEDGER, lambda d: d["entries"][-1].pop("prompt_improvements"))
         errors = validate(root)
         self.assertTrue(any("prompt_improvements" in e for e in errors), errors)
+
+    def test_ledger_producer_refuses_dropped_or_rewritten_entry(self) -> None:
+        """The hash chain alone stays self-consistent even if gen_ledger.py is
+        re-run against a shortened or edited ENTRIES list, so the producer's
+        own prefix diff is what has to catch it."""
+        committed = json.loads((SKILL_ROOT / LEDGER).read_text(encoding="utf-8"))["entries"]
+
+        appended = dict(committed[-1], wave="synthetic-append", prev_sha256=entry_digest(committed[-1]))
+        self.assertEqual(check_prefix_preserved(committed, committed + [appended]), [])
+
+        self.assertTrue(
+            any("shrink" in e for e in check_prefix_preserved(committed, committed[:-1])),
+        )
+
+        rewritten = [dict(committed[0], gaps=["laundered"])]
+        errors = check_prefix_preserved(committed, rewritten)
+        self.assertTrue(any("laundering" in e for e in errors), errors)
 
 
 if __name__ == "__main__":

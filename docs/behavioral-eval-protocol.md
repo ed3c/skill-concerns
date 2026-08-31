@@ -70,12 +70,30 @@ transcript (`evals/behavioral-campaigns/fixtures/`) with
 ## Cross-wave judge ledger
 
 `evals/behavioral-campaigns/ledger.json` carries one entry per judged wave -
-`date`, `wave`, `judge_model`, `per_clause_summary`, `gaps`,
-`prompt_improvements`, `receipt_refs` - so per-clause verdicts form a
+`date`, `wave`, `judge_model`, `per_clause_summary`, `negative_control_verdict`,
+`gaps`, `prompt_improvements`, `receipt_refs` - so per-clause verdicts form a
 hillclimb gradient instead of isolated greens. Entries are hash-chained
 (`prev_sha256` per entry, `head_sha256` for the tail): appending a wave never
 touches prior bytes, while removing or rewriting one fails the validator
 (`ledger-entry-removed`, `ledger-tail-rewritten`, `ledger-key-missing`).
 Append through the producer `scripts/gen_ledger.py`; hand-editing the ledger
-is laundering. A wave's `gaps` and `prompt_improvements` are the next wave's
-input - that is what makes the ledger a gradient rather than an archive.
+is laundering. `gen_ledger.py` also refuses to regenerate over a shortened or
+rewritten `ENTRIES` list - the hash chain alone stays self-consistent even if
+a prior wave's dict is dropped before re-running, so the producer diffs
+against whatever is already on disk before it will write. A wave's `gaps`
+and `prompt_improvements` are the next wave's input - that is what makes the
+ledger a gradient rather than an archive.
+
+`negative_control_verdict` records what the judge did with
+`N-C3-C8-violating-actor` that wave: the case id plus its verdict, or an
+explicit `NOT_RUN` with a reason for a wave that predates the control. This
+is a presence check only (CI asserts the key is non-empty, same as the other
+six) - a wave whose judge returned PASS/compliant on the negative control is
+void per the rule above and must not be appended to the ledger at all; that
+call is the operator's, not the validator's, matching the CI/runtime-judging
+boundary this protocol already draws for the verdict itself.
+
+A wave that genuinely finds no gap or no prompt improvement still records an
+explicit sentinel (e.g. `["none identified this wave"]`), never an omitted or
+empty key - omission fails the key-presence check, and an explicit negative
+answer stays distinguishable from a wave that just forgot to look.

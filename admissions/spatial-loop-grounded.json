@@ -29,11 +29,11 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/violating-actor-transcript.md",
-      "sha256": "303fbcebea226450452b59a45c0c371a94aa56a20ae7bf0f1cb42ea91a9431d9"
+      "sha256": "41fc3995a0de60b354e68a80961dbe1c27fe4cb88276ec355d2951d5c0b1c849"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ledger.json",
-      "sha256": "ca58d4e7ed5059a45b57b7ba0ddfbfb0bdab850bbf78fb311a03b0962fa73cad"
+      "sha256": "b42c69a090fa9ed81aa639b7d3d5258fa8b47fe931421f0eba4df4e16108d175"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
@@ -69,7 +69,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
-      "sha256": "be4d2072429710b499f9a8ca66b9062213802e6293253c3be63b8cf1663f5f4c"
+      "sha256": "d6173250c8dda35312b16502bbb5a699d8631e8f2a8ad9e592b0aba0a5df6bf2"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
@@ -77,7 +77,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "8aaabbc97cc762e845978efe342361f6ffa9b050f1427003c1f9b7135535d2eb"
+      "sha256": "456ed75aeeb4a7551612ce466bf490695f11cebb711f0d4ba0015b9be08fd3b1"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -85,10 +85,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "684f2b4f15ccd1ce06ec31d4ae8c9b0c2fd6276f8d6e9b2a82e48cf32d9cc664"
+      "sha256": "04965ad337d91a8af06fad85bfceaadc297304ea16b8e93546ca39be3f642f6e"
     }
   ],
-  "skill_tree_sha256": "267298bf3c032be2b6deb8fdf2e1b2f83393b39c532f3f25f6ae39b742490d7e",
+  "skill_tree_sha256": "e591eb7c8a8334209ebc63d1089a5805ed3d8152ab3b8d49a7b6f038a446e4fc",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

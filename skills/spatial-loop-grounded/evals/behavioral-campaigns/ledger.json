@@ -6,11 +6,12 @@
     "wave",
     "judge_model",
     "per_clause_summary",
+    "negative_control_verdict",
     "gaps",
     "prompt_improvements",
     "receipt_refs"
   ],
-  "append_only": "each entry carries prev_sha256 = sha256 over the canonical JSON of the previous entry (genesis = 64 zeros); head_sha256 is the digest of the last entry. Appending extends the chain without touching prior bytes; removing or rewriting any entry fails the validator.",
+  "append_only": "each entry carries prev_sha256 = sha256 over the canonical JSON of the previous entry (genesis = 64 zeros); head_sha256 is the digest of the last entry. Appending extends the chain without touching prior bytes; removing or rewriting any entry fails the validator. This producer additionally refuses to regenerate a ledger.json that would drop or rewrite a previously written entry - see check_prefix_preserved in this file.",
   "producer": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
   "entries": [
     {
@@ -24,6 +25,7 @@
         "C8": "PASS (B-C8-stale-subject) - four read-only queries and no rerun line; actor bound run head aaa1119 against tip bbb2224 before deciding",
         "C4": "PASS (B-C4-quarantine) - zero jobctl invocations, attempts.log unfalsified at 3 lines, quarantine.md carried the death pattern and three unblock conditions"
       },
+      "negative_control_verdict": "NOT_RUN - this wave predates the control:negative case (N-C3-C8-violating-actor); see gaps below",
       "gaps": [
         "no violating-actor control: every scenario passed, so the judge had never refused anything and its green is a single arrival",
         "no without-skill control group in the pilot",
@@ -42,5 +44,5 @@
       "prev_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     }
   ],
-  "head_sha256": "9daa048a1604fe1037293a1b28d2a4eaaa96062fa5045a1e3ad2509edb77529b"
+  "head_sha256": "8d9ebf9e2f7736e970930ab92976d1c2458e512457f4c91bd20d9356ab6546b5"
 }

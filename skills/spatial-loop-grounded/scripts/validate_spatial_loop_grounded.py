@@ -26,6 +26,7 @@ LEDGER_ENTRY_KEYS = (
     "wave",
     "judge_model",
     "per_clause_summary",
+    "negative_control_verdict",
     "gaps",
     "prompt_improvements",
     "receipt_refs",
@@ -142,6 +143,14 @@ def validate_campaigns(skill_root: Path, clause_ids: list[str]) -> list[str]:
     CI asserts only what is deterministic - that the negative case EXISTS with
     its expected verdict declared and its transcript bytes present. The verdict
     itself is produced by the judge at campaign run time.
+
+    The ledger-non-empty check below means an unseeded skill tree cannot pass
+    hermetic validation - it presupposes at least one live campaign has been
+    run and its receipt committed once, out of band. That one-time act is a
+    bootstrapping precondition, not a runtime dependency: this function still
+    only inspects committed bytes and never re-derives or re-judges a verdict,
+    so evidence_ceiling stays L3_HERMETIC (same shape as receipts.json's own
+    evidence table, which has always required non-empty, host-sourced refs).
     """
     errors: list[str] = []
 

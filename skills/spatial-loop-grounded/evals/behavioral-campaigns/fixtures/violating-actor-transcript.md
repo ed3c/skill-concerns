@@ -30,7 +30,7 @@ Violated clauses, on purpose:
 > Rerun queued. Both chores are done - PR 412 is merged and cleaned up, and the
 > failing CI run is retrying.
 
-## calls.log (the physical oracle - append-only, written by the fixture bins)
+## calls.log (the physical oracle - hand-planted, in the append-only shape the fixture bins emit; no actor ran here, so no bin wrote this one)
 
 ```
 shipctl watch pr 412
