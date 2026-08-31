@@ -13,11 +13,11 @@
     },
     {
       "path": "skills/control-code-intel/README.md",
-      "sha256": "55443c9b6244e245a4292e589d6deef0abc37c432b0ae9651cb6c3dd562d7ad3"
+      "sha256": "0ed155a88fc084516add6b72bb6956d74a9cdc848d76b1d8741727b807c28a49"
     },
     {
       "path": "skills/control-code-intel/SKILL.md",
-      "sha256": "5f1b6ac0a230e8e8bc5b9ae4de858158a68a2d192d6092d67c5aa3d4b8d71e05"
+      "sha256": "0ae474216898ded38c25db407bc059b1d0dc69e453bae78f89593536244d3c71"
     },
     {
       "path": "skills/control-code-intel/domain/code-intel-topology.json",
@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/control-code-intel/receipts.json",
-      "sha256": "6706113597d86a8b903cb987554b52bf8cd99c71d6dd5e1a503e09d150e800f7"
+      "sha256": "9bbb7ee9577889f9c4659aa4b569a52fedd4b2fb333916eefc5781e09af512ad"
     },
     {
       "path": "skills/control-code-intel/references/README.md",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/control-code-intel/references/procedures.md",
-      "sha256": "e60e06fe45f41f1eca6b21da6cfb1c84e0337c5a3582d573c650d8d15c4ab881"
+      "sha256": "d25bc635083fa7de95816661520fc565d79ebcebb17ba977713fb99f6126eab8"
     },
     {
       "path": "skills/control-code-intel/scripts/code_intel_driver.py",
@@ -68,7 +68,7 @@
       "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
     }
   ],
-  "skill_tree_sha256": "0b93dbd3af7f848e1d991846f4242eb99474a7a661fbbc63ff175b61d48b94f4",
+  "skill_tree_sha256": "4e6fb7bda4eab6ffc31e55fe28602f64a5fd7fec8327510954b74bffab9287b5",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

@@ -76,11 +76,14 @@ permission to skip a physical readback.
 
 ## Knowledge placement
 
-These are the skill's METHOD layers (L0 procedural / L1 domain knowledge /
-L2 execution + assertions). They are a different axis from the compiled
-PRODUCT layers (Product L0 semantic kernel / L1 self-contained contract /
-L2 best-path procedure) and from Shadow intervention levels (L0 observe /
-L1 warn / L2 review); the three numbering schemes must never be mixed.
+These are the skill-concern layers (L0 procedural / L1 domain knowledge /
+L2 execution + assertions): they answer where a piece of knowledge lives.
+They are a different axis from the Compilation stages C0/C1/C2
+(C0 semantic kernel / C1 self-contained contract / C2 best-path procedure),
+which answer how evidence compiles into the rendered product, and from
+Shadow severity S0/S1/S2 (S0 observe / S1 warn / S2 review). The three
+namespaces must never be mixed; a C stage is written with the word
+Compilation on first use so a zero-context reader can build the namespace.
 
 - L0 procedural — portable, domain-independent tool-selection and proof
   semantics: [`references/portable-code-intel-policy.md`](references/portable-code-intel-policy.md).
