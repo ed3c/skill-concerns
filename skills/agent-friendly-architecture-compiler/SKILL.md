@@ -3,8 +3,8 @@ name: agent-friendly-architecture-compiler
 description: >
   Compile evidence-backed architecture knowledge into a self-contained Agent-Friendly
   Architecture contract that a zero-context coding LLM can use to infer the Best Path.
-  Supports two target modes: Domain-rich and Procedure-rich/Domain-decoupled. BUILD is
-  the only writer role; SHADOW is a read-only reviewer with L0/L1/L2 intervention levels.
+  Supports two Skill modes: Domain-rich and Procedure-rich/Domain-decoupled. BUILD is
+  the only writer role; SHADOW is a read-only reviewer.
 ---
 
 # Agent-Friendly Architecture Compiler
@@ -15,57 +15,125 @@ Produce one direct Agent-facing architecture contract that explains enough syste
 
 The output is not a summary of a source system. It is evidence-backed architecture knowledge compiled into a decision contract.
 
+## Naming law
+
+Do not overload `L0/L1/L2`.
+
+In this Skill:
+
+```text
+L0/L1/L2 = Skill concern stack
+P0/P1/P2 = rendered-product compilation stack
+S0/S1/S2 = SHADOW review severity
+```
+
+These are separate axes and must not be substituted for one another.
+
+## Skill concern stack — L0 / L1 / L2
+
+### L0 — PROCEDURAL SKILL
+
+Portable, domain-independent method.
+
+L0 owns:
+- mode selection;
+- evidence-to-semantics procedure;
+- exploration policy;
+- generalization and compression laws;
+- self-containedness tests;
+- Best Path preservation tests;
+- proof semantics and stop conditions.
+
+L0 must not absorb repository-specific commands, paths, selectors, ownership facts, provider identities, runtime state, or product-specific assertions.
+
+### L1 — DOMAIN KNOWLEDGE
+
+Consumer-repository/product knowledge needed to instantiate L0 correctly.
+
+L1 may contain:
+- capabilities, states, entry points, and extension surfaces;
+- domain vocabulary and architecture primitives;
+- canonical owners/writers;
+- package/import boundaries;
+- selectors, commands, feature flags, fixtures, and environment constraints;
+- known exceptions and failure modes;
+- source evidence needed to distinguish actual architecture from analogy.
+
+`DOMAIN_RICH` may preserve selected L1 concepts in the final contract only when they are load-bearing and defined in-place.
+
+`PROCEDURE_RICH_DOMAIN_DECOUPLED` consumes L1 but removes source-specific black boxes from the reusable product.
+
+### L2 — EXECUTION + ASSERTIONS
+
+Concrete actions and proof mechanisms.
+
+L2 may:
+- inspect repository/runtime state;
+- act through supported interfaces;
+- poll and synchronize;
+- run static analysis, compiler, lint, CI, tests, or domain drivers;
+- observe relevant outcomes;
+- assert invariants;
+- execute planted negative controls;
+- persist and read back evidence.
+
+L2 proves or falsifies a concrete domain realization. It cannot silently redefine L0 portable policy or promote one repository mechanism into a universal architecture rule.
+
+```text
+L0 PROCEDURAL SKILL
+        ↓ applies to
+L1 DOMAIN KNOWLEDGE
+        ↓ grounded/proven by
+L2 EXECUTION + ASSERTIONS
+```
+
 ## Two Skill modes
 
-Select exactly one product mode before compilation.
+Select exactly one mode before compilation.
 
-### Mode A — Domain-rich Skill
+### Mode A — DOMAIN_RICH
 
 Use when domain nouns are themselves part of the executable architecture and removing them would destroy the Best Path.
 
-A Domain-rich output may preserve repository/product-specific nouns, paths, commands, state owners, extension surfaces, or runtime concepts only when it defines them in-place and binds them to the domain's actual architecture.
+A Domain-rich output may preserve repository/product-specific nouns, paths, commands, state owners, extension surfaces, or runtime concepts only when it defines them in-place and they materially change the consumer's correct decision.
 
-The consumer must not need hidden background knowledge. Domain-specific does not mean black-box.
+Domain-specific does not mean black-box.
 
-Use Domain-rich mode when:
+### Mode B — PROCEDURE_RICH_DOMAIN_DECOUPLED
 
-- the Skill will operate inside one known product/repository family;
-- concrete domain primitives are required to choose the correct path;
-- the domain realization is stable enough to be a maintained contract;
-- removing the domain vocabulary would make the instruction less correct, not merely less reusable.
+Use when architecture knowledge should transfer across repositories.
 
-### Mode B — Procedure-rich / Domain-decoupled Skill
+Remove source-system nouns and preserve only architectural pressure needed for correct decisions. Render every required concept in ordinary architecture language.
 
-Use when the objective is to extract architecture knowledge that should transfer across repositories.
-
-Remove source-system nouns and preserve only the architectural pressure needed for correct decisions. Render every required concept in ordinary architecture language.
-
-A zero-context coding LLM must be able to use the output without knowing Dune, Noodle, noodles, P/L/R/N, FeatureMap, Spatial Loop, or another source framework.
+A zero-context coding LLM must be able to use the result without prior knowledge of Dune, Noodle, noodles, P/L/R/N, FeatureMap, Spatial Loop, or another source framework.
 
 Use this mode by default for reusable Agent-Friendly Architecture guidance.
 
-## Orthogonal execution roles
+## BUILD and SHADOW roles
 
-`BUILD` and `SHADOW` are not Skill modes. They are roles that can be applied to either mode.
+`BUILD` and `SHADOW` are orthogonal roles available in either Skill mode.
 
 ```text
-Domain-rich
-  ├── BUILD   # only writer
-  └── SHADOW  # read-only reviewer
+DOMAIN_RICH
+  ├── BUILD
+  └── SHADOW
 
-Procedure-rich / Domain-decoupled
-  ├── BUILD   # only writer
-  └── SHADOW  # read-only reviewer
+PROCEDURE_RICH_DOMAIN_DECOUPLED
+  ├── BUILD
+  └── SHADOW
 ```
 
 ### BUILD
 
-BUILD is the sole candidate writer. It owns evidence → semantic kernel → self-contained contract → Best Path.
+BUILD is the sole candidate writer.
+
+It consumes L0 procedure + L1 domain knowledge + available L2 evidence, then produces P0 → P1 → P2.
 
 ### SHADOW
 
-SHADOW reads the same evidence and BUILD output, produces findings only, and never creates a competing implementation. It looks specifically for:
+SHADOW reads the same evidence and BUILD output, produces findings only, and never creates a competing implementation.
 
+It looks for:
 - black-box vocabulary;
 - semantic degradation;
 - unsupported generalization;
@@ -73,46 +141,59 @@ SHADOW reads the same evidence and BUILD output, produces findings only, and nev
 - authority laundering;
 - wrong Best Path inference.
 
-## Product layers
+Use these severity names so they cannot be confused with Skill layers:
 
-The following layers describe the produced knowledge, not the BUILD/SHADOW roles.
+### S0 OBSERVE
 
-### L0 — Semantic Kernel
+Record a non-load-bearing concern. Do not interrupt BUILD.
 
-Extract the architecture pressure that must survive compression.
+### S1 WARN
+
+Expose a material ambiguity, evidence limitation, or narrower safe interpretation. BUILD may continue while the limitation is explicit.
+
+### S2 REVIEW
+
+Require reconciliation before publication when a consumer can reasonably infer a wrong Best Path.
 
 Examples:
+- unexplained domain/framework vocabulary is required to understand the contract;
+- domain-decoupled mode leaks a source implementation as a universal rule;
+- domain-rich mode uses a domain primitive without defining its architectural role;
+- a load-bearing invariant disappears during compression;
+- a negative claim or exception is omitted and a stronger interpretation becomes plausible;
+- guidance is rendered as mechanical enforcement;
+- a new abstraction layer increases normal-path decisions without closing a demonstrated failure;
+- the output describes the source control system instead of reusable architecture knowledge.
 
+## Rendered-product compilation stack — P0 / P1 / P2
+
+These stages describe the product generated from the Skill stack. They are not Skill concern layers.
+
+### P0 — Semantic Kernel
+
+Extract the load-bearing architecture pressure that must survive removal or compression of source-specific representation.
+
+Examples:
 - narrow-context Agents imitate local precedent;
 - conventional paths should require fewer decisions than shortcuts;
-- invalid states should fail at the strongest practical deterministic layer;
+- deterministic invariants belong at the strongest practical enforcement layer;
 - durable truth should have one obvious writer;
 - extension should prefer isolated surfaces over shared-root branching;
 - repeated deterministic failures should migrate from review prose into mechanisms.
 
-In Domain-rich mode, L0 may retain a domain primitive only when that primitive is itself load-bearing and defined by the output. In Domain-decoupled mode, source-specific nouns must not survive merely because they were prominent in the source.
+### P1 — Self-contained Contract
 
-### L1 — Self-contained Contract
+Render P0 into direct Agent-facing architecture language. Every concept required to infer the Best Path must be defined in-place.
 
-Render L0 into direct architecture language. Every concept needed to infer the Best Path must be defined in-place.
+For domain-decoupled mode, understanding must not depend on source-system knowledge.
 
-The consumer must be able to answer:
+For domain-rich mode, domain primitives may remain only when the contract itself defines their responsibility, allowed operations, constraints, and Best Path consequence.
 
-- what local Agent behavior the architecture assumes;
-- what repository shape it should prefer;
-- what counts as a shortcut;
-- where deterministic enforcement belongs;
-- how ownership and exceptions work;
-- why Greenfield, rewrite, and repeated review failures are dangerous.
+### P2 — Best Path Procedure
 
-A Domain-rich L1 may use domain vocabulary only when the document itself makes that vocabulary non-black-box. A Domain-decoupled L1 fails if understanding depends on source-system knowledge.
+Turn P1 into a concrete repository-change decision procedure.
 
-### L2 — Best Path Procedure
-
-Turn the contract into a concrete decision procedure.
-
-For a repository change, the consumer should be able to:
-
+The consumer should be able to:
 1. identify the required outcome;
 2. locate the nearest correct precedent;
 3. find the canonical owner/writer of affected durable state;
@@ -124,86 +205,58 @@ For a repository change, the consumer should be able to:
 9. exercise relevant negative/failure paths;
 10. move repeated deterministic failures toward stronger enforcement.
 
-L2 must not require compiler metadata.
+P2 must not require compiler metadata.
 
 ## BUILD procedure
 
-1. Select Domain-rich or Procedure-rich/Domain-decoupled mode explicitly.
-2. Freeze the exact source and target-repository evidence available to the task.
-3. Separate source statements, repository observations, executable evidence, and inference.
-4. Identify the contributor-context model: what a local Agent is likely to see and imitate.
-5. Extract candidate invariants from repeated architectural pressures, not from source vocabulary alone.
-6. Apply the mode-specific vocabulary test:
-   - Domain-rich: retain a domain noun only when it is load-bearing, defined in-place, and needed for the Best Path.
-   - Domain-decoupled: remove a source noun unless its meaning can be rewritten as a portable architectural primitive.
-7. Preserve material divergence, exceptions, failure modes, and negative knowledge whenever deleting them could permit a stronger or wrong Best Path inference.
-8. Render L1 before L2. Explain why before prescribing procedure.
-9. Keep evidence IDs, schemas, manifests, graphs, confidence classes, and source-comparison machinery outside the normal rendered reading path unless a Domain-rich consumer explicitly needs one as an executable primitive.
-10. Prefer the shortest wording that preserves every load-bearing invariant.
-11. Run SHADOW review and deterministic structural checks before publication.
-
-## SHADOW procedure
-
-SHADOW uses the same intervention levels in either Skill mode.
-
-### L0 OBSERVE
-
-Use for non-load-bearing issues such as wording that could be shorter or an example that is harmless but slightly domain-flavored.
-
-Record only. Do not interrupt BUILD.
-
-### L1 WARN
-
-Use when the output may mislead but can continue while the limitation is explicit, for example an evidence ceiling narrower than the wording or a compressed exception that creates ambiguity.
-
-State the likely misread and the narrower safe interpretation.
-
-### L2 REVIEW
-
-Use when a zero-context consumer of the declared Skill mode can reasonably infer a wrong Best Path:
-
-- unexplained domain/framework vocabulary is required to understand the contract;
-- Domain-decoupled mode leaks source-specific implementation as a universal rule;
-- Domain-rich mode uses domain nouns without defining their role in the architecture;
-- a load-bearing invariant disappears during compression;
-- a negative claim or exception is omitted and a stronger interpretation becomes plausible;
-- guidance is rendered as mechanical enforcement;
-- a new abstraction layer increases normal-path decisions without closing a demonstrated failure;
-- the output describes the source control system instead of the architecture knowledge the consumer actually needs.
-
-L2 requires reconciliation before publication. It is not a style veto.
+1. Select `DOMAIN_RICH` or `PROCEDURE_RICH_DOMAIN_DECOUPLED`.
+2. Apply the portable L0 procedure.
+3. Bind the exact L1 domain knowledge relevant to the task.
+4. Identify available L2 execution/assertion evidence and its limits.
+5. Separate source statements, repository observations, executable evidence, and inference.
+6. Identify the contributor-context model: what a local Agent is likely to see and imitate.
+7. Extract P0 candidate invariants from architectural pressures, not source vocabulary alone.
+8. Apply the mode-specific vocabulary test:
+   - Domain-rich: retain a domain noun only when load-bearing, defined in-place, and required for the Best Path.
+   - Domain-decoupled: remove a source noun unless its meaning can be expressed as a portable architecture primitive.
+9. Preserve material divergence, exceptions, failure modes, and negative knowledge whenever deletion could permit a stronger or wrong Best Path inference.
+10. Render P1 before P2. Explain why before prescribing procedure.
+11. Keep schemas, manifests, evidence IDs, graphs, confidence classes, and comparison machinery outside the normal rendered reading path unless a Domain-rich consumer genuinely needs one as an executable primitive.
+12. Prefer the shortest wording that preserves every load-bearing invariant.
+13. Run SHADOW S0/S1/S2 review and deterministic checks before publication.
 
 ## Self-containedness test
 
-For Domain-decoupled mode, remove all external names and ask:
+For `PROCEDURE_RICH_DOMAIN_DECOUPLED`, ask:
 
-> Given only this rendered contract and an unfamiliar repository, can a fresh coding LLM explain how to choose the architecture-preserving Best Path and why an unsafe shortcut is wrong?
+> Given only P1/P2 and an unfamiliar repository, can a fresh coding LLM explain how to choose the architecture-preserving Best Path and why an unsafe shortcut is wrong?
 
-For Domain-rich mode, ask:
+For `DOMAIN_RICH`, ask:
 
-> Given only this rendered contract and the repository files it explicitly routes to, can a fresh coding LLM understand every domain primitive required for the Best Path without undocumented organizational knowledge?
+> Given only P1/P2 and repository files explicitly routed by the contract, can a fresh coding LLM understand every domain primitive required for the Best Path without undocumented organizational knowledge?
 
 Fail when either answer depends on hidden context.
 
 ## Best Path preservation test
 
-For every material source insight, check both directions:
+For every material insight, check both directions:
 
 ```text
-source evidence
--> rendered architecture rule
--> consumer decision consequence
+L1 domain evidence + L2 observations
+-> P0 semantic kernel
+-> P1 architecture rule
+-> P2 decision consequence
 ```
 
 and:
 
 ```text
-rendered architecture rule
+P1/P2 rendered rule
 -> plausible local Agent inference
--> does that inference stay inside the evidence-backed architecture pressure?
+-> does that inference remain inside the evidence-backed architecture pressure?
 ```
 
-If the second chain can produce a stronger or wrong instruction, narrow or rewrite the contract.
+If the second chain can produce a stronger or wrong instruction, narrow or rewrite the product.
 
 ## Anti-overengineering test
 
@@ -221,10 +274,13 @@ Default to keeping schemas, evidence manifests, graph projections, and validator
 
 A candidate is complete at this Skill's procedure level when:
 
-- the target mode is explicit;
-- L0 preserves the load-bearing semantic kernel;
-- L1 is self-contained under that mode's context contract;
-- L2 yields a direct Best Path decision procedure;
-- SHADOW has no unresolved L2 findings;
+- the Skill mode is explicit;
+- L0 procedure remained domain-independent;
+- required L1 knowledge is explicit rather than hidden;
+- L2 evidence/assertion limits are preserved;
+- P0 retains the load-bearing semantic kernel;
+- P1 is self-contained under the selected mode;
+- P2 yields a direct Best Path decision procedure;
+- SHADOW has no unresolved S2 findings;
 - deterministic checks reject planted black-box and semantic-loss cases;
 - wording does not imply an evidence layer that was not reached.
