@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "skill": "agent-friendly-architecture-compiler",
+  "source_kind": "git",
+  "repository": "https://github.com/ed3c/ai-content-notes",
+  "commit": "c461dd5e30630597b061dd6ad9ce5f4512bd3e49",
+  "source_path": "templates/agent-friendly-architecture.md, schemas/architecture-context-pack.schema.json",
+  "locked_files": [
+    {
+      "path": "intake/agent-friendly-architecture-compiler/fixtures/agent-friendly-architecture.md",
+      "sha256": "2681081f7bcb9fc83b1014548c5c3b58c6b981dc5558a8c00db061e412c89290"
+    },
+    {
+      "path": "intake/agent-friendly-architecture-compiler/fixtures/architecture-context-pack.schema.json",
+      "sha256": "2ad7b01f56ff811caae47f81076cf514b70b308bb3e2d00d9b1271ae9cb435a5"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "https://github.com/ed3c/ai-content-notes",
+      "commit": "c461dd5e30630597b061dd6ad9ce5f4512bd3e49",
+      "path": "templates/agent-friendly-architecture.md",
+      "blob_sha": "55dc00ac6912b229ff65e28e1004743dda56712f"
+    },
+    {
+      "repository": "https://github.com/ed3c/ai-content-notes",
+      "commit": "c461dd5e30630597b061dd6ad9ce5f4512bd3e49",
+      "path": "schemas/architecture-context-pack.schema.json",
+      "blob_sha": "3b36d9e85fda88eb94b9917be28234f48cf4dfeb"
+    }
+  ]
+}
