@@ -49,6 +49,16 @@
       "source_lock": "intake/control-code-intel/source-lock.json",
       "admission": "admissions/control-code-intel.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "control-backup",
+      "path": "skills/control-backup",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/control-backup/skill.json",
+      "source_lock": "intake/control-backup/source-lock.json",
+      "admission": "admissions/control-backup.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

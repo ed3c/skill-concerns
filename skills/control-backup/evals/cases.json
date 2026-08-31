@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "control-backup-positive", "control": "positive", "expected": "PASS"},
+    {"id": "l2-driver-selftest", "control": "positive", "expected": "PASS"},
+    {"id": "missing-layer-file", "control": "mutation", "expected": "FAIL"},
+    {"id": "unbacked-receipt-removed", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "openrsync-admitted", "control": "boundary", "expected": "FAIL"},
+    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL"}
+  ],
+  "runner": "python3 -m unittest discover -s skills/control-backup/tests",
+  "hillclimb": "edits may add tiers+receipts; weakening the three-layer structure, admitting an unbacked copier, or defusing a driver negative control fails closed"
+}

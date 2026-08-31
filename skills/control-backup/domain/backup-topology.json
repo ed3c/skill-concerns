@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "subject": "noodles production-environment backup (operator machine, macOS/APFS home)",
+  "tiers": {
+    "local": {
+      "root": "~/Backups/noodles",
+      "fs": "APFS",
+      "role": "fast tier; only tier reading live sources",
+      "history": "3 daily snapshots via rsync --link-dest hardlinks",
+      "space_rule": "min_free 5G, keep floor 2, prune-before-copy",
+      "receipt": "linkdest-inode-verified"
+    },
+    "usb": {
+      "root": "/Volumes/SANDISK/noodles-backup",
+      "fs": "exFAT",
+      "role": "replicates from completed local snapshot only (frozen source)",
+      "history": "single-slot rotation: no hardlinks, each snapshot ~4.6G full cost (2.9G APFS source)",
+      "space_rule": "min_free 4G, keep floor 1; threshold derived from measured snapshot cost vs 29G disk with ~19G foreign usage",
+      "mount_guard": "mount | grep ' on /Volumes/SANDISK ' before any write",
+      "receipts": ["exfat-no-hardlink", "exfat-no-unix-socket", "freeze-then-replicate-verified", "rotation-floor-unattainable-bug"]
+    },
+    "gdrive": {
+      "account_lock": "path-embedded account (GoogleDrive-<account>@gmail.com); MCP folder owner asserted from metadata",
+      "role": "text-manifest lane only: Brewfile, versions, bootstrap, restore map",
+      "no_secrets": true,
+      "receipts": ["mcp-drive-text-lane", "mcp-binary-infeasible", "secrets-cloud-refused"]
+    }
+  },
+  "tools": {
+    "gnu-rsync": {
+      "source": "brew install rsync (3.5.0), /opt/homebrew/bin/rsync",
+      "why": "exit 24 (vanished sources) is warning-class; wrapper maps 24 to success explicitly",
+      "receipt": "gnu-rsync-exit24"
+    },
+    "link-dest": {
+      "why": "hardlink dedup for unchanged files across daily snapshots on APFS",
+      "receipt": "linkdest-inode-verified"
+    },
+    "launchd": {
+      "label": "com.neon.noodles-backup",
+      "triggers": "StartCalendarInterval 03:30 + StartOnMount (USB attach) + manual",
+      "receipt": "launchd-scheduled-fired"
+    },
+    "mcp-drive-text": {
+      "why": "create_file with textContent for manifests; owner field is the account assertion",
+      "receipt": "mcp-drive-text-lane"
+    }
+  },
+  "not_admitted": {
+    "openrsync": {
+      "reason": "macOS stock rsync fails the whole transfer on one vanished/changed file on hot sources; also no /./ relative anchor",
+      "receipt": "openrsync-hot-source-fatal"
+    },
+    "apfs-localsnapshot-unattended": {
+      "reason": "tmutil localsnapshot works unprivileged but mount_apfs -s returns Operation not permitted without root; unusable for an unattended agent",
+      "receipt": "apfs-snapshot-mount-needs-root"
+    },
+    "cloudstorage-direct-write": {
+      "reason": "TCC denies terminal processes access to ~/Library/CloudStorage until the human grants Full Disk Access and restarts the app",
+      "receipt": "tcc-blocks-cloudstorage"
+    },
+    "binary-over-mcp": {
+      "reason": "MCP file content transits model context; a 5MB tar.gz is ~6.7M base64 chars, far beyond per-call limits",
+      "receipt": "mcp-binary-infeasible"
+    }
+  },
+  "volatile_zones": [
+    "noodles/.noodle (whole tree excluded from wide copy; durable subset via dedicated small rsync + 3 retries)",
+    "noodles/.worktrees (per-lane runtime worktrees with nested caches)",
+    ".codex/ipc (unix socket)",
+    ".ssh/agent (unix socket dir)",
+    "live .git refs during branch surgery",
+    ".claude.json (rewritten continuously by live sessions)"
+  ],
+  "secrets_physical_only": [
+    "~/.ssh", "~/.noodles-app-key.pem", "~/.noodles-runtime-token",
+    "~/.codex/auth.json", "~/.claude/.credentials.json", "~/.config/gh/hosts.yml"
+  ],
+  "executable": {
+    "script": "~/.noodles-ops/backup-noodles.sh",
+    "restore": "~/.noodles-ops/restore-from-sandisk.sh (travels inside every snapshot)",
+    "restore_kit": "~/.noodles-ops/restore-kit/ (Brewfile, versions.txt, bootstrap-new-machine.sh, RESTORE.md)"
+  },
+  "rebuilt_not_backed_up": [
+    "~/.serena index (1.8G)", "grepai index", "SCIP index",
+    ".noodle/codex-isolation", ".noodle/providers", "conversation transcripts"
+  ]
+}

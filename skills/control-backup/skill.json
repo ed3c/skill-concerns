@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "name": "control-backup",
+  "version": "0.1.0",
+  "kind": "domain-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-backup-policy.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "receipts.json",
+    "references/README.md",
+    "references/procedures.md",
+    "domain/backup-topology.json"
+  ],
+  "execution_paths": [
+    "scripts/backup_driver.py",
+    "scripts/validate_control_backup.py"
+  ],
+  "test_paths": [
+    "tests/test_control_backup.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "domain/backup-topology.json"
+  ],
+  "forbidden_domain_literals": [
+    "noodles",
+    "SANDISK",
+    "/Users/neon",
+    "ga874199",
+    "launchd"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json"
+  ]
+}

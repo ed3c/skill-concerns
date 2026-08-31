@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "skill": "control-backup",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/control-backup/source-lock.json",
+    "sha256": "faf6cefa5afbd71452e19caca63f5c3c752f6d287aa91232d35976a2b9c4d2f6"
+  },
+  "subject_files": [
+    {
+      "path": "skills/control-backup/AGENTS.md",
+      "sha256": "860dde11897cc4151c54770b7fce7992ff970539292c24dad9c706f8512186de"
+    },
+    {
+      "path": "skills/control-backup/README.md",
+      "sha256": "2b4fc9c43aea8ca9ada4f3718e893d0ff64904baf5947065c7e4ca5684e6c719"
+    },
+    {
+      "path": "skills/control-backup/SKILL.md",
+      "sha256": "e60871cc66725097840f85bc8f7ed0576298b4ac23201d939ce1a0030c608c11"
+    },
+    {
+      "path": "skills/control-backup/domain/backup-topology.json",
+      "sha256": "372986cf8f8c177bf7f8929c6374d7ae8dca1558f31ac7d02ab502897e1286d0"
+    },
+    {
+      "path": "skills/control-backup/evals/cases.json",
+      "sha256": "a2b2f31faf1d1f579bd9d4d3e6a91dd3a7f7a735252fdd575e8375bbddc2ecf6"
+    },
+    {
+      "path": "skills/control-backup/receipts.json",
+      "sha256": "145784be3c2953c18786826d4e88a18351991d1404ad1ff251fc2f90239ebcc3"
+    },
+    {
+      "path": "skills/control-backup/references/README.md",
+      "sha256": "2a8bdef21a207de154174814064273f0781ba79bae140eec1af843ef3e6f586c"
+    },
+    {
+      "path": "skills/control-backup/references/portable-backup-policy.md",
+      "sha256": "1370739676dc7e801d787c36332e7aca0d4f83f8c5888cbbd3c72cdda81e9a0c"
+    },
+    {
+      "path": "skills/control-backup/references/procedures.md",
+      "sha256": "d35697fc2ae678afde2e5ab2ba5df5b97c645eb5873fb49e524ee4a40084d8a9"
+    },
+    {
+      "path": "skills/control-backup/scripts/backup_driver.py",
+      "sha256": "101a7a35d854d318059b04632c57cac48610f97f0906539ca0f871d2840f7e15"
+    },
+    {
+      "path": "skills/control-backup/scripts/gen_admission.py",
+      "sha256": "4042ae973108d64c5a051b28e360610f3494114796f0e62235847c8cfbcc1bc9"
+    },
+    {
+      "path": "skills/control-backup/scripts/gen_source_lock.py",
+      "sha256": "b7d5b3685289abfef6583aac1e850630d6ec16ea989c545d76e1be53b730bd22"
+    },
+    {
+      "path": "skills/control-backup/scripts/validate_control_backup.py",
+      "sha256": "8f5dbd57c3a8957d002a36a08334143b10df16af1b89b7b6475e5ad450e2db7a"
+    },
+    {
+      "path": "skills/control-backup/skill.json",
+      "sha256": "c381e877058be421db1e214c4740c16ceb63ef9e95726bf9cdf4ac0b953bb4b5"
+    },
+    {
+      "path": "skills/control-backup/tests/test_control_backup.py",
+      "sha256": "63acc3691a72d6a1b2aba8484a2f9a98b364c496beebdc13b0401434ba9240d0"
+    }
+  ],
+  "skill_tree_sha256": "4aca676b6adce90f4ed9b0e3e6e676c8df839e591bb64a738c72908a742e54a8",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "control-backup-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "l2-driver-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-layer-file",
+      "state": "PASS"
+    },
+    {
+      "id": "unbacked-receipt-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "openrsync-admitted",
+      "state": "PASS"
+    },
+    {
+      "id": "driver-negative-control-defused",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}
