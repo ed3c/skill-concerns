@@ -20,6 +20,14 @@
       "sha256": "58b7e945eb969ec3723373db2caf61f513865e419c625378960110e01357ab6d"
     },
     {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-08-31-pilot.json",
+      "sha256": "e36bbc25d446978078a232f473a474f074d2fff37a7607469d86d11665099325"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral.json",
+      "sha256": "2191a2f68d9108ea1d57e66dc320110e9288d10fe9b7e37ef465baf705d916eb"
+    },
+    {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
       "sha256": "73971fc8fcc06e7ffaaf4bf2b6549df0b744226116f67dbf4581d2955d7480a7"
     },
@@ -30,6 +38,10 @@
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_admission.py",
       "sha256": "fd4b29dcff3f9ec214abfdd3e20e500b25cb52b1b3f8c93210383afa7b591a17"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/gen_campaign_receipt.py",
+      "sha256": "6c039e2f9b9e178d05d9c56e27b98c287f8378d92d5c9853e45276ee5c569fda"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
@@ -48,7 +60,7 @@
       "sha256": "7b6122a40771c9b8d4b611e9f0a6b96a96e621398c6c0362016cb94f1e02a42b"
     }
   ],
-  "skill_tree_sha256": "0c4332a725d6d31b082e116202e9bb4e1bdfb59e0a77ca28a9c259d3b9ab53aa",
+  "skill_tree_sha256": "6e2de7eb491fed10b109d97827a44346a1d076a4f58cfb5ff1ae22daee364f06",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
