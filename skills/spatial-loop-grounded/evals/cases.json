@@ -9,8 +9,14 @@
     {"id": "provenance-erased", "control": "boundary", "expected": "FAIL"},
     {"id": "topology-removed", "control": "mutation", "expected": "FAIL"},
     {"id": "kernel-dropped", "control": "mutation", "expected": "FAIL"},
-    {"id": "host-ref-empty", "control": "evidence-promotion", "expected": "FAIL"}
+    {"id": "host-ref-empty", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "negative-control-dropped", "control": "campaign-negative-control", "expected": "FAIL"},
+    {"id": "negative-transcript-missing", "control": "campaign-negative-control", "expected": "FAIL"},
+    {"id": "negative-verdict-softened", "control": "campaign-negative-control", "expected": "FAIL"},
+    {"id": "ledger-entry-removed", "control": "ledger-append-only", "expected": "FAIL"},
+    {"id": "ledger-tail-rewritten", "control": "ledger-append-only", "expected": "FAIL"},
+    {"id": "ledger-key-missing", "control": "ledger-append-only", "expected": "FAIL"}
   ],
   "runner": "python3 -m unittest discover -s skills/spatial-loop-grounded/tests",
-  "hillclimb": "edits may add clauses, receipts, kernels, and topology primitives; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, breaks the kernel/clause count tie, drops a layer file, or erases upstream provenance fails closed"
+  "hillclimb": "edits may add clauses, receipts, kernels, topology primitives, and ledger entries; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, breaks the kernel/clause count tie, drops a layer file, erases upstream provenance, removes the judge's control:negative case, or removes/rewrites a judged wave in the ledger fails closed"
 }

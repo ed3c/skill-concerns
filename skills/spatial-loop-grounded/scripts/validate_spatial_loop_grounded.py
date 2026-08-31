@@ -8,6 +8,7 @@ silently weaken them.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -19,6 +20,23 @@ REF_RE = re.compile(r"^ed3c/[a-z-]+#\d+$")
 # host-environment receipts (non-repository evidence) name their exact host artifact
 HOST_REF_RE = re.compile(r"^host:\S+$")
 KERNEL_RE = re.compile(r"^- (K\d+) ", re.M)
+# cross-wave judge ledger: one entry per judged campaign
+LEDGER_ENTRY_KEYS = (
+    "date",
+    "wave",
+    "judge_model",
+    "per_clause_summary",
+    "gaps",
+    "prompt_improvements",
+    "receipt_refs",
+)
+GENESIS = "0" * 64
+
+
+def entry_digest(entry: dict) -> str:
+    """Chain digest of one ledger entry, prev_sha256 included."""
+    canonical = json.dumps(entry, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _ref_ok(ref: object) -> bool:
@@ -112,6 +130,75 @@ def validate(skill_root: Path) -> list[str]:
                 for token in prim_evidence:
                     if token not in evidence:
                         errors.append(f"topology primitive {name!r}: evidence id {token!r} not in receipts.json")
+
+    errors.extend(validate_campaigns(skill_root, clause_ids))
+    return errors
+
+
+def validate_campaigns(skill_root: Path, clause_ids: list[str]) -> list[str]:
+    """Campaign-level gates: the judge keeps a case it must refuse, and every
+    judged wave lands in an append-only ledger.
+
+    CI asserts only what is deterministic - that the negative case EXISTS with
+    its expected verdict declared and its transcript bytes present. The verdict
+    itself is produced by the judge at campaign run time.
+    """
+    errors: list[str] = []
+
+    behavioral_path = skill_root / "evals" / "behavioral.json"
+    if not behavioral_path.is_file():
+        errors.append("campaign inventory evals/behavioral.json missing")
+    else:
+        scenarios = json.loads(behavioral_path.read_text(encoding="utf-8")).get("scenarios")
+        if not isinstance(scenarios, list) or not scenarios:
+            errors.append("campaign inventory has no scenarios")
+            scenarios = []
+        negatives = [s for s in scenarios if isinstance(s, dict) and s.get("control") == "negative"]
+        if not negatives:
+            errors.append(
+                "campaign inventory carries no control:negative case - a judge that has never "
+                "refused anything is a single arrival, not a physical standard"
+            )
+        for case in negatives:
+            case_id = case.get("id")
+            if case.get("expected_verdict") != "violated":
+                errors.append(f"negative control {case_id!r} does not declare expected_verdict 'violated'")
+            clauses = case.get("clauses")
+            if not isinstance(clauses, list) or not clauses:
+                errors.append(f"negative control {case_id!r} names no violated clauses")
+            else:
+                for clause in clauses:
+                    if clause not in clause_ids:
+                        errors.append(f"negative control {case_id!r} names clause {clause!r} absent from SKILL.md")
+            transcript = case.get("transcript")
+            if not isinstance(transcript, str) or not (skill_root / transcript).is_file():
+                errors.append(f"negative control {case_id!r} transcript fixture missing: {transcript!r}")
+
+    ledger_path = skill_root / "evals" / "behavioral-campaigns" / "ledger.json"
+    if not ledger_path.is_file():
+        errors.append("cross-wave judge ledger evals/behavioral-campaigns/ledger.json missing")
+        return errors
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    entries = ledger.get("entries")
+    if not isinstance(entries, list) or not entries:
+        errors.append("judge ledger carries no entries")
+        return errors
+    previous = GENESIS
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            errors.append(f"ledger entry {index} is not an object")
+            return errors
+        for key in LEDGER_ENTRY_KEYS:
+            if not entry.get(key):
+                errors.append(f"ledger entry {index} ({entry.get('wave')!r}) missing required key {key!r}")
+        if entry.get("prev_sha256") != previous:
+            errors.append(
+                f"ledger entry {index} breaks the append-only chain: "
+                f"prev_sha256 {entry.get('prev_sha256')!r} != {previous!r}"
+            )
+        previous = entry_digest(entry)
+    if ledger.get("head_sha256") != previous:
+        errors.append("ledger head_sha256 does not match the last entry - the tail was removed or rewritten")
     return errors
 
 

@@ -16,7 +16,16 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
-from validate_spatial_loop_grounded import validate  # noqa: E402
+from validate_spatial_loop_grounded import entry_digest, validate  # noqa: E402
+
+BEHAVIORAL = Path("evals/behavioral.json")
+LEDGER = Path("evals/behavioral-campaigns/ledger.json")
+
+
+def rewrite_json(path: Path, mutate) -> None:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    mutate(data)
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 def mutated_copy() -> tuple[tempfile.TemporaryDirectory, Path]:
@@ -101,6 +110,79 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         self.assertIn("skills-shared", text)
         path.write_text(text.replace("skills-shared", "elsewhere"), encoding="utf-8")
         self.assertTrue(any("provenance" in e for e in validate(root)), validate(root))
+
+    # --- campaign machinery: the judge keeps a case it must refuse, and waves land append-only ---
+
+    def test_hollow_negative_control_dropped_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(
+            root / BEHAVIORAL,
+            lambda d: d.__setitem__(
+                "scenarios", [s for s in d["scenarios"] if s.get("control") != "negative"]
+            ),
+        )
+        errors = validate(root)
+        self.assertTrue(any("control:negative" in e for e in errors), errors)
+
+    def test_hollow_negative_transcript_missing_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        case = next(
+            s
+            for s in json.loads((root / BEHAVIORAL).read_text(encoding="utf-8"))["scenarios"]
+            if s.get("control") == "negative"
+        )
+        (root / case["transcript"]).unlink()
+        errors = validate(root)
+        self.assertTrue(any("transcript fixture missing" in e for e in errors), errors)
+
+    def test_hollow_negative_expected_verdict_softened_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+
+        def soften(data: dict) -> None:
+            for scenario in data["scenarios"]:
+                if scenario.get("control") == "negative":
+                    scenario["expected_verdict"] = "unscored"
+
+        rewrite_json(root / BEHAVIORAL, soften)
+        errors = validate(root)
+        self.assertTrue(any("expected_verdict" in e for e in errors), errors)
+
+    def test_hollow_ledger_entry_removed_fails(self) -> None:
+        """Appends stay green; deleting a prior entry cuts the chain even when
+        the tail digest is repaired."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / LEDGER
+        data = json.loads(path.read_text(encoding="utf-8"))
+        entries = data["entries"]
+        appended = dict(entries[-1], wave="synthetic-append", prev_sha256=entry_digest(entries[-1]))
+        entries.append(appended)
+        data["head_sha256"] = entry_digest(appended)
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self.assertEqual(validate(root), [], "appending a wave must stay green")
+
+        del entries[0]
+        data["head_sha256"] = entry_digest(entries[-1])
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("append-only chain" in e for e in errors), errors)
+
+    def test_hollow_ledger_tail_rewritten_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(root / LEDGER, lambda d: d["entries"][-1]["gaps"].append("laundered"))
+        errors = validate(root)
+        self.assertTrue(any("head_sha256" in e for e in errors), errors)
+
+    def test_hollow_ledger_key_missing_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(root / LEDGER, lambda d: d["entries"][-1].pop("prompt_improvements"))
+        errors = validate(root)
+        self.assertTrue(any("prompt_improvements" in e for e in errors), errors)
 
 
 if __name__ == "__main__":

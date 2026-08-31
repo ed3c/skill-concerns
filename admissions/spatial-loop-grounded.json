@@ -28,12 +28,20 @@
       "sha256": "d3f48d39f109852ba276f47b1c98892a491dacdea7ba1dc2b3b43ab801cfff46"
     },
     {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/violating-actor-transcript.md",
+      "sha256": "303fbcebea226450452b59a45c0c371a94aa56a20ae7bf0f1cb42ea91a9431d9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ledger.json",
+      "sha256": "ca58d4e7ed5059a45b57b7ba0ddfbfb0bdab850bbf78fb311a03b0962fa73cad"
+    },
+    {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
-      "sha256": "39d9f5fad1cffaf277ef26a8f18777a3d87b8856b3c953df9c4212ba26fc14c3"
+      "sha256": "ca6a71897f4e308f5c91ed4aed6bf8f92019a45557657404601ffa995efc48e1"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "fc0b30adb7e7ce941032634fed7e514edb883f2f8d97e8494ef39a894cffbc6b"
+      "sha256": "c6275d3e11e02dab4383cb329a1e3f317828b9b7d7f29418a2c014908a650339"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
@@ -60,12 +68,16 @@
       "sha256": "6c039e2f9b9e178d05d9c56e27b98c287f8378d92d5c9853e45276ee5c569fda"
     },
     {
+      "path": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
+      "sha256": "be4d2072429710b499f9a8ca66b9062213802e6293253c3be63b8cf1663f5f4c"
+    },
+    {
       "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
       "sha256": "5e21c09269cdfb0ab68ddb6a670742b36521d3c1edfad07db08e9aef73cb3eb5"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "04fc9b5ce75855b6afa7aaf281cbebbcd9cd304a2d6277e0a4ef97ec016c2e17"
+      "sha256": "8aaabbc97cc762e845978efe342361f6ffa9b050f1427003c1f9b7135535d2eb"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -73,10 +85,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "eb06013ac8e43c1db6ccfeaa4c85da07bc3370db036c1b06a8a15c9b90927ed8"
+      "sha256": "684f2b4f15ccd1ce06ec31d4ae8c9b0c2fd6276f8d6e9b2a82e48cf32d9cc664"
     }
   ],
-  "skill_tree_sha256": "1fed271a89bf06e7e7d4b89a8269fa70b46d3e55090d93567f668d511ad0b799",
+  "skill_tree_sha256": "267298bf3c032be2b6deb8fdf2e1b2f83393b39c532f3f25f6ae39b742490d7e",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -174,6 +186,30 @@
     },
     {
       "id": "host-ref-empty",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-control-dropped",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-transcript-missing",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-verdict-softened",
+      "state": "PASS"
+    },
+    {
+      "id": "ledger-entry-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "ledger-tail-rewritten",
+      "state": "PASS"
+    },
+    {
+      "id": "ledger-key-missing",
       "state": "PASS"
     }
   ],
