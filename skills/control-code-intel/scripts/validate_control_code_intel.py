@@ -35,8 +35,8 @@ def validate(root: Path) -> list[str]:
     need("SKILL.md")
     need("references/procedures.md")
 
-    if l0 and "L0 semantic kernel" not in l0.read_text(encoding="utf-8"):
-        errors.append("L0 policy does not declare itself the semantic kernel")
+    if l0 and "L0 procedural" not in l0.read_text(encoding="utf-8"):
+        errors.append("L0 policy does not declare itself the procedural layer")
 
     topo = {}
     if l1:

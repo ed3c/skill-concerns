@@ -1,8 +1,9 @@
-# Portable code-intel policy (L0 semantic kernel)
+# Portable code-intel policy (L0 procedural)
 
 Domain-decoupled decision rules for using a code-intelligence stack. These
 hold for any grepai/Serena/tree-sitter/SCIP/SQLite-shaped stack; the concrete
-tool names, pins, and paths are the L1 contract's, not this kernel's.
+tool names, pins, and paths belong to the L1 domain-knowledge layer, not to
+this procedural layer.
 
 ## Tool selection by question shape
 
