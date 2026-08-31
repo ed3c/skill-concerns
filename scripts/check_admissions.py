@@ -288,7 +288,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
             for level in sorted(required_higher - set(not_claimed)):
                 errors.append(f"HIGHER_LAYER_NOT_EXPLICIT:{name}:{level}")
 
-        if admission.get("authoring_command") != f"python3 skills/{name}/scripts/gen_admission.py":
+        if admission.get("authoring_command") != "python3 scripts/run_all.py":
             errors.append(f"AUTHORING_COMMAND_INVALID:{name}")
         if admission.get("hosted_evidence") not in {
             "READ_FROM_GITHUB",

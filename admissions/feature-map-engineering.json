@@ -190,6 +190,6 @@
     "L4_MATCHED_LIVE_RUNTIME",
     "L5_DELIVERY_AND_PRODUCTION"
   ],
-  "authoring_command": "python3 skills/feature-map-engineering/scripts/gen_admission.py",
+  "authoring_command": "python3 scripts/run_all.py",
   "hosted_evidence": "READ_FROM_GITHUB"
 }

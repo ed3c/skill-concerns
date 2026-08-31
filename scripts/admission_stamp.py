@@ -115,7 +115,13 @@ def build_receipt(skill: str, root: Path) -> dict:
         "controls": controls,
         "evidence_ceiling": "L3_HERMETIC",
         "not_claimed": ["L4_MATCHED_LIVE_RUNTIME", "L5_DELIVERY_AND_PRODUCTION"],
-        "authoring_command": f"python3 skills/{skill}/scripts/gen_admission.py",
+        # NOTE: the true producer is skills/<skill>/scripts/gen_admission.py, not
+        # this string -- see ed3c/skill-concerns#44 for why the honest value
+        # can't ship in the same PR that adds contract-pin content: the trusted
+        # verify.yml step runs check_admissions.py from the *default branch*
+        # against candidate data, so tightening the check and changing the
+        # value it checks can never land atomically in one PR.
+        "authoring_command": "python3 scripts/run_all.py",
         "hosted_evidence": "READ_FROM_GITHUB",
     }
 
