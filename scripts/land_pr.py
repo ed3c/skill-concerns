@@ -75,6 +75,44 @@ def api(method: str, path: str, payload: dict[str, Any] | None = None) -> dict[s
         ) from exc
 
 
+def post_receipt_anchor(
+    repository: str, number: int, merge_sha: str, call: Any = None
+) -> str:
+    """Post the physical-receipt anchor on the merged PR, once.
+
+    N-class: runs only after merge + issue-closure readback and can never gate
+    a land - every failure path returns 'failed' instead of raising. The Drive
+    index is appended by the periodic batch reconcile, not here.
+    Returns 'exists' | 'posted' | 'failed'.
+    """
+    call = api if call is None else call
+    try:
+        comments = call("GET", f"/repos/{repository}/issues/{number}/comments?per_page=100")
+        if any(
+            "physical-receipt-anchor" in str(item.get("body") or "")
+            for item in comments
+            if isinstance(item, dict)
+        ):
+            return "exists"
+        merged_at = str(call("GET", f"/repos/{repository}/pulls/{number}").get("merged_at") or "")
+        call(
+            "POST",
+            f"/repos/{repository}/issues/{number}/comments",
+            {
+                "body": (
+                    f"physical-receipt-anchor: pr={number} merge-commit={merge_sha} "
+                    f"merged-at={merged_at}\n\n"
+                    "Anchor is the merge commit SHA (immutable provider truth). The Drive "
+                    "index is appended by the periodic batch reconcile; receipts are "
+                    "N-class, never a landing-gate dependency."
+                )
+            },
+        )
+        return "posted"
+    except (SystemExit, Exception):
+        return "failed"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=Path, required=True)
@@ -134,6 +172,8 @@ def main(argv: list[str] | None = None) -> int:
     if closed["state"] != "closed":
         raise SystemExit(f"ISSUE_CLOSE_READBACK_ABSENT:{issue}:{closed['state']}")
 
+    anchor = post_receipt_anchor(repository, number, merge_sha)
+
     print(
         json.dumps(
             {
@@ -141,6 +181,7 @@ def main(argv: list[str] | None = None) -> int:
                 "head_sha": head,
                 "merge_sha": merge_sha,
                 "closed_issue": issue,
+                "receipt_anchor": anchor,
             },
             indent=2,
             sort_keys=True,
