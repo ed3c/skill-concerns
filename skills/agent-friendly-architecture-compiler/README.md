@@ -1,61 +1,72 @@
 # Agent-Friendly Architecture Compiler
 
-This Skill turns source-specific architecture evidence into a self-contained Agent contract that a zero-context coding LLM can use to infer the correct Best Path in an unfamiliar repository.
+This Skill compiles evidence-backed architecture knowledge into a self-contained Agent contract that a zero-context coding LLM can use to infer the correct Best Path.
 
-The Skill does not copy the vocabulary of the source system into the product. It extracts the architectural pressure, preserves the load-bearing semantics, and renders only concepts the consumer needs to make correct local decisions.
+## The two Skill modes
+
+The Skill has two product modes. This is the primary mode axis.
+
+### 1. Domain-rich Skill
+
+Use when repository/product-specific nouns are themselves load-bearing architecture primitives. The output may keep concrete domain vocabulary, paths, commands, owners, and execution surfaces, but every required concept must be defined in-place. Domain-rich must never mean hidden organizational knowledge.
+
+### 2. Procedure-rich / Domain-decoupled Skill
+
+Use when the architecture knowledge should transfer across repositories. Remove source-system vocabulary and preserve the reusable semantic kernel: contributor context model, invariants, enforcement hierarchy, ownership, isolation, exceptions, failure learning, rewrite safety, and Best Path reasoning.
+
+This is the default mode for a reusable Agent-Friendly Architecture contract.
+
+## BUILD and SHADOW are roles, not modes
+
+Either Skill mode can use the same two execution roles:
+
+```text
+Domain-rich
+  ├── BUILD
+  └── SHADOW
+
+Procedure-rich / Domain-decoupled
+  ├── BUILD
+  └── SHADOW
+```
+
+**BUILD** is the only writer. It owns evidence → semantic kernel → self-contained contract → Best Path.
+
+**SHADOW** is read-only. It never creates a competing implementation. It reviews the same evidence/output for black-box vocabulary, semantic degradation, unsupported generalization, lost negative knowledge, authority laundering, and wrong Best Path inference.
+
+SHADOW intervention levels are:
+
+- `L0 OBSERVE` — record a non-load-bearing concern;
+- `L1 WARN` — expose a material ambiguity or limitation;
+- `L2 REVIEW` — publication must reconcile because the declared mode's consumer can reasonably infer a wrong Best Path.
+
+## Product layers
+
+These are separate from SHADOW's intervention levels:
+
+- **L0 — Semantic Kernel:** load-bearing architecture pressure that must survive compression.
+- **L1 — Self-contained Contract:** every concept required for correct reasoning is defined in the output.
+- **L2 — Best Path Procedure:** direct repository-change decision procedure.
+
+For Domain-decoupled output, a zero-context LLM must not need Dune, Noodle, noodles, P/L/R/N, FeatureMap, Spatial Loop, or compiler internals. For Domain-rich output, the consumer may use domain vocabulary only when the output defines why each primitive exists and how it changes the Best Path.
 
 ## Product boundary
 
-The final product is the rendered Markdown contract. Compiler IR, evidence manifests, schemas, source-comparison matrices, and audit receipts exist to protect that product from drift; they are not part of the normal Agent reading path.
+The final product is the rendered Markdown contract. Compiler IR, evidence manifests, schemas, comparison matrices, and audit receipts protect that product from drift but remain outside the normal Agent reading path unless a Domain-rich executable contract genuinely needs one.
 
 ```text
 source evidence + repository reality
         ↓
-semantic kernel extraction
+select Skill mode
         ↓
-BUILD candidate
+BUILD semantic kernel + contract + Best Path
         ↕
-SHADOW review
+SHADOW L0/L1/L2 review
         ↓
 self-contained rendered contract
         ↓
-zero-context Agent Best Path reasoning
+Agent Best Path reasoning
 ```
-
-## Two modes
-
-### BUILD
-
-BUILD is the only writing mode. It:
-
-1. identifies the contributor-context assumptions;
-2. extracts architecture invariants without source-specific black boxes;
-3. separates universal semantic kernel from domain realization;
-4. preserves failure/exception/negative knowledge that changes Best Path inference;
-5. renders a short, direct contract with Context Model, Core Rules, Enforcement Hierarchy, Shortest Path, Greenfield, Slop, Rewrite, Architecture Addition, Implementation Procedure, and Best Path Decision Rule;
-6. removes evidence machinery and unexplained source vocabulary from the hot path.
-
-### SHADOW
-
-SHADOW reads the same source evidence and BUILD candidate but does not write the implementation. It checks whether compression or generalization introduced a wrong inference.
-
-Shadow findings use:
-
-- `L0 OBSERVE` — possible issue, record only;
-- `L1 WARN` — material ambiguity or evidence/semantic limitation;
-- `L2 REVIEW` — candidate must be reconciled before publication because a zero-context Agent can reasonably infer a wrong Best Path.
-
-SHADOW does not block for wording preference and does not become a second author.
-
-## Three-layer product model
-
-This Skill uses a separate three-layer product model from the Shadow intervention levels:
-
-- **Product L0 — Semantic Kernel:** source-independent architectural pressures and invariants.
-- **Product L1 — Self-contained Contract:** direct, fully defined Agent-facing rules with no required source-system knowledge.
-- **Product L2 — Best Path Procedure:** executable decision procedure for choosing the smallest architecture-preserving, mechanically verifiable implementation path.
-
-The product must remain understandable at L1/L2 without exposing compiler internals.
 
 ## Anti-overengineering law
 
@@ -65,6 +76,4 @@ If a normal consumer must learn more concepts before making an ordinary change, 
 
 ## Evidence boundary
 
-Evidence is required during compilation, but evidence syntax is not required in the rendered product. The renderer may omit claim IDs and authority labels from the hot path when their semantics have already been conservatively resolved.
-
-The final text may never claim more than the underlying evidence supports. Unsupported generalization becomes narrower wording, explicit uncertainty, or omission—not invented universality.
+Evidence is required during compilation, but evidence syntax is not required in the rendered product. The final text may never claim more than the underlying evidence supports. Unsupported generalization becomes narrower wording, explicit uncertainty, or omission—not invented universality.
