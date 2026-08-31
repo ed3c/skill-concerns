@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "grounded-positive", "control": "positive", "expected": "PASS"},
+    {"id": "clause-removed", "control": "mutation", "expected": "FAIL"},
+    {"id": "trigger-form-degraded", "control": "mutation", "expected": "FAIL"},
+    {"id": "evidence-unbound", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "receipt-without-refs", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "provenance-erased", "control": "boundary", "expected": "FAIL"}
+  ],
+  "runner": "python3 -m unittest discover -s skills/spatial-loop-grounded/tests",
+  "hillclimb": "edits may add clauses and receipts; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, or erases upstream provenance fails closed"
+}

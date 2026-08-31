@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "session": "ed3c/noodles machine session 2026-08-30/31",
+  "receipt_chain": "each PR listed below carries (or will carry) a physical-receipt-anchor comment binding sha256 digests to a Drive-held manifest; full session bytes stay host-archived. Chain: clause -> this file -> PR anchor -> Drive manifest -> host bytes.",
+  "evidence": {
+    "monitor-contract": {
+      "refs": ["ed3c/skill-concerns#13"],
+      "claim": "reader-only monitor contract: same-bytes shadow consumption, steer-not-gate, stage-boundary delivery, digest handshake"
+    },
+    "monitor-clauses": {
+      "refs": ["ed3c/skill-concerns#13"],
+      "claim": "plurality clauses (one delivery per boundary, channel split by latency ceiling) and pstack-interaction disciplines recorded after conflict analysis"
+    },
+    "receipt-semantics": {
+      "refs": ["ed3c/noodles#191"],
+      "claim": "publish statuses become self-describing after a status word was re-derived into a wrong causal story for hours"
+    },
+    "ownership-premise": {
+      "refs": ["ed3c/noodles#182", "ed3c/noodles#179"],
+      "claim": "merge-queue availability claimed off visibility while the load-bearing premise was owner.type; closure receipt reversed the supersession of #179"
+    },
+    "decompression-law": {
+      "refs": ["ed3c/noodles#198", "ed3c/noodles#191"],
+      "claim": "the representation-vs-property law landed in three ledger places; PR for #198 carries the AGENTS.md routing row"
+    },
+    "premature-sweep": {
+      "refs": ["ed3c/noodles#190"],
+      "claim": "branch swept on watch-exit instead of MERGED readback auto-closed open PR #197; corrected ceremony landed the same atom as PR #197 reopened"
+    },
+    "terminal-readback": {
+      "refs": ["ed3c/noodles#217"],
+      "claim": "cancelled != failed and rerun-guard operational notes recorded with the superseded-head cancellation atom"
+    },
+    "poison-pill": {
+      "refs": ["ed3c/noodles#174"],
+      "claim": "four admission-correlated daemon deaths -> quarantine with blocker receipt naming unblock conditions; fleet resumed next cycle"
+    },
+    "producer-regeneration": {
+      "refs": ["ed3c/noodles#8"],
+      "claim": "stale evidence receipt regenerated exclusively via its pinned producer, twice, landing as PR #216"
+    },
+    "salvage-heal": {
+      "refs": ["ed3c/noodles#141"],
+      "claim": "death-class catalog comment: content-aware lossless reset + auto-salvage turned repeated fleet wedges into 11-second self-heals"
+    },
+    "invalid-state-eliminations": {
+      "refs": ["ed3c/noodles#138", "ed3c/noodles#190", "ed3c/noodles#176", "ed3c/noodles#179", "ed3c/noodles#217"],
+      "claim": "five invalid-state classes eliminated at the architecture layer in one session: orphan claims, repo-wide freeze, out-of-surface mutation, BEHIND wedge, dead-head compute"
+    },
+    "map-revision-protocol": {
+      "refs": ["ed3c/noodles#211"],
+      "claim": "a gate outran three in-flight siblings; the map-revision atom (not a gate rollback) unblocked them; candidates never widen the surface they are judged against"
+    },
+    "exact-subject": {
+      "refs": ["ed3c/noodles#217"],
+      "claim": "identity-bound run selection (name + headSha) after position-selection watched the wrong workflow"
+    },
+    "stale-rerun-guard": {
+      "refs": ["ed3c/noodles#217"],
+      "claim": "rerunning a stale run cancels the live head's run under per-PR concurrency; assert run.headSha == branch tip before any rerun"
+    }
+  }
+}

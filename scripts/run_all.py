@@ -33,6 +33,17 @@ def main() -> int:
         "test_*.py",
         "-v",
     )
+    run("skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py")
+    run(
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "skills/spatial-loop-grounded/tests",
+        "-p",
+        "test_*.py",
+        "-v",
+    )
     run(
         "-m",
         "unittest",
