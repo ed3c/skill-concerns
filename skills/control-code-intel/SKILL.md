@@ -76,7 +76,16 @@ permission to skip a physical readback.
 
 ## Knowledge placement
 
-- Portable tool-selection and evidence policy (L0 semantic kernel): [`references/portable-code-intel-policy.md`](references/portable-code-intel-policy.md).
-- Stack topology, tools, states, backends (L1 self-contained contract): [`domain/code-intel-topology.json`](domain/code-intel-topology.json).
-- Best-path procedures with gotchas (L2 best-path procedure): [`references/procedures.md`](references/procedures.md).
+These are the skill's METHOD layers (L0 procedural / L1 domain knowledge /
+L2 execution + assertions). They are a different axis from the compiled
+PRODUCT layers (Product L0 semantic kernel / L1 self-contained contract /
+L2 best-path procedure) and from Shadow intervention levels (L0 observe /
+L1 warn / L2 review); the three numbering schemes must never be mixed.
+
+- L0 procedural — portable, domain-independent tool-selection and proof
+  semantics: [`references/portable-code-intel-policy.md`](references/portable-code-intel-policy.md).
+- L1 domain knowledge — stack topology, tools, states, backends:
+  [`domain/code-intel-topology.json`](domain/code-intel-topology.json).
+- L2 execution + assertions — drivers, procedures, gotchas:
+  [`references/procedures.md`](references/procedures.md) and [`scripts/code_intel_driver.py`](scripts/code_intel_driver.py).
 - Physical receipts for every admitted capability: [`receipts.json`](receipts.json).

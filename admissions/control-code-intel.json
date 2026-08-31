@@ -13,11 +13,11 @@
     },
     {
       "path": "skills/control-code-intel/README.md",
-      "sha256": "ba8d83a8d10d62cfe72c277e43405edbec0ca3e8458d9714a204511d46c62e32"
+      "sha256": "55443c9b6244e245a4292e589d6deef0abc37c432b0ae9651cb6c3dd562d7ad3"
     },
     {
       "path": "skills/control-code-intel/SKILL.md",
-      "sha256": "a7ba60fe55f08e82bcb4b02ecb92107d67d97cf681f76c1a7841ff0b6f870fc4"
+      "sha256": "5f1b6ac0a230e8e8bc5b9ae4de858158a68a2d192d6092d67c5aa3d4b8d71e05"
     },
     {
       "path": "skills/control-code-intel/domain/code-intel-topology.json",
@@ -33,11 +33,11 @@
     },
     {
       "path": "skills/control-code-intel/references/README.md",
-      "sha256": "bb6d3ea2806f11888d64f6b10280ef57a09edd4f15737d7c0644fbd96196d32b"
+      "sha256": "bf676e7a31b152e677c37e588eeb48121217a4aa2ed5218060b6b987c57873b3"
     },
     {
       "path": "skills/control-code-intel/references/portable-code-intel-policy.md",
-      "sha256": "e814eb74ae66af093ca1d12943aa56214911adba02c600a954887ac60d2470e4"
+      "sha256": "9aa7415c15a5a417b8715c36d36d2a6e76b41e138e0488d044a24643b2b5f0d0"
     },
     {
       "path": "skills/control-code-intel/references/procedures.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "skills/control-code-intel/scripts/validate_control_code_intel.py",
-      "sha256": "dfa86d2a6b6e29747acbecdb3984c5e6da4ec48a6205ccb7df3db6b179e45f93"
+      "sha256": "d5f5b844a86a96ead8fffceaa6f26194cc480d85b5904c176059e7172316fa09"
     },
     {
       "path": "skills/control-code-intel/skill.json",
@@ -68,7 +68,7 @@
       "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
     }
   ],
-  "skill_tree_sha256": "2915c68cdfb9f302228ac435d45a937609522af3203167fecf36bcc70a8f23de",
+  "skill_tree_sha256": "0b93dbd3af7f848e1d991846f4242eb99474a7a661fbbc63ff175b61d48b94f4",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
