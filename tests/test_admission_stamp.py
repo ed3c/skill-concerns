@@ -92,17 +92,29 @@ class AdmissionStampRefusalTests(unittest.TestCase):
         self.assertIn("RED_CHECK", gen_admission(root, PLANT_SKILL).stderr)
 
     def test_every_registered_skill_stamps_through_the_shared_surface(self) -> None:
+        # Every delegate must be byte-identical to this template with only the
+        # Skill name substituted -- not merely free of a couple of blacklisted
+        # substrings, which a differently-styled reimplementation (os.system,
+        # hand-rolled JSON writing) could dodge while still keeping a per-Skill
+        # copy of the guard alive.
+        template = (
+            "#!/usr/bin/env python3\n"
+            '"""Stamp this Skill\'s admission receipt through the shared refusing surface."""\n'
+            "import sys\n"
+            "from pathlib import Path\n"
+            "\n"
+            'sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))\n'
+            "from admission_stamp import stamp  # noqa: E402\n"
+            "\n"
+            'raise SystemExit(stamp("{name}"))\n'
+        )
         for row in load_json(ROOT / "registry.json")["skills"]:
             name = row["name"]
             with self.subTest(skill=name):
                 self.assertTrue(SKILL_CHECKS.get(name), f"no declared checks for {name}")
                 producer = ROOT / row["path"] / "scripts" / "gen_admission.py"
                 body = producer.read_text(encoding="utf-8")
-                self.assertIn("from admission_stamp import stamp", body)
-                self.assertIn(f'stamp("{name}")', body)
-                # no per-Skill copy of the guard
-                self.assertNotIn("subprocess", body)
-                self.assertNotIn("json.dumps", body)
+                self.assertEqual(body, template.format(name=name))
 
     def test_unknown_skill_refuses_rather_than_stamping_nothing(self) -> None:
         root = scratch_copy(self)
