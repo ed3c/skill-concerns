@@ -39,6 +39,9 @@ registry.json
 contracts/
   shared machine-readable shapes
 
+policy/
+  target-local GitHub boundary declaration; read back by admitted cross-repository executors, never an admission grant
+
 intake/
   frozen design briefs or Git source locks; never runtime state
 
@@ -64,7 +67,8 @@ tests/
   planted repository-level falsifiers
 
 .github/workflows/
-  read-only exact-head execution
+  verify: exact-head candidate self-test plus default-branch trusted validators
+  land: receipt-bound exact-head merge and Issue closure
 ```
 
 ## Admission State Machine
