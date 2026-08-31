@@ -7,56 +7,56 @@
       "roles": ["BUILD", "SHADOW"],
       "expect": "PASS",
       "assertions": [
-        "consumer can infer Best Path without source-framework knowledge",
-        "no required unexplained source-specific vocabulary",
-        "compiler/evidence machinery absent from hot path"
+        "L0 procedure remains domain-independent",
+        "L1 source-domain knowledge does not leak unexplained black boxes into P1",
+        "L2 execution/evidence does not become universal semantics",
+        "consumer can infer P2 Best Path without source-framework knowledge"
       ]
     },
     {
-      "id": "domain-rich-defined-primitives",
+      "id": "domain-rich-self-contained",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["BUILD", "SHADOW"],
       "expect": "PASS",
       "assertions": [
-        "domain primitives are defined in-place",
-        "domain nouns change the Best Path rather than merely leaking source vocabulary",
-        "consumer needs no undocumented organizational knowledge"
+        "load-bearing L1 primitives may survive into P1 only when defined in-place",
+        "P2 Best Path is inferable without undocumented organizational knowledge"
       ]
     },
     {
-      "id": "domain-decoupled-black-box-leak",
+      "id": "black-box-leak",
       "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
       "roles": ["SHADOW"],
-      "expect": "L2_REVIEW",
-      "mutation": "inject unexplained source control-plane vocabulary into the rendered contract"
+      "expect": "S2_REVIEW",
+      "mutation": "inject unexplained source control-plane vocabulary into P1"
     },
     {
       "id": "domain-rich-hidden-primitive",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
-      "expect": "L2_REVIEW",
-      "mutation": "retain a domain-specific noun required by the Best Path without defining its architectural responsibility"
+      "expect": "S2_REVIEW",
+      "mutation": "retain a Best-Path-critical L1 domain noun in P1 without defining its owner, responsibility, constraints, or decision consequence"
     },
     {
       "id": "semantic-loss-shortest-path",
       "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
       "roles": ["SHADOW"],
-      "expect": "L2_REVIEW",
+      "expect": "S2_REVIEW",
       "mutation": "remove the distinction between shortest compiling path and shortest architecture-preserving verifiable path"
     },
     {
       "id": "authority-laundering",
-      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
-      "expect": "L1_WARN_OR_L2_REVIEW",
-      "mutation": "render a prose convention as a mechanically enforced invariant"
+      "expect": "S1_WARN_OR_S2_REVIEW",
+      "mutation": "promote L1 prose convention or incomplete L2 evidence into a mechanically enforced P1 invariant"
     },
     {
       "id": "harmless-wording",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
-      "expect": "L0_OBSERVE",
-      "mutation": "retain a defined non-load-bearing example that does not affect Best Path reasoning"
+      "expect": "S0_OBSERVE",
+      "mutation": "retain a defined non-load-bearing example that does not affect P2 Best Path reasoning"
     }
   ]
 }
