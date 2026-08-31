@@ -67,7 +67,8 @@ tests/
   planted repository-level falsifiers
 
 .github/workflows/
-  read-only exact-head execution
+  verify: exact-head candidate self-test plus default-branch trusted validators
+  land: receipt-bound exact-head merge and Issue closure
 ```
 
 ## Admission State Machine
