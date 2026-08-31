@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "skill": "control-code-intel",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/control-code-intel/source-lock.json",
+    "sha256": "4ea7b8415d13ac835fcb3d46e4372c368eda2f00ec57f8157c85f19bb0c85fc3"
+  },
+  "subject_files": [
+    {
+      "path": "skills/control-code-intel/AGENTS.md",
+      "sha256": "a50c79e6456df79ae2b4a5a0c0e5f77eb9d82928cee8e046e70b6b1d6eb22103"
+    },
+    {
+      "path": "skills/control-code-intel/README.md",
+      "sha256": "ba8d83a8d10d62cfe72c277e43405edbec0ca3e8458d9714a204511d46c62e32"
+    },
+    {
+      "path": "skills/control-code-intel/SKILL.md",
+      "sha256": "a7ba60fe55f08e82bcb4b02ecb92107d67d97cf681f76c1a7841ff0b6f870fc4"
+    },
+    {
+      "path": "skills/control-code-intel/domain/code-intel-topology.json",
+      "sha256": "943cf7354edc537bd719d1831307154818b5d091b53b49980f1474429c5f7454"
+    },
+    {
+      "path": "skills/control-code-intel/evals/cases.json",
+      "sha256": "fa5fc4a57d674d0efa91cbde9e16b427379938182edf4f61e011ec1ab0710825"
+    },
+    {
+      "path": "skills/control-code-intel/receipts.json",
+      "sha256": "6706113597d86a8b903cb987554b52bf8cd99c71d6dd5e1a503e09d150e800f7"
+    },
+    {
+      "path": "skills/control-code-intel/references/README.md",
+      "sha256": "bb6d3ea2806f11888d64f6b10280ef57a09edd4f15737d7c0644fbd96196d32b"
+    },
+    {
+      "path": "skills/control-code-intel/references/portable-code-intel-policy.md",
+      "sha256": "e814eb74ae66af093ca1d12943aa56214911adba02c600a954887ac60d2470e4"
+    },
+    {
+      "path": "skills/control-code-intel/references/procedures.md",
+      "sha256": "e60e06fe45f41f1eca6b21da6cfb1c84e0337c5a3582d573c650d8d15c4ab881"
+    },
+    {
+      "path": "skills/control-code-intel/scripts/code_intel_driver.py",
+      "sha256": "a36cd4e3ca3978f543f80fa76b93a222a4ff48b05353aa209eb2cac231756c41"
+    },
+    {
+      "path": "skills/control-code-intel/scripts/gen_admission.py",
+      "sha256": "aa9961e94d9d8c50761f722d05dccf3b3c6b3a06df0cb342b4e99fc54d8541f7"
+    },
+    {
+      "path": "skills/control-code-intel/scripts/gen_source_lock.py",
+      "sha256": "9847a83cbea05584ef4e81b4379210bb8cef345bb8f8243f6d86130ca870ee8e"
+    },
+    {
+      "path": "skills/control-code-intel/scripts/validate_control_code_intel.py",
+      "sha256": "dfa86d2a6b6e29747acbecdb3984c5e6da4ec48a6205ccb7df3db6b179e45f93"
+    },
+    {
+      "path": "skills/control-code-intel/skill.json",
+      "sha256": "7371046a93ebed5a3294bac2be1df81d86e32dd81e56f8870a38c54a75ad86df"
+    },
+    {
+      "path": "skills/control-code-intel/tests/test_control_code_intel.py",
+      "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
+    }
+  ],
+  "skill_tree_sha256": "2915c68cdfb9f302228ac435d45a937609522af3203167fecf36bcc70a8f23de",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "control-code-intel-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "l2-driver-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-layer-file",
+      "state": "PASS"
+    },
+    {
+      "id": "unbacked-receipt-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "lancedb-admitted",
+      "state": "PASS"
+    },
+    {
+      "id": "driver-negative-control-defused",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

@@ -9,10 +9,12 @@
     "skills/AGENTS.md": [
       "skills/feature-map-engineering/AGENTS.md",
       "skills/control-noodle/AGENTS.md",
-      "skills/spatial-loop-grounded/AGENTS.md"
+      "skills/spatial-loop-grounded/AGENTS.md",
+      "skills/control-code-intel/AGENTS.md"
     ],
     "skills/feature-map-engineering/AGENTS.md": [],
     "skills/control-noodle/AGENTS.md": [],
-    "skills/spatial-loop-grounded/AGENTS.md": []
+    "skills/spatial-loop-grounded/AGENTS.md": [],
+    "skills/control-code-intel/AGENTS.md": []
   }
 }

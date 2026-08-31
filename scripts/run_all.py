@@ -44,6 +44,17 @@ def main() -> int:
         "test_*.py",
         "-v",
     )
+    run("skills/control-code-intel/scripts/validate_control_code_intel.py")
+    run(
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "skills/control-code-intel/tests",
+        "-p",
+        "test_*.py",
+        "-v",
+    )
     run(
         "-m",
         "unittest",

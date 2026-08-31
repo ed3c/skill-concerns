@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "control-code-intel-positive", "control": "positive", "expected": "PASS"},
+    {"id": "l2-driver-selftest", "control": "positive", "expected": "PASS"},
+    {"id": "missing-layer-file", "control": "mutation", "expected": "FAIL"},
+    {"id": "unbacked-receipt-removed", "control": "evidence-promotion", "expected": "FAIL"},
+    {"id": "lancedb-admitted", "control": "boundary", "expected": "FAIL"},
+    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL"}
+  ],
+  "runner": "python3 -m unittest discover -s skills/control-code-intel/tests",
+  "hillclimb": "edits may add tools+receipts; weakening the three-layer structure, admitting an unbacked tool, or defusing a driver negative control fails closed"
+}

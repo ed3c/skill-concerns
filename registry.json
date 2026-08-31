@@ -39,6 +39,16 @@
       "source_lock": "intake/spatial-loop-grounded/source-lock.json",
       "admission": "admissions/spatial-loop-grounded.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "control-code-intel",
+      "path": "skills/control-code-intel",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/control-code-intel/skill.json",
+      "source_lock": "intake/control-code-intel/source-lock.json",
+      "admission": "admissions/control-code-intel.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }
