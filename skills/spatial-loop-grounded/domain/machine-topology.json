@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "note": "L1 domain knowledge: the machine primitives the grounded clauses' receipts depend on, each self-defined (what it is, who owns it, what it writes). An agent may rely only on primitives defined here, never on undocumented organizational knowledge.",
+  "environments": {
+    "repository-machine": "agent-driven repository machine of the ed3c/noodles class: issue-contract ceremony, trusted verify, mechanical landing",
+    "host-scheduler": "the host's job launcher and its jobs (second environment class; carries the C11 receipt)"
+  },
+  "primitives": {
+    "trusted-verifier": {
+      "what": "CI job that runs the default branch's tests against the candidate as data; its success event is the only trigger for landing",
+      "owner": "default-branch workflow definitions",
+      "writes": "check conclusions on the candidate head",
+      "evidence": ["terminal-readback"]
+    },
+    "landing-authority": {
+      "what": "workflow that performs the exact-head merge and issue closure on verify success; agents and monitors never merge",
+      "owner": "repository machine (app identity)",
+      "writes": "merge commits, issue state, anchor comments",
+      "evidence": ["premature-sweep"]
+    },
+    "landing-train": {
+      "what": "mechanical rebaser that serves the oldest open landable head that is behind the default branch; textual replay only, conflicts fail back to the owner",
+      "owner": "landing workflow post-merge step",
+      "writes": "force-with-lease pushes of rebased heads",
+      "evidence": ["train-starvation"]
+    },
+    "state-marker": {
+      "what": "issue-body contract field over {ready, in_progress, awaiting_land, landed, blocked}; awaiting_land means mechanically landable, nothing softer",
+      "owner": "ceremony (agents flip it only at defined transitions)",
+      "writes": "issue body marker",
+      "evidence": ["train-starvation"]
+    },
+    "quarantine-blocker": {
+      "what": "receipt naming an observed death pattern and explicit unblock conditions, parked on the failing target so the fleet routes around it",
+      "owner": "the supervising role that observed the repeats",
+      "writes": "blocker receipt on the target",
+      "evidence": ["poison-pill"]
+    },
+    "salvage-ref": {
+      "what": "durable ref the bytes are pushed to before any reset or delete, so no live work can be destroyed by teardown",
+      "owner": "the actor performing teardown",
+      "writes": "one named ref",
+      "evidence": ["salvage-heal"]
+    },
+    "map-revision-atom": {
+      "what": "admission-data catch-up change that lets in-flight candidates satisfy a newly landed gate; the gate itself never rolls back and candidates never widen the surface they are judged against",
+      "owner": "whoever owns the admission data",
+      "writes": "admission map only",
+      "evidence": ["map-revision-protocol"]
+    },
+    "completion-notification": {
+      "what": "the harness-owned signal that a dispatched background run has ended; the only death certificate such a run has",
+      "owner": "dispatch harness",
+      "writes": "one notification per run",
+      "evidence": ["still-running-not-crashed"]
+    },
+    "exit-residue": {
+      "what": "a launcher's displayed last-exit status; describes one past run of the job and may survive a later successful run",
+      "owner": "host scheduler",
+      "writes": "status column only",
+      "evidence": ["exit-residue"]
+    }
+  }
+}

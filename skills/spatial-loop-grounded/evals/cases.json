@@ -6,8 +6,11 @@
     {"id": "trigger-form-degraded", "control": "mutation", "expected": "FAIL"},
     {"id": "evidence-unbound", "control": "evidence-promotion", "expected": "FAIL"},
     {"id": "receipt-without-refs", "control": "evidence-promotion", "expected": "FAIL"},
-    {"id": "provenance-erased", "control": "boundary", "expected": "FAIL"}
+    {"id": "provenance-erased", "control": "boundary", "expected": "FAIL"},
+    {"id": "topology-removed", "control": "mutation", "expected": "FAIL"},
+    {"id": "kernel-dropped", "control": "mutation", "expected": "FAIL"},
+    {"id": "host-ref-empty", "control": "evidence-promotion", "expected": "FAIL"}
   ],
   "runner": "python3 -m unittest discover -s skills/spatial-loop-grounded/tests",
-  "hillclimb": "edits may add clauses and receipts; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, or erases upstream provenance fails closed"
+  "hillclimb": "edits may add clauses, receipts, kernels, and topology primitives; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, breaks the kernel/clause count tie, drops a layer file, or erases upstream provenance fails closed"
 }

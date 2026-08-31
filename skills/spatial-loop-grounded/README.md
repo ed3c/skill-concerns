@@ -3,10 +3,20 @@
 The environment-evidenced subset of `skills-shared/skills/spatial-loop-systems-engineering`.
 
 Upstream owns the method (registry status: method ownership only, live receipts
-environment-owned). This skill owns the eight clauses that survived physical
-contact in the ed3c/noodles machine session of 2026-08-30/31, each bound to
-exact provider receipts in `receipts.json` and guarded by hollow-mutation
-evals (`evals/cases.json`, run via `tests/`).
+environment-owned). This skill owns the eleven clauses that survived physical
+contact — the ed3c/noodles machine sessions of 2026-08-30/31 plus one
+host-scheduler receipt (a second environment class) — each bound to exact
+receipts in `receipts.json` and guarded by hollow-mutation evals
+(`evals/cases.json`, run via `tests/`).
+
+Three skill-concern layers, one method (distinct from the Compilation stages
+C0/C1/C2 and from Shadow severity S0/S1/S2 — never mix the namespaces):
+- L0 procedural: `references/portable-supervision-kernel.md` (domain-free clause kernels, count-tied to the clauses).
+- L1 domain knowledge: `domain/machine-topology.json` (self-defined machine primitives with owners and receipts).
+- L2 execution + assertions: `scripts/validate_spatial_loop_grounded.py` + the behavioral eval campaigns under `evals/`.
+
+Roles: BUILD executes under the clauses; SHADOW supervises reader-only per C1
+with severities S0 observe / S1 warn / S2 review.
 
 Receipt chain: clause → `receipts.json` → PR physical-receipt-anchor comment
 → Drive-held manifest (sha256-bound) → host-archived session bytes.

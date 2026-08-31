@@ -58,6 +58,22 @@
     "stale-rerun-guard": {
       "refs": ["ed3c/noodles#217"],
       "claim": "rerunning a stale run cancels the live head's run under per-PR concurrency; assert run.headSha == branch tip before any rerun"
+    },
+    "monitor-efficacy": {
+      "refs": ["ed3c/noodles#243", "ed3c/noodles#244"],
+      "claim": "two reader-only monitors at the implement->land boundary surfaced a missing planted control (disjoint-boundary lane) and a false-positive oracle (promotion-seam lane); both fixed by the land role before merge; the monitors wrote nothing anywhere"
+    },
+    "train-starvation": {
+      "refs": ["ed3c/noodles#245"],
+      "claim": "the oldest-behind landing-train head rebased clean but kept a red verify; after every land it went behind and was re-selected, starving newer ready PRs; freed by honest blocked-park of the head issues, with the selection-rule cure filed as its own atom"
+    },
+    "still-running-not-crashed": {
+      "refs": ["ed3c/noodles#243", "ed3c/noodles#244"],
+      "claim": "a monitored dispatch run was misdiagnosed as crashed from artifact/process absence while still running; manual PRs raced its land agents; lease + patch-id dedup converged and the monitor-improved commits landed on top of the manual rebase"
+    },
+    "exit-residue": {
+      "refs": ["host:~/.noodles-ops/backups/backup-noodles.log", "host:launchctl-list:com.neon.noodles-backup"],
+      "claim": "the launcher listed exit 1 for the nightly backup job while the job's log ended with the full-success line and both snapshot layers read back complete (local daily + external replicate); the residue came from an earlier superseded attempt - a second, non-repository environment"
     }
   }
 }
