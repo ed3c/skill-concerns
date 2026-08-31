@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "skill": "control-backup",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/control-backup/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/control-backup/SOURCE_PROPOSAL.md",
+      "sha256": "96845b45765b5338090e188f6fe44cb9ef4de0e2bfad98d304f76a3e51afd43b"
+    }
+  ],
+  "method_references": []
+}
