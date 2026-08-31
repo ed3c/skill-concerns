@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import sys
 import unittest
+from pathlib import Path
 
-from skills.agent_friendly_architecture_compiler.scripts.validate_rendered_contract import validate
+# The skill directory name is hyphenated, so a package import can never
+# resolve; load the validator by path like every other admitted skill's tests.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+
+from validate_rendered_contract import validate  # noqa: E402
 
 
 GOOD = """
