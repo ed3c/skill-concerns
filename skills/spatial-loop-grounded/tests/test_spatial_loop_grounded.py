@@ -198,7 +198,9 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
             any("shrink" in e for e in check_prefix_preserved(committed, committed[:-1])),
         )
 
-        rewritten = [dict(committed[0], gaps=["laundered"])]
+        # same length as committed so the byte-compare branch is exercised
+        # regardless of how many waves the ledger has accumulated
+        rewritten = [dict(committed[0], gaps=["laundered"])] + committed[1:]
         errors = check_prefix_preserved(committed, rewritten)
         self.assertTrue(any("laundering" in e for e in errors), errors)
 
