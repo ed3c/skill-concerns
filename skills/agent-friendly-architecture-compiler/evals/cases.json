@@ -8,9 +8,9 @@
       "expect": "PASS",
       "assertions": [
         "L0 procedure remains domain-independent",
-        "L1 source-domain knowledge does not leak unexplained black boxes into P1",
-        "L2 execution/evidence does not become universal semantics",
-        "consumer can infer P2 Best Path without source-framework knowledge"
+        "L1 source-domain knowledge does not leak unexplained black boxes into C1",
+        "L2 execution/evidence does not become universal C0 semantics",
+        "consumer can infer C2 Best Path without source-framework knowledge"
       ]
     },
     {
@@ -19,8 +19,8 @@
       "roles": ["BUILD", "SHADOW"],
       "expect": "PASS",
       "assertions": [
-        "load-bearing L1 primitives may survive into P1 only when defined in-place",
-        "P2 Best Path is inferable without undocumented organizational knowledge"
+        "load-bearing L1 primitives may survive into C1 only when defined in-place",
+        "C2 Best Path is inferable without undocumented organizational knowledge"
       ]
     },
     {
@@ -28,35 +28,42 @@
       "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
       "roles": ["SHADOW"],
       "expect": "S2_REVIEW",
-      "mutation": "inject unexplained source control-plane vocabulary into P1"
+      "mutation": "inject unexplained source control-plane vocabulary into C1"
     },
     {
       "id": "domain-rich-hidden-primitive",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
       "expect": "S2_REVIEW",
-      "mutation": "retain a Best-Path-critical L1 domain noun in P1 without defining its owner, responsibility, constraints, or decision consequence"
+      "mutation": "retain a Best-Path-critical L1 domain noun in C1 without defining its owner, responsibility, constraints, or decision consequence"
     },
     {
       "id": "semantic-loss-shortest-path",
       "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
       "roles": ["SHADOW"],
       "expect": "S2_REVIEW",
-      "mutation": "remove the distinction between shortest compiling path and shortest architecture-preserving verifiable path"
+      "mutation": "remove the distinction between shortest compiling path and shortest architecture-preserving verifiable C2 path"
     },
     {
       "id": "authority-laundering",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
       "expect": "S1_WARN_OR_S2_REVIEW",
-      "mutation": "promote L1 prose convention or incomplete L2 evidence into a mechanically enforced P1 invariant"
+      "mutation": "promote L1 prose convention or incomplete L2 evidence into a mechanically enforced C1 invariant"
     },
     {
       "id": "harmless-wording",
       "skill_mode": "DOMAIN_RICH",
       "roles": ["SHADOW"],
       "expect": "S0_OBSERVE",
-      "mutation": "retain a defined non-load-bearing example that does not affect P2 Best Path reasoning"
+      "mutation": "retain a defined non-load-bearing example that does not affect C2 Best Path reasoning"
+    },
+    {
+      "id": "namespace-collision",
+      "skill_mode": "PROCEDURE_RICH_DOMAIN_DECOUPLED",
+      "roles": ["SHADOW"],
+      "expect": "S1_WARN_OR_S2_REVIEW",
+      "mutation": "rename compilation stages to P0/P1/P2, creating ambiguity with priority or P/L/R/N evidence vocabulary"
     }
   ]
 }
