@@ -7,7 +7,7 @@ import argparse
 import ast
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Iterable
 
 from common import REPO_ROOT, load_json, print_result, safe_repo_path
 
@@ -29,6 +29,60 @@ REQUIRED_MANIFEST_KEYS = {
 }
 REQUIRED_FILES = {"AGENTS.md", "README.md", "SKILL.md", "skill.json"}
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+# The maintain loop's two halves (ed3c/skill-concerns#62): BUILD is the half
+# allowed to propose edits, SHADOW is reader-only and reports at severities
+# S0/S1/S2. A skill that names either half is making a claim about who may
+# write during its own operation, so both halves, the reader-only clause, and
+# the severities must be on the page rather than assumed by the reader.
+# `\bSHADOW\b` deliberately does not match `MODULE_NAME_SHADOWED`.
+ROLE_CLAIM = re.compile(r"\b(?:BUILD|SHADOW)\b")
+ROLE_DECLARATION_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
+ROLE_DOCUMENTS = ("SKILL.md", "README.md")
+
+
+def roles_block(text: str) -> str | None:
+    """The paragraph opened by a `Roles:` line, or None when there is none.
+
+    Paragraph-scoped rather than whole-document: a document-wide token search
+    would be satisfied by `BUILD` in one section and `S1` in an unrelated one,
+    which is not a declaration of anything.
+    """
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if "Roles:" not in line:
+            continue
+        block = [line]
+        for following in lines[index + 1 :]:
+            if not following.strip():
+                break
+            block.append(following)
+        return "\n".join(block)
+    return None
+
+
+def scan_role_declarations(
+    name: str, skill_root: Path, documents: Iterable[str] = ROLE_DOCUMENTS
+) -> list[str]:
+    """A skill claiming BUILD or SHADOW must declare both, in one Roles block."""
+    errors: list[str] = []
+    for relative in documents:
+        path = skill_root / relative
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if not ROLE_CLAIM.search(text):
+            continue
+        block = roles_block(text)
+        if block is None:
+            errors.append(f"SKILL_ROLES_DECLARATION_ABSENT:{name}:{relative}")
+            continue
+        missing = [token for token in ROLE_DECLARATION_TOKENS if token not in block]
+        if missing:
+            errors.append(
+                f"SKILL_ROLES_DECLARATION_INCOMPLETE:{name}:{relative}:{','.join(missing)}"
+            )
+    return errors
 
 
 def parse_skill_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
@@ -252,6 +306,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
 
         frontmatter, frontmatter_errors = parse_skill_frontmatter(skill_root / "SKILL.md")
         errors.extend(frontmatter_errors)
+        errors.extend(scan_role_declarations(name, skill_root))
         if frontmatter.get("name") != name:
             errors.append(
                 f"SKILL_FRONTMATTER_NAME_MISMATCH:{name}:{frontmatter.get('name')}"

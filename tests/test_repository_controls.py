@@ -167,6 +167,41 @@ class RepositoryControlTests(unittest.TestCase):
                 errors,
             )
 
+    def test_roles_claim_without_a_declaration_fails(self) -> None:
+        # ed3c/skill-concerns#62 goal 3. BUILD/SHADOW were prose: a skill could
+        # name either role and never say what that role is bound to. These are
+        # the planted fixtures behind the two diagnostics - a doc that claims a
+        # role with no `Roles:` block at all, and a block that names both roles
+        # but drops the reader-only clause and the S0/S1/S2 severities.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "SKILL.md").write_text(
+                "# demo\n\nThe SHADOW agent watches the run.\n", encoding="utf-8"
+            )
+            (skill_root / "README.md").write_text(
+                "# demo\n\nRoles: BUILD executes; SHADOW supervises.\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                [
+                    "SKILL_ROLES_DECLARATION_ABSENT:demo:SKILL.md",
+                    "SKILL_ROLES_DECLARATION_INCOMPLETE:demo:README.md:reader-only,S0,S1,S2",
+                ],
+                check_skill_bundles.scan_role_declarations("demo", skill_root),
+            )
+
+    def test_roles_scan_is_silent_on_a_skill_that_claims_no_role(self) -> None:
+        # Positive control: the check must not demand a roles block from every
+        # skill, only from one that claims a role. `MODULE_NAME_SHADOWED` is a
+        # diagnostic id, not a role claim, and must not trip the word match.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "SKILL.md").write_text(
+                "# demo\n\nRefuses on MODULE_NAME_SHADOWED.\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                [], check_skill_bundles.scan_role_declarations("demo", skill_root)
+            )
+
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))
 

@@ -166,6 +166,20 @@ The sweep re-runs each Skill's own `run_all.SKILL_CHECKS` row and the three repo
 
 The sweep is **N-class: it gates nothing.** No admission, stamp, or CI path reads its exit code or its report, and `tests/test_maintain_skills.py::test_sweep_gates_nothing` reds if one ever starts. Its own falsifier is `python3 scripts/maintain_skills.py --selftest`: planted drift must be detected, filed with a destination, and left unfixed.
 
+### The BUILD/SHADOW split
+
+The maintain loop has two halves and only one of them may write. **SHADOW** is the default pass and has no write verb at all; it proves it stayed a reader by digesting the edit scope before and after, and a pass whose digest moved refuses its own report (`EDIT_SCOPE_VIOLATION`, `blocked`) rather than publishing findings read off a tree something mutated underneath it.
+
+**BUILD** is `python3 scripts/maintain_skills.py --pass <skill>` and may only PROPOSE: it creates `maintain/<skill>-<stamp>`, regenerates corrections through the subject Skill's own `scripts/gen_*.py` producers (never by hand — spatial-loop-grounded C5), commits them there, and returns the checkout to the base branch with its head sha re-read and asserted unchanged. Writes may land only under `skills/<skill>/`; the guard is `git status --porcelain -uall` after every producer, so one out-of-scope path refuses the whole producer, restores the tree, and blocks the pass. Producers whose output is a repository artifact by contract (`gen_admission.py` → `admissions/`, `gen_source_lock.py` → `intake/`) are excluded rather than refused every run. Both halves carry planted negatives in `--selftest`: a repository gate that writes into `skills/`, and a producer that writes into `policy/`.
+
+Any correction BUILD proposes still lands through the ordinary change procedure below. A proposal is not a landing.
+
+### Adjudications carried here as bytes (ed3c/skill-concerns#59)
+
+- **Runtime/ceremony boundary.** A supervising reader owns RUNTIME liveness of the sessions it watches — session write age, spawn surface, death signatures, falsely-dead versus dead shapes. CEREMONY correctness — receipt verbatim discipline, marker-transition legality, handoff — stays with the Skill that owns that ceremony. Same lane, two lenses. Entries covering another Skill's ceremony must POINT at it, never restate it; a restated copy is the drift the split exists to prevent.
+- **Filing-not-reflex coupling.** An observation-time finding never auto-invokes a maintain pass. Findings are mechanically FILED at a strict destination with a named owner, and the daily cadence consumes them on its own schedule — admitted means auto-enrolled. An auto-maintain path would let a reader rewrite its own lens until a finding disappears: self-laundering, the exact write path the reader-only contract forbids. Most observation findings concern the OBSERVED system anyway and are out of maintain's edit scope by its own contract; only lens-drift findings are maintain territory.
+- **Trigger-not-apply exception.** When a driver's own selftest goes red mid-observation — the lens is provably broken now — the observation report auto-degrades itself to lens-suspect and one immediate maintain pass is SCHEDULED. That pass still lands through the full PR and gate ceremony, never an inline edit. Trigger automation is admitted because it keeps every gate; application automation is not.
+
 ## Change procedure
 
 1. Bind one issue and one branch.

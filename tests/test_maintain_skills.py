@@ -100,6 +100,37 @@ class MaintainSkillsTests(unittest.TestCase):
             f"results={results}",
         )
 
+    def test_the_write_verb_is_opt_in_and_the_cadence_never_takes_it(self) -> None:
+        """SHADOW is the default; BUILD is reachable only through `--pass`.
+
+        ed3c/skill-concerns#62 goal 1. The daily launchd row is the one
+        invocation nobody watches, so it is the one that must never carry the
+        half with a write verb. `mode` in the report says which half ran
+        rather than leaving a reader to infer it from what did not happen.
+        """
+        self.assertNotIn("--pass", plistlib.loads(PLIST.read_bytes())["ProgramArguments"])
+        report = maintain_skills.sweep(ROOT, run_skill_checks=False, online=False)
+        self.assertEqual("shadow", report["mode"])
+        self.assertTrue(report["edit_scope"]["held"], report["edit_scope"])
+
+    def test_maintain_docs_carry_the_sc59_adjudications(self) -> None:
+        """ed3c/skill-concerns#62 goal 4: adjudications live as tree bytes.
+
+        Three owner rulings were reachable only as comments on
+        ed3c/skill-concerns#59 - a destination no gate reads and no clone
+        carries. This is the mechanical reader that keeps them here: delete
+        a ruling from AGENTS.md and this reds.
+        """
+        text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("ed3c/skill-concerns#59", text)
+        for adjudication in (
+            "Runtime/ceremony boundary",
+            "Filing-not-reflex coupling",
+            "Trigger-not-apply exception",
+        ):
+            with self.subTest(adjudication=adjudication):
+                self.assertIn(adjudication, text)
+
     def test_launchd_plist_drives_this_sweep(self) -> None:
         """The cadence owner must name a script that exists in this tree."""
         plist = plistlib.loads(PLIST.read_bytes())
