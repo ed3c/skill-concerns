@@ -90,8 +90,6 @@ class BootstrapAdmissionTests(unittest.TestCase):
     def authorize(self, path: Path, skill: str, digest: str, **overrides: object) -> Path:
         entry: dict[str, object] = {
             "skill": skill,
-            "refs": "ed3c/skill-concerns#72",
-            "authorized_head": "0" * 40,
             "skill_tree_sha256": digest,
             "checks": [list(argv) for argv in SKILL_CHECKS.get(skill, ())],
         }
@@ -211,7 +209,11 @@ class BootstrapAdmissionTests(unittest.TestCase):
             "BOOTSTRAP_ENTRY_ARGV_FOREIGN": {
                 "checks": [["skills/some-other-skill/scripts/validate.py"]]
             },
-            "BOOTSTRAP_ENTRY_REFS_INVALID": {"refs": "trust me"},
+            # A prefix that a `..` can walk out of authorizes anything in the
+            # tree while reading as this Skill's own checks.
+            "BOOTSTRAP_ENTRY_ARGV_UNNORMALIZED": {
+                "checks": [[f"skills/{SUBJECT}/../../scripts/run_all.py"]]
+            },
         }
         for diagnostic, override in planted.items():
             with self.subTest(diagnostic=diagnostic):
@@ -230,11 +232,25 @@ class BootstrapAdmissionTests(unittest.TestCase):
                         admission_stamp.bootstrap_checks(SUBJECT, root)
                 self.assertIn("BOOTSTRAP_FILE_REJECTED", str(refusal.exception))
 
+    def bootstrap_errors(self, root: Path) -> list[str]:
+        """This mechanism's own diagnostics only, out of the whole gate's output.
+
+        Every control here plants its subject into a copy of the live tree, so
+        reading the gate's full output would couple them to every unrelated
+        admission defect in the repository. `run_all.py` runs
+        `check_admissions.py` whole; these controls own one mechanism.
+        """
+        return [
+            error
+            for error in check_admissions.check(root)
+            if error.startswith("BOOTSTRAP_")
+        ]
+
     def test_a_pending_entry_is_green_while_its_skill_is_absent(self) -> None:
         """The state `main` sits in between the two landings."""
         root = self.scratch_copy()
         self.plant_pending(root)
-        self.assertEqual([], check_admissions.check(root))
+        self.assertEqual([], self.bootstrap_errors(root))
         self.assertNotIn(
             PLANTED, SKILL_CHECKS, "a pending entry is not a landed row"
         )
@@ -247,14 +263,14 @@ class BootstrapAdmissionTests(unittest.TestCase):
         (root / "skills" / PLANTED).mkdir()
         self.assertIn(
             f"BOOTSTRAP_ENTRY_STALE:{PLANTED}",
-            check_admissions.check(root),
+            self.bootstrap_errors(root),
             "an authorization left standing after its Skill landed",
         )
 
         (root / ALLOWLIST).unlink()
         self.assertEqual(
             [],
-            check_admissions.check(root),
+            self.bootstrap_errors(root),
             "retiring the entry is what makes the landed tree green",
         )
 
@@ -265,6 +281,11 @@ class BootstrapAdmissionTests(unittest.TestCase):
         arrived, and must not duplicate a landed `SKILL_CHECKS` row -- the
         three properties that distinguish an authorization still owed from one
         already spent. An empty allowlist satisfies all three honestly.
+
+        Only this mechanism's own diagnostics are read out of the live tree.
+        Asserting the whole of `check_admissions.check(ROOT)` would red this
+        control for any unrelated admission defect anywhere in the repository,
+        which `run_all.py` already runs `check_admissions.py` to catch.
         """
         entries, errors = admission_stamp.bootstrap_entries(admission_stamp.BOOTSTRAP)
         self.assertEqual([], errors)
@@ -272,7 +293,7 @@ class BootstrapAdmissionTests(unittest.TestCase):
             with self.subTest(skill=skill):
                 self.assertFalse((ROOT / "skills" / skill).exists())
                 self.assertNotIn(skill, SKILL_CHECKS)
-        self.assertEqual([], check_admissions.check(ROOT))
+        self.assertEqual([], self.bootstrap_errors(ROOT))
 
 
 if __name__ == "__main__":

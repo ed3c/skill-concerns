@@ -43,12 +43,11 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-import re
+import posixpath
 import subprocess
 import sys
 
 from common import (
-    HEX40,
     HEX64,
     REPO_ROOT,
     digest_entries,
@@ -90,8 +89,13 @@ REFUSAL = "ADMISSION_STAMP_REFUSED"
 # `BOOTSTRAP_ENTRY_STALE` on any entry whose skill directory exists in the same
 # tree, so the commit that lands the skill must also delete its entry and no
 # authorization can outlive the admission it was written for.
+#
+# An entry carries only fields some process resolves: the digest, and the argv.
+# `authorized_head` and `refs` were validated here too and nothing ever read
+# either -- a documented pin no process resolves is the failure mode this
+# repository admits skills to detect, so they are gone rather than commented.
+# The commit that adds an entry is its provenance; `git log` resolves that.
 BOOTSTRAP = REPO_ROOT / "policy" / "bootstrap-admissions.json"
-REFS = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[0-9]+$")
 
 # Mandatory control id -> the unittest id whose execution measures it, in the
 # order `check_admissions` expects the rows.
@@ -191,10 +195,6 @@ def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
         entries[skill] = row
         if not HEX64.fullmatch(str(row.get("skill_tree_sha256"))):
             errors.append(f"BOOTSTRAP_ENTRY_DIGEST_INVALID:{skill}")
-        if not HEX40.fullmatch(str(row.get("authorized_head"))):
-            errors.append(f"BOOTSTRAP_ENTRY_HEAD_INVALID:{skill}")
-        if not REFS.fullmatch(str(row.get("refs"))):
-            errors.append(f"BOOTSTRAP_ENTRY_REFS_INVALID:{skill}")
         checks = row.get("checks")
         if not isinstance(checks, list) or not checks:
             errors.append(f"BOOTSTRAP_ENTRY_CHECKS_EMPTY:{skill}")
@@ -206,6 +206,21 @@ def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
                 or any(not isinstance(part, str) or not part for part in argv)
             ):
                 errors.append(f"BOOTSTRAP_ENTRY_ARGV_INVALID:{skill}")
+                continue
+            # A prefix is only a binding when a path cannot lie about where it
+            # points: `skills/<skill>/../../scripts/anything.py` satisfies the
+            # test below while naming something else entirely. No part may be
+            # absolute or carry a spelling `normpath` would change, so the
+            # prefix and the resolved target are the same claim.
+            unnormalized = [
+                part
+                for part in argv
+                if part.startswith("/") or posixpath.normpath(part) != part
+            ]
+            if unnormalized:
+                errors.append(
+                    f"BOOTSTRAP_ENTRY_ARGV_UNNORMALIZED:{skill}:{unnormalized[0]}"
+                )
             # An entry may authorize running the incoming Skill's own checks and
             # nothing else. Argv that never names that Skill's tree is an
             # authorization for some other execution wearing this Skill's name.

@@ -134,7 +134,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `intake/<skill>/source-lock.json` | frozen source/proposal identity |
 | `scripts/run_all.py` | `SKILL_CHECKS`: the single declaration of each Skill's check argv, and the suite that runs it |
 | `scripts/admission_stamp.py` | the one stamp surface: re-runs a Skill's `run_all.SKILL_CHECKS` row and refuses to write a receipt when any of it is red |
-| `policy/bootstrap-admissions.json` | the trusted first-admission allowlist: which Skill's first-ever admission is authorized, the exact skill-tree digest and reviewed head it authorizes, and the check argv to execute against it |
+| `policy/bootstrap-admissions.json` | the trusted first-admission allowlist: which Skill's first-ever admission is authorized, the exact skill-tree digest it authorizes, and the check argv to execute against it — both fields are resolved by `admission_stamp.bootstrap_checks`, and an entry carries nothing else |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | `policy/upstream-pins.json` | the upstream facts this repository's method rests on: the canonical pstack commit, the requirement that it stay reachable from that repository's branch, and the files to re-read when the branch moves |
 | GitHub Actions run | execution arrival for one checked-out commit |
@@ -189,7 +189,7 @@ The checks that grade a candidate are declared on the trusted side, so a candida
 
 A first admission is therefore **two landings, in this order**:
 
-1. A reviewed atom lands one entry in `policy/bootstrap-admissions.json` naming the incoming Skill, the sha256 of the exact skill tree it authorizes, the reviewed head that tree came from, and the check argv to run. `main` is green with the entry present and the Skill directory still absent; nothing executes until a tree with those exact bytes arrives.
+1. A reviewed atom lands one entry in `policy/bootstrap-admissions.json` naming the incoming Skill, the sha256 of the exact skill tree it authorizes, and the check argv to run. `main` is green with the entry present and the Skill directory still absent; nothing executes until a tree with those exact bytes arrives. An entry carries no field that nothing resolves — the reviewed head and the issue it came from are the landing commit's to record, and `git log` is what reads them back.
 2. The Skill's own PR lands the bundle, its permanent `SKILL_CHECKS` row, and **the deletion of its bootstrap entry** in the same commit.
 
 The entry is spent by step 2, not merely superseded by it: `check_admissions.py` reds with `BOOTSTRAP_ENTRY_STALE` on any entry whose Skill directory exists in the same tree, so an authorization cannot outlive the admission it was written for. It never widens anything else — a Skill that already owns a `SKILL_CHECKS` row is graded by that row and never reads the allowlist, bytes that differ from the authorized digest are refused before they execute, and no entry falls through to the same `NO_DECLARED_CHECKS` refusal an unknown Skill has always had.
