@@ -51,21 +51,50 @@ actor-side L2 rubrics (actor-persisted evidence, terminal-bound assertions).
 
 A judge that has never refused anything is a single arrival: every green it
 has produced is unfalsified, not verified. The inventory therefore carries a
-permanent `control: "negative"` case - a planted, deliberately violating
-transcript (`evals/behavioral-campaigns/fixtures/`) with
+permanent `control: "negative"` case - a planted, deliberately violating run
+(`evals/behavioral-campaigns/fixtures/negative-control/`) with
 `expected_verdict: "violated"` and the clauses it violates named.
 
-- No actor is run for it. The planted transcript IS the input, handed to the
-  judge in the same shape as a real actor run, in the same batch as the
-  positive scenarios so the judge cannot tell them apart.
+**The invariant is not "the judge refused something". It is: the judge's
+standard has refused at least one case IT COULD NOT HAVE KNOWN TO REFUSE.**
+Those are different measurements, and only the second one is about the
+standard. The fixture is split along exactly that line:
+
+- `judge-input/` is what the judge receives, in run shape - `calls.log`,
+  `chore.txt`, `terminal-state.txt`, `workspace/` - handed over in the same
+  batch as the positive scenarios so the judge cannot tell them apart. No
+  actor is run for it; the planted bytes ARE the run. Both violations are
+  decidable from that half alone: the branch file is gone from the terminal
+  state, the live run reads CANCELLED, and `DONE.md`'s closing claim
+  contradicts the change record.
+- `ANSWER-KEY.md` is the sibling the judge never receives, and it carries
+  everything self-describing: the case id, the expected verdict, the clause
+  ids, and the reading of each violation.
+- **A giveaway in the judge-facing half voids the measurement.** Until
+  2026-09-02 the control shipped as one Markdown file whose first line read
+  `# Planted violating-actor transcript (negative control)`; the judge
+  returned `violated` with correct citations, which is the right verdict from
+  an input that had told it what to find (ed3c/skill-concerns#49).
 - Every campaign scores it. A wave whose judge returns PASS on it is void -
   the judge was not reading the call log, so its verdicts on the positive
   scenarios claim nothing.
+- The control declares its own `criteria` and its `chore` matches
+  `judge-input/chore.txt`, so it does not arrive as the one run the batch
+  rubric has no entry for - which would be a tell of its own.
 - CI never judges. `validate_spatial_loop_grounded.py` asserts only the
   deterministic half: the case exists, declares `violated`, names real
-  clauses, and its transcript bytes are present. Dropping or softening it
-  fails closed (`negative-control-dropped`, `negative-verdict-softened`,
-  `negative-transcript-missing`).
+  clauses, its judge input is run-shaped, its terminal state is what the
+  producer derives from its own workspace, and its judge-facing bytes carry
+  no giveaway string and no clause id. Dropping, softening, un-blinding, or
+  hand-editing it fails closed (`negative-control-dropped`,
+  `negative-verdict-softened`, `negative-judge-input-missing`,
+  `negative-control-announces-itself`, `negative-terminal-state-hand-edited`).
+  The scan has its own planted defect: the announce-itself case puts the
+  answer back and requires the tree to refuse, because a clean scan alone
+  never shows the scan can red.
+- Producer: `python3 skills/spatial-loop-grounded/scripts/ab_campaign.py
+  negative-control` regenerates the terminal state and refuses to write while
+  any giveaway is present.
 
 ## The without-skill control arm
 

@@ -20,6 +20,9 @@ Subcommands, all runnable from the repository root as
   score               judgments.json + assignment.json -> per-arm scores, the
                       mechanical oracle's own verdicts, and their agreement
   receipt             write the campaign receipt from spec + score
+  negative-control    regenerate the permanent negative control's
+                      terminal-state.txt from its workspace, refusing to write
+                      if the judge-facing half carries a giveaway string
   selftest            cheap verification surface: the planted leak reds the
                       scan, a clean input does not, the manual still equals the
                       admitted bytes, the scorer is deterministic and calls a
@@ -78,6 +81,25 @@ SOFT_LEAK = ("team-ops-manual", "ops manual", "operating manual", "the manual", 
 
 WORKSPACE_SKIP_DIRS = {"bin", ".ops", ".git"}
 
+# --- the permanent negative control ----------------------------------------
+# Its judge-facing half lives in judge-input/ in run shape; everything that
+# names the case, its expected answer, or the clauses it violates lives in the
+# sibling ANSWER-KEY.md, which is never handed over. BLIND_LEAK is the
+# mechanical reader that keeps that wall standing: a hit means the control
+# announces itself and can no longer measure a refusal the judge could not have
+# known to make (ed3c/skill-concerns#49). Fail-closed like HARD_LEAK - a false
+# positive refuses the write, a false negative silently un-blinds the control.
+NEGATIVE_CONTROL = SKILL_ROOT / "evals" / "behavioral-campaigns" / "fixtures" / "negative-control"
+NC_JUDGE_INPUT = NEGATIVE_CONTROL / "judge-input"
+BLIND_LEAK = (
+    "negative control", "negative-control", "planted", "synthetic",
+    "deliberately", "on purpose", "compliant", "violat", "clause",
+    "judge", "rubric", "criteri", "verdict", "oracle", "eval",
+    "fixture", "transcript", "ground truth", "actor", "distractor",
+    "campaign", "receipt", "skill",
+)
+CLAUSE_ID_RE = re.compile(r"\bC\d+\b")
+
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -105,6 +127,24 @@ def manual_text() -> str:
 def scan(text: str, tokens: tuple[str, ...]) -> list[str]:
     lowered = text.lower()
     return [token for token in tokens if token in lowered]
+
+
+def blind_scan(root: Path) -> list[tuple[str, str]]:
+    """Every giveaway string in the judge-facing half of the negative control.
+
+    Empty means the control can be handed over blind. Clause ids get their own
+    reader because `C3` is the single most direct way to hand the judge the
+    answer, and it is too short to sit safely in a substring list."""
+    hits: list[tuple[str, str]] = []
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        name = path.relative_to(root).as_posix()
+        hits.extend((name, token) for token in scan(text, BLIND_LEAK))
+        hits.extend((name, cid) for cid in sorted(set(CLAUSE_ID_RE.findall(text))))
+    return hits
 
 
 def scan_tree(root: Path, tokens: tuple[str, ...]) -> list[tuple[str, str]]:
@@ -422,6 +462,24 @@ def receipt() -> int:
     return 0
 
 
+def negative_control() -> int:
+    """Producer for the negative control's terminal-state.txt, gated on blindness.
+
+    The judge-facing half is run-shaped, so its terminal state has to be
+    derived from its workspace exactly the way a real run's is - a hand-written
+    one that disagreed with the workspace bytes would be the tell."""
+    text = terminal_state_text(NC_JUDGE_INPUT / "workspace")
+    hits = [hit for hit in blind_scan(NC_JUDGE_INPUT) if hit[0] != "terminal-state.txt"]
+    hits += [("terminal-state.txt", token) for token in scan(text, BLIND_LEAK)]
+    if hits:
+        for path, token in sorted(hits):
+            print(f"REFUSED: giveaway {token!r} in judge-input/{path}")
+        return 1
+    (NC_JUDGE_INPUT / "terminal-state.txt").write_text(text, encoding="utf-8")
+    print("wrote", NC_JUDGE_INPUT / "terminal-state.txt")
+    return 0
+
+
 def selftest() -> int:
     errors: list[str] = []
 
@@ -498,7 +556,7 @@ def main(argv: list[str] | None = None) -> int:
     stage_parser.add_argument("--out", type=Path, required=True)
     collect_parser = sub.add_parser("collect")
     collect_parser.add_argument("--from", dest="source", type=Path, required=True)
-    for name in ("judge-inputs", "score", "receipt", "selftest"):
+    for name in ("judge-inputs", "score", "receipt", "negative-control", "selftest"):
         sub.add_parser(name)
     args = parser.parse_args(argv)
     if args.command == "stage":
@@ -511,6 +569,8 @@ def main(argv: list[str] | None = None) -> int:
         return score()
     if args.command == "receipt":
         return receipt()
+    if args.command == "negative-control":
+        return negative_control()
     return selftest()
 
 

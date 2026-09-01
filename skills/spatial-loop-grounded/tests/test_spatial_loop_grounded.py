@@ -6,7 +6,9 @@ FAIL the validator. This suite is the hillclimb gate for evals/cases.json.
 
 from __future__ import annotations
 
+import contextlib
 import inspect
+import io
 import json
 import re
 import shutil
@@ -130,17 +132,46 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         errors = validate(root)
         self.assertTrue(any("control:negative" in e for e in errors), errors)
 
-    def test_hollow_negative_transcript_missing_fails(self) -> None:
-        temp, root = mutated_copy()
-        self.addCleanup(temp.cleanup)
-        case = next(
+    def negative_case(self, root: Path) -> dict:
+        return next(
             s
             for s in json.loads((root / BEHAVIORAL).read_text(encoding="utf-8"))["scenarios"]
             if s.get("control") == "negative"
         )
-        (root / case["transcript"]).unlink()
+
+    def test_hollow_negative_judge_input_missing_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        shutil.rmtree(root / self.negative_case(root)["judge_input"])
         errors = validate(root)
-        self.assertTrue(any("transcript fixture missing" in e for e in errors), errors)
+        self.assertTrue(any("judge input missing" in e for e in errors), errors)
+
+    def test_hollow_negative_control_announces_itself_fails(self) -> None:
+        """The gate's own planted defect: put the answer back into the
+        judge-facing half and watch the tree refuse. Without this the blindness
+        claim would be prose - the committed fixture is clean, and a clean scan
+        alone never shows the scan can red."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        done = root / self.negative_case(root)["judge_input"] / "workspace" / "DONE.md"
+        done.write_text(
+            done.read_text(encoding="utf-8") + "\n(planted negative control: violates C3.)\n",
+            encoding="utf-8",
+        )
+        errors = validate(root)
+        self.assertTrue(any("announces itself" in e for e in errors), errors)
+        self.assertTrue(any("'C3'" in e for e in errors), errors)
+
+    def test_hollow_negative_terminal_state_hand_edited_fails(self) -> None:
+        """terminal-state.txt is produced from the workspace, never typed. A
+        hand-written one that disagreed with the bytes it describes would be
+        the tell that this run is not a run."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        state = root / self.negative_case(root)["judge_input"] / "terminal-state.txt"
+        state.write_text(state.read_text(encoding="utf-8").replace("bytes=", "bytes=9", 1), encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("disagrees with its own workspace" in e for e in errors), errors)
 
     def test_hollow_negative_expected_verdict_softened_fails(self) -> None:
         temp, root = mutated_copy()
@@ -305,6 +336,19 @@ class ABCampaign(unittest.TestCase):
 
     def test_selftest_passes(self) -> None:
         self.assertEqual(ab_campaign.selftest(), 0)
+
+    def test_negative_control_producer_reproduces_committed_bytes(self) -> None:
+        """The committed terminal state is what the producer writes, not what
+        someone typed. Runs the producer against the real tree: identical bytes
+        mean nothing moved, different bytes red here after regenerating."""
+        state = ab_campaign.NC_JUDGE_INPUT / "terminal-state.txt"
+        before = state.read_bytes()
+        # stdout is swallowed on purpose: tests/test_admission_stamp.py reads the
+        # runner's own output to prove the stamper refused, and a producer's
+        # "wrote ..." line here would answer that question for it.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ab_campaign.negative_control(), 0)
+        self.assertEqual(state.read_bytes(), before)
 
     def test_ab_control_arm_ledger_score_binds_to_the_receipt(self) -> None:
         """gen_ledger.py's ENTRIES are hand-written Python literals - by design
