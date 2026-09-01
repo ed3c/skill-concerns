@@ -24,6 +24,14 @@ is the default branch checkout. Only the subject scripts under `skills/` execute
 from the candidate, which is unavoidable -- they are what is being admitted --
 and they can only make the gate red, never green: a candidate `run_all.py` or
 `admission_stamp.py` is never imported or executed here.
+
+"Only make the gate red" also depends on read order, not just on which code
+runs: the candidate subprocesses `run_checks` launches have full write access
+to this same checked-out tree, `admission_path` included, for as long as they
+run. `reproduce()` reads `admission_path` before calling `run_checks`, so a
+candidate test that rewrites its own admission file at runtime is comparing
+against bytes already captured -- it cannot launder that write into the
+baseline it is being checked against.
 """
 
 from __future__ import annotations
@@ -37,13 +45,22 @@ from common import REPO_ROOT, load_json, print_result, safe_repo_path
 
 
 def reproduce(root: Path, name: str, admission_path: Path) -> list[str]:
-    """Re-run `name`'s checks and compare the receipt they imply to the bytes."""
+    """Re-run `name`'s checks and compare the receipt they imply to the bytes.
+
+    `actual` is read *before* `run_checks` executes anything. `run_checks`
+    launches the candidate's own subject scripts and test modules as
+    subprocesses with `cwd=root` -- full write access to this same tree,
+    `admission_path` included. Reading the comparison baseline after that
+    execution would let a candidate test's own runtime writes become the
+    thing this function compares against, making the check agree with
+    whatever the candidate just wrote rather than with what was committed.
+    """
+    actual = admission_path.read_text(encoding="utf-8")
     try:
         bound = run_checks(name, root)
     except StampRefused as exc:
         return [str(exc)]
     expected = json.dumps(build_receipt(name, root, bound), indent=2) + "\n"
-    actual = admission_path.read_text(encoding="utf-8")
     if actual == expected:
         return []
     # Name the field that differs; a bare byte mismatch is unactionable.

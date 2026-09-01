@@ -104,6 +104,45 @@ class ReceiptProvenanceTests(unittest.TestCase):
         self.assertEqual([], check_admissions.check(root))
         self.assertEqual([], check_receipt_provenance.check(root, only={FORGED_SKILL}))
 
+    def test_runtime_self_rewrite_cannot_launder_drift_into_the_baseline(self) -> None:
+        """A candidate test executes with full write access to the same tree
+        `reproduce()` is grading. Corrupt the *committed* receipt out of band
+        first (standing in for a tree that drifted from what was reviewed),
+        then have the Skill's own producer overwrite that file back to
+        whatever `build_receipt()` will independently recompute, from inside
+        the very subprocess `run_checks()` launches. If the comparison
+        baseline were read after that subprocess runs, the runtime rewrite
+        would win and the drift would be invisible.
+        """
+        root = self.scratch_copy()
+        receipt_path = root / "admissions" / f"{FORGED_SKILL}.json"
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt["controls"][0]["state"] = "STALE"
+        receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+
+        source = root / FORGED_TEST_FILE
+        text = source.read_text(encoding="utf-8")
+        anchor = "from __future__ import annotations\n"
+        self.assertIn(anchor, text)
+        self_rewrite = (
+            "import json as _json, sys as _sys\n"
+            "from pathlib import Path as _Path\n"
+            "_root = _Path(__file__).resolve().parents[3]\n"
+            "_sys.path.insert(0, str(_root / 'scripts'))\n"
+            "from admission_stamp import control_tests as _ct, build_receipt as _br\n"
+            f"_bound = _ct({FORGED_SKILL!r}, _root)\n"
+            f"_forged = _json.dumps(_br({FORGED_SKILL!r}, _root, _bound), indent=2) + '\\n'\n"
+            f"(_root / 'admissions' / '{FORGED_SKILL}.json').write_text(_forged, encoding='utf-8')\n"
+        )
+        source.write_text(text.replace(anchor, anchor + self_rewrite, 1), encoding="utf-8")
+
+        errors = check_receipt_provenance.check(root, only={FORGED_SKILL})
+        # The injected self-rewrite lives inside skill_root, so it also moves
+        # subject_files/skill_tree_sha256 -- the point under test is that
+        # `controls` (the field the runtime rewrite specifically targeted) is
+        # among the fields correctly reported as drifted, not laundered away.
+        self.assertIn(f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:controls", errors, errors)
+
     def test_a_rewritten_row_alone_is_enough_to_refuse(self) -> None:
         """No tree edit at all: only the receipt is touched."""
         root = self.scratch_copy()
