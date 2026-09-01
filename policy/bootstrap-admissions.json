@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "skill": "dynamic-workflow",
+      "refs": "ed3c/skill-concerns#59",
+      "authorized_head": "80951179b202d2f44d21a76f0efbdd676fa1410e",
+      "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
+      "checks": [
+        ["skills/dynamic-workflow/scripts/validate_dynamic_workflow.py"],
+        [
+          "-m",
+          "unittest",
+          "discover",
+          "-p",
+          "test_*.py",
+          "-v",
+          "-s",
+          "skills/dynamic-workflow/tests"
+        ]
+      ]
+    }
+  ]
+}

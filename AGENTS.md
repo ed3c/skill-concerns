@@ -134,6 +134,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `intake/<skill>/source-lock.json` | frozen source/proposal identity |
 | `scripts/run_all.py` | `SKILL_CHECKS`: the single declaration of each Skill's check argv, and the suite that runs it |
 | `scripts/admission_stamp.py` | the one stamp surface: re-runs a Skill's `run_all.SKILL_CHECKS` row and refuses to write a receipt when any of it is red |
+| `policy/bootstrap-admissions.json` | the trusted first-admission allowlist: which Skill's first-ever admission is authorized, the exact skill-tree digest and reviewed head it authorizes, and the check argv to execute against it |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | `policy/upstream-pins.json` | the upstream facts this repository's method rests on: the canonical pstack commit, the requirement that it stay reachable from that repository's branch, and the files to re-read when the branch moves |
 | GitHub Actions run | execution arrival for one checked-out commit |
@@ -182,9 +183,20 @@ Planted negatives keep all of this falsifiable in `--selftest`: a repository gat
 - **Filing-not-reflex coupling.** An observation-time finding never auto-invokes a maintain pass. Findings are mechanically FILED at a strict destination with a named owner, and the daily cadence consumes them on its own schedule — admitted means auto-enrolled. An auto-maintain path would let a reader rewrite its own lens until a finding disappears: self-laundering, the exact write path the reader-only contract forbids. Most observation findings concern the OBSERVED system anyway and are out of maintain's edit scope by its own contract; only lens-drift findings are maintain territory.
 - **Trigger-not-apply exception.** When a driver's own selftest goes red mid-observation — the lens is provably broken now — the observation report auto-degrades itself to lens-suspect and one immediate maintain pass is SCHEDULED. That pass still lands through the full PR and gate ceremony, never an inline edit. Trigger automation is admitted because it keeps every gate; application automation is not.
 
+### First-ever admission (ed3c/skill-concerns#72)
+
+The checks that grade a candidate are declared on the trusted side, so a candidate cannot vouch for itself — and so a Skill's *first* admission cannot happen at all: the commit that adds the Skill is the commit that adds its `SKILL_CHECKS` row, and the gate reads that row from a branch that commit is not on yet.
+
+A first admission is therefore **two landings, in this order**:
+
+1. A reviewed atom lands one entry in `policy/bootstrap-admissions.json` naming the incoming Skill, the sha256 of the exact skill tree it authorizes, the reviewed head that tree came from, and the check argv to run. `main` is green with the entry present and the Skill directory still absent; nothing executes until a tree with those exact bytes arrives.
+2. The Skill's own PR lands the bundle, its permanent `SKILL_CHECKS` row, and **the deletion of its bootstrap entry** in the same commit.
+
+The entry is spent by step 2, not merely superseded by it: `check_admissions.py` reds with `BOOTSTRAP_ENTRY_STALE` on any entry whose Skill directory exists in the same tree, so an authorization cannot outlive the admission it was written for. It never widens anything else — a Skill that already owns a `SKILL_CHECKS` row is graded by that row and never reads the allowlist, bytes that differ from the authorized digest are refused before they execute, and no entry falls through to the same `NO_DECLARED_CHECKS` refusal an unknown Skill has always had.
+
 ## Change procedure
 
-1. Bind one issue and one branch.
+1. Bind one issue and one branch. A Skill arriving for the first time binds two, per the ceremony above.
 2. Freeze the source proposal or Git source before refactoring.
 3. Keep portable procedure, domain knowledge, execution mechanics, and proof artifacts in separate declared paths.
 4. Add positive and planted negative controls before admission.

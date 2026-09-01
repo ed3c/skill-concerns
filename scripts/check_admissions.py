@@ -22,11 +22,12 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import re
 from typing import Any
 
-from admission_stamp import MANDATORY_PRODUCERS
+from admission_stamp import MANDATORY_PRODUCERS, bootstrap_entries
 from common import (
+    HEX40,
+    HEX64,
     EVIDENCE_LEVELS,
     REPO_ROOT,
     compare_digest_entries,
@@ -40,8 +41,6 @@ from common import (
 )
 
 
-HEX40 = re.compile(r"^[0-9a-f]{40}$")
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
 # One declaration, two readers: the stamper writes a mandatory row only after
 # running that id's producer, and this gate requires the same twelve ids. A
 # second literal here let the two sets drift silently (ed3c/skill-concerns#40).
@@ -153,14 +152,39 @@ def validate_source_lock(root: Path, lock_path: Path, lock: Any) -> list[str]:
     return errors
 
 
+def bootstrap_retirement(root: Path) -> list[str]:
+    """A first-admission authorization must not outlive the landing it bought.
+
+    Both sides are read from `root` on purpose -- the entries file and the
+    skills directory must be judged against each other in ONE tree, and this
+    one is the candidate's. That is safe here in a way `admission_stamp`'s read
+    is not: this can only add a refusal, and the only way a candidate silences
+    it is by actually deleting the spent entry, which is the retirement being
+    demanded. `admission_stamp.BOOTSTRAP` still resolves inside the trusted
+    tree, so no authorization is ever taken from the candidate.
+
+    An entry naming a skill whose directory is present in this tree has already
+    been spent: the commit that lands the skill also lands its permanent
+    `SKILL_CHECKS` row, and an entry left behind is a standing authorization
+    for bytes that are already admitted -- a skeleton key with nothing left to
+    open honestly.
+    """
+    entries, errors = bootstrap_entries(root / "policy" / "bootstrap-admissions.json")
+    return errors + [
+        f"BOOTSTRAP_ENTRY_STALE:{skill}"
+        for skill in sorted(entries)
+        if (root / "skills" / skill).is_dir()
+    ]
+
+
 def check(root: Path = REPO_ROOT) -> list[str]:
-    errors: list[str] = []
+    errors: list[str] = bootstrap_retirement(root)
     try:
         registry = load_json(root / "registry.json")
     except ValueError as exc:
-        return [str(exc)]
+        return errors + [str(exc)]
     if not isinstance(registry, dict):
-        return ["REGISTRY_NOT_OBJECT"]
+        return errors + ["REGISTRY_NOT_OBJECT"]
 
     policy = registry.get("policy", {})
     minimum = policy.get("minimum_admission_level")
