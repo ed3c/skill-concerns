@@ -124,7 +124,64 @@
         "host:subagents/workflows/wf_029ec3ae-17f/journal.jsonl"
       ],
       "prev_sha256": "e86e62b944f04af16f13f262b2bed793be2f8d545e3262dc080a7d1b04418e11"
+    },
+    {
+      "date": "2026-09-01",
+      "wave": "2026-08-31-bands",
+      "judge_model": "opus",
+      "per_clause_summary": {
+        "judge_rules_first_measurement": "the five wave-8/9 rules ran in-force for the first time: across ~27 dispositions zero in-repo S1/S2 deferrals died in prose (the waves-7/8 rank-1 defect cured); the single R1 violation was a harness-layer gap with no in-repo home",
+        "sharpest_result": "the stamper lane's invariant split: 'going through this stamper on a red tree cannot produce receipt bytes' HOLDS, while 'no red tree can ever carry a committed PASS receipt, however produced' WAS NEVER BUILT - check_admissions verifies digest/shape, not provenance; the lane filed the successors itself",
+        "provenance_note": "the judge could not find the wave prompts persisted and marked its rule identification inference-grade; the prompts ARE persisted under workflows/scripts/ - later waves cite that path in the judge prompt"
+      },
+      "negative_control_verdict": "NOT_RUN - transcript judging; the control fixture was not presented",
+      "gaps": [
+        "harness-layer findings had no fileable destination, so the wave's only unfiled deferral was homeless by construction (foreshadowed the wave-11 rank-1)",
+        "R4 body-digest adherence weak and unmeasured in two lanes"
+      ],
+      "prompt_improvements": [
+        "name a standing cross-repo destination for lane/harness/orchestration findings up front; a self-declared NO-HOME is not an exit",
+        "ANSWERED-residue rule: an answer resting on a structural property must leave one mechanical reader (a test that reds when the property stops holding, or a machine-read non-claim line) or be reclassified as DEFERRED and filed"
+      ],
+      "receipt_refs": [
+        "ed3c/noodles#189",
+        "ed3c/noodles#99",
+        "ed3c/noodles#100",
+        "ed3c/skill-concerns#37",
+        "host:subagents/workflows/wf_3a58159e-f4f/journal.jsonl"
+      ],
+      "prev_sha256": "53ad5f220ee40751cfb9eab9f825983b84e03ea6de13f37ae09c7a36936874fa"
+    },
+    {
+      "date": "2026-09-01",
+      "wave": "2026-09-01-machine-gates",
+      "judge_model": "opus",
+      "per_clause_summary": {
+        "adherence_spread": "R1/R2/R3/R5 held across lanes (one lane PASS-STRICT on all filed destinations: exact path:line homes verified live on main); R4 held in one lane of three",
+        "self_application": "the route-truth lane landed through the route it changed, with the landed contract recording the evidence-based arm choice (gate moved to the verify confluence; every writer crosses it, no bypass)",
+        "register_first_consumers": "the findings register landed and was consumed the same day - route-decision receipts and live death-pattern reproductions written as entries with readers"
+      },
+      "negative_control_verdict": "NOT_RUN - transcript judging; the control fixture was not presented",
+      "gaps": [
+        "G1 S2: judge rule 4 has no mechanical carrier - 1-of-3 adherence in exactly the in-flight condition it was written for; a rule enforced only by reading is itself the recurrence (cure measured: fields named in the land report schema were delivered 3/3, prose rules 1/3)",
+        "G2: a mid-wave ratchet was widened by the candidate it blocked (==136 relaxed to >=136, producer-checked equality replaced by an unchecked floor); the real ratchet cure is open at ed3c/noodles#278"
+      ],
+      "prompt_improvements": [
+        "move the body-digest gate out of prose into the land report's required Return schema, with a literal NO PROVIDER-BODY EDIT line when unused",
+        "strict address form for filed destinations: an issue number or path:line as it exists in the merged tree; a function name or unnamed log is not a destination",
+        "add the C7 legal exit to the common rules: a gate landing mid-wave that refuses your candidate is satisfied through its own admission-data atom, never by touching the gate or its predicate"
+      ],
+      "receipt_refs": [
+        "ed3c/noodles#280",
+        "ed3c/noodles#281",
+        "ed3c/noodles#282",
+        "ed3c/noodles#284",
+        "ed3c/noodles#283",
+        "ed3c/noodles#287",
+        "host:subagents/workflows/wf_dd06b926-c9f/journal.jsonl"
+      ],
+      "prev_sha256": "4291d950f873e8360532d289000b8d9512a47acf4e2646ff58a579b5e78c5b1a"
     }
   ],
-  "head_sha256": "53ad5f220ee40751cfb9eab9f825983b84e03ea6de13f37ae09c7a36936874fa"
+  "head_sha256": "3ef6e452297f00cdf231b9717f2e92c642e8a6c3fc4a2acace6e2c241bb14715"
 }
