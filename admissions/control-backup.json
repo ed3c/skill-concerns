@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/control-backup/receipts.json",
-      "sha256": "145784be3c2953c18786826d4e88a18351991d1404ad1ff251fc2f90239ebcc3"
+      "sha256": "1a87da00244588a53ca4442f2ef45199cc7a6a3d3e93fe2d64f1fc4dd4afef61"
     },
     {
       "path": "skills/control-backup/references/README.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "skills/control-backup/scripts/validate_control_backup.py",
-      "sha256": "8f5dbd57c3a8957d002a36a08334143b10df16af1b89b7b6475e5ad450e2db7a"
+      "sha256": "bd938285e007f60746b83a08f3c9445af36aba15b98b8972fd517ce729df2a83"
     },
     {
       "path": "skills/control-backup/skill.json",
@@ -68,7 +68,7 @@
       "sha256": "63acc3691a72d6a1b2aba8484a2f9a98b364c496beebdc13b0401434ba9240d0"
     }
   ],
-  "skill_tree_sha256": "6c23a310b07da92c7a973a57bb5367c50fdc97670c5385adfd735492a70f8bbb",
+  "skill_tree_sha256": "f927931241937c9db46f7964dff8bd2b52494d344645d051a3a79f7cf70534be",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

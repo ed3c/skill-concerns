@@ -15,6 +15,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md, read out of these bytes by
+# `scripts/check_skill_bundles.py` so a hollowed SKILL.md reds against a tuple
+# the hollowing never touched.
+SKILL_MD_CLAUSES = (
+    "Decision boundary",
+    "Backends and their boundary",
+    "Best-path procedures",
+    "Hard constraints",
+    "Knowledge placement",
+)
+
 ADMITTED = {"grepai", "serena", "tree-sitter", "scip", "sqlite"}
 
 

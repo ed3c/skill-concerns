@@ -30,6 +30,18 @@ from pathlib import Path
 
 LAW_HEADING = re.compile(r"^## (LAW-[A-Z-]+)\s*$", re.MULTILINE)
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74). The tie
+# below is L0-policy-to-L1-topology; this one is SKILL.md-to-validator, and the
+# two are independent: the law ledger says nothing about the entrypoint's
+# sections. `scripts/check_skill_bundles.py` reads this tuple out of these bytes
+# -- parsed, never imported -- and reds when SKILL.md's headings differ.
+SKILL_MD_CLAUSES = (
+    "Decision boundary",
+    "What this Skill does not own",
+    "Executable contract",
+    "Knowledge placement",
+)
+
 # Independent-of-JSON ground truth: hard-coded here so that editing the L1
 # topology's row list and its own count field together -- which a purely
 # self-referential `count == len(rows)` tie cannot see, since both numbers

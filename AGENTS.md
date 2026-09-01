@@ -69,6 +69,37 @@ Scripts and tests must establish:
 - the admission receipt covers the complete Skill tree and selected shared contracts;
 - higher evidence layers remain explicit and cannot be promoted by wording.
 
+## Dual-standard conformance
+
+A new Skill's shape used to split in half: one half already mechanical, the
+other half author memory that an admission issue could enumerate and nothing
+would re-read. `scripts/check_skill_bundles.py` now sweeps every `skills/*`
+directory and refuses the second half too (ed3c/skill-concerns#74):
+
+- a validator exists, is **wired** into its own `run_all.SKILL_CHECKS` row
+  alongside that Skill's test discovery, and is **count-tied** to its entrypoint
+  through the `SKILL_MD_CLAUSES` tuple it declares in its own bytes — a hollowed
+  `SKILL.md` reds against a tuple the hollowing never touched;
+- an admission stamp exists and was taken against the bytes that are here now;
+- the eval campaign is a directory, and no planted-negative arm shares its
+  producing assertion with a positive one;
+- every `receipts.json` entry names its ground — a `producer` path that exists,
+  provider/host `refs`, or the explicit `HOST_OBSERVED` exit for a one-time host
+  observation nothing here replays;
+- both collection documents carry the Skill's row, kind included;
+- the pstack birth triple is present by shape: feature map, refusing Doctor,
+  prove-once receipt.
+
+The gate reads bytes and never imports a candidate module: the count tie comes
+from each Skill's own validator, so there is no per-skill list here to go stale.
+What it cannot prove is method honesty — that the interview behind a feature map
+was faithful, that a campaign arm measured anything. That stays with campaigns,
+planted negatives, and wave monitors, and this sweep does not pretend otherwise.
+
+Each assertion has its own planted negative in
+`tests/test_repository_controls.py`; a clean sweep alone never shows a sweep can
+red.
+
 ## Concern ownership
 
 ```text
@@ -133,6 +164,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `skills/<skill>/tests/` and `evals/` | positive and negative falsifiers |
 | `intake/<skill>/source-lock.json` | frozen source/proposal identity |
 | `scripts/run_all.py` | `SKILL_CHECKS`: the single declaration of each Skill's check argv, and the suite that runs it |
+| `scripts/check_skill_bundles.py` | the repository-wide dual-standard conformance sweep: bundle anatomy plus validator wiring, count tie, stamp freshness, campaign arms, receipt grounds, collection rows, and birth artifacts |
 | `scripts/admission_stamp.py` | the one stamp surface: re-runs a Skill's `run_all.SKILL_CHECKS` row and refuses to write a receipt when any of it is red |
 | `policy/bootstrap-admissions.json` | the trusted first-admission allowlist: which Skill's first-ever admission is authorized, the exact skill-tree digest it authorizes, and the check argv to execute against it — both fields are resolved by `admission_stamp.bootstrap_checks`, and an entry carries nothing else |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |

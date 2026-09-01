@@ -10,6 +10,24 @@ from pathlib import Path
 from control_contract import ContractError, validate_bundle
 
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md. This CLI validates composition data and
+# never reads SKILL.md, so without this tuple the entrypoint could lose its
+# Monitor mode or its hard constraints with the composed contract still green.
+# `scripts/check_skill_bundles.py` reads it out of these bytes, parsed and never
+# imported.
+SKILL_MD_CLAUSES = (
+    "Decision boundary",
+    "Knowledge placement",
+    "Failure-edge routing",
+    "Monitor mode",
+    "Hard constraints",
+    "Soft conventions",
+    "Discoverable knowledge",
+    "Hermetic authoring",
+)
+
+
 def load(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
