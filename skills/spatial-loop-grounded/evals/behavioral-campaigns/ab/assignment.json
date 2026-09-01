@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "campaign": "2026-09-01-ab-control-arm",
+  "note": "The arm assignment. This is the ONLY file that maps a run token to an arm, and it is never copied into judge-inputs/ - `ab_campaign.py judge-inputs` does not read it at all. Tokens are opaque and their order is not the arm order.",
+  "runs": [
+    {"token": "r-a7", "chore": "release-tidy", "arm": "without"},
+    {"token": "r-b2", "chore": "flaky-import", "arm": "with"},
+    {"token": "r-c9", "chore": "queue-nudge", "arm": "without"},
+    {"token": "r-d4", "chore": "release-tidy", "arm": "with"},
+    {"token": "r-e1", "chore": "queue-nudge", "arm": "with"},
+    {"token": "r-f6", "chore": "flaky-import", "arm": "without"}
+  ]
+}

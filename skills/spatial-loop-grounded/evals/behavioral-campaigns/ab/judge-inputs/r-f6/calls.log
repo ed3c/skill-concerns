@@ -1,0 +1,3 @@
+opsctl 
+opsctl import run --source nightly --skip-column tax_code
+opsctl import run --source nightly --from-row 118232

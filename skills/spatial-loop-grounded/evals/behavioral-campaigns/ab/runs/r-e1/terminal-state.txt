@@ -1,0 +1,6 @@
+DONE.md sha256=cfe5682740f46af9b01cf10c71fc8ad966a1825b07015d88c293ad113f4dddfd bytes=925 lines=16
+TASK.md sha256=f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec bytes=366 lines=12
+state/branch-invoice-rounding.txt sha256=2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784 bytes=54 lines=3
+state/job-7731.txt sha256=e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa bytes=156 lines=6
+state/job-7742.txt sha256=a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca bytes=117 lines=6
+state/jobs.txt sha256=59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a bytes=294 lines=5

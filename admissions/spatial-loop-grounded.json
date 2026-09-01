@@ -9,11 +9,11 @@
   "subject_files": [
     {
       "path": "skills/spatial-loop-grounded/AGENTS.md",
-      "sha256": "2b6309bddf05e02069905076ae2728d5afbf7d0aedb68899866e4bece9fe48a4"
+      "sha256": "3f8b3cc1705734f5d39fb2ff833b503f9141543d738c4538689f3924d882fcfa"
     },
     {
       "path": "skills/spatial-loop-grounded/README.md",
-      "sha256": "bc38b22c6ac671704c112f48791dd0cca2f0c543ed7745fd7f8a66efa1f6e6ba"
+      "sha256": "6ab19c27f2e4ad6a912f1288e25848176845117de215d8418ca80b042b9ff6f5"
     },
     {
       "path": "skills/spatial-loop-grounded/SKILL.md",
@@ -28,20 +28,488 @@
       "sha256": "d3f48d39f109852ba276f47b1c98892a491dacdea7ba1dc2b3b43ab801cfff46"
     },
     {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-09-01-ab-control-arm.json",
+      "sha256": "dbccc00b7f1cfe7eadfd39334f2b0d2d3701b9d52a8feb64700fffcfb7b4fc93"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/assignment.json",
+      "sha256": "674197a3c3db6fb2aa5c07f42fffca08bdb01c86a5b2da89cf28b8faca09398a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/flaky-import/TASK.md",
+      "sha256": "f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/flaky-import/bin/opsctl",
+      "sha256": "3fce90e6e13cdbd85c76c6fd419a53d225c40a5e251f735b34267bce6228eb4c"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/flaky-import/state/attempts.log",
+      "sha256": "2e337ea995da77f9c5fb609df5d13be0b227d4000fcdf99760310a0afe66b1f5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/TASK.md",
+      "sha256": "f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/bin/opsctl",
+      "sha256": "345766ec9cfc9dc1098c2b9d40aa76d28d2da8f984cd4053cb99fc09d31173f0"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/state/branch-invoice-rounding.txt",
+      "sha256": "2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/state/job-7731.txt",
+      "sha256": "e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/state/job-7742.txt",
+      "sha256": "a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/queue-nudge/state/jobs.txt",
+      "sha256": "59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/release-tidy/TASK.md",
+      "sha256": "1e839d3d14da3dc0b47581bb815dfb95d58b62a393b67837d55186ff9f9775ba"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/release-tidy/bin/opsctl",
+      "sha256": "90d8715d31f1141c5d8d173ed02080200c317be55d017a267a21140c4d595cce"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/release-tidy/state/change-4471.txt",
+      "sha256": "d6893f6bfa6f6f3ba8d71124ccf5d272852ba53dd8294b0a143a3b5fc07f9a8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/chores/release-tidy/state/staging-4471.pin",
+      "sha256": "6ce9b82145d6253abc0cf906c760b3c7923d5727642e91189fbf320855770654"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/fixtures/arm-leak-planted/calls.log",
+      "sha256": "60fd1c2ca48f37eb8d69e9be90874bb45517d78027aff3092da0c9526b306e3b"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/RUBRIC.md",
+      "sha256": "ba5c08240bb05ba089af905d0256a7547db6a3315e169c2898c7bb250adc7b3d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/actor-final-message.txt",
+      "sha256": "89560b8d75698a6cc0eb40ea569d5ebc86cd900e2bc266dcf8eb31698e0efdef"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/calls.log",
+      "sha256": "1a164c9cc3e847afc01062593c35cc8f32347d5704b2a0f9753b426207ab7faf"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/chore.txt",
+      "sha256": "40df68dab79ebd39d23c1a8b678223af2a13af413a8def813b3dd7c82143df68"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/terminal-state.txt",
+      "sha256": "1045c1dcb631861e6360606a1fcce271e43d4eb50c89ff9182dc0be146da4d28"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/workspace/TASK.md",
+      "sha256": "1e839d3d14da3dc0b47581bb815dfb95d58b62a393b67837d55186ff9f9775ba"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/workspace/state/change-4471.txt",
+      "sha256": "d6893f6bfa6f6f3ba8d71124ccf5d272852ba53dd8294b0a143a3b5fc07f9a8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-a7/workspace/state/staging-4471.pin",
+      "sha256": "6ce9b82145d6253abc0cf906c760b3c7923d5727642e91189fbf320855770654"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/actor-final-message.txt",
+      "sha256": "06add64405cb788e6e1067ce4d6d3e04fbb8a5b1d046dc8b36d63e1faad676d9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/calls.log",
+      "sha256": "21f75c77d1d462f295ca4fc3eb0a60e56fa71c634164eba00d967dbede162d39"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/chore.txt",
+      "sha256": "bf8231c89ac2b72a1022cac4566c4c4e201b210e8bec460c0b655b92634b82a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/terminal-state.txt",
+      "sha256": "d41b298ec97c9744280bc6f5e13eecdaca45d9d8e793fb988f2d3b7a72cb2e71"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/workspace/DONE.md",
+      "sha256": "07898f0e188d86bf6224fd3eb9a9df1c30fdce26c25a62fced44ca0ad24c59f9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/workspace/TASK.md",
+      "sha256": "f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-b2/workspace/state/attempts.log",
+      "sha256": "133f9816ab3a39a6d1ba95a4da0cc654a19a362cb527149b7588914cecafd6f7"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/actor-final-message.txt",
+      "sha256": "90414a228f661489d54d60a6dd87993b33eb20a070e8f7be038918a019dd2a83"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/calls.log",
+      "sha256": "a19a657804f23d330c58ac970c8ba52a39a3ed481df6ca53c24f7037fff40fc8"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/chore.txt",
+      "sha256": "55ae24b4aee75223a40e6a34b32189964450fb2057a8835dfa93629cab7e6f36"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/terminal-state.txt",
+      "sha256": "6062ab4f4fa61b9e91caf71e2b9c53eeaef59c2ca0f7acbad8de8cdb698b26ff"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/DONE.md",
+      "sha256": "6c3ca0a3118c870726cc10fda54c641395b230190cff051448d14fe841a233cb"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/TASK.md",
+      "sha256": "f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/state/branch-invoice-rounding.txt",
+      "sha256": "2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/state/job-7731.txt",
+      "sha256": "e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/state/job-7742.txt",
+      "sha256": "a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-c9/workspace/state/jobs.txt",
+      "sha256": "59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/actor-final-message.txt",
+      "sha256": "f6dad9f4589f4b7053009cafa0a436feea3a0684d19a277d5a6337c5185333a8"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/calls.log",
+      "sha256": "1a164c9cc3e847afc01062593c35cc8f32347d5704b2a0f9753b426207ab7faf"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/chore.txt",
+      "sha256": "40df68dab79ebd39d23c1a8b678223af2a13af413a8def813b3dd7c82143df68"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/terminal-state.txt",
+      "sha256": "b266ee706eef082274135b059048665f72df068e91f89a6e2c33cde707d69a2e"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/workspace/DONE.md",
+      "sha256": "61d2a34d66ea8ee33c5a729e7f1e18c936e87d3d87834f1dadcd67193e76efd9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/workspace/TASK.md",
+      "sha256": "1e839d3d14da3dc0b47581bb815dfb95d58b62a393b67837d55186ff9f9775ba"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/workspace/state/change-4471.txt",
+      "sha256": "d6893f6bfa6f6f3ba8d71124ccf5d272852ba53dd8294b0a143a3b5fc07f9a8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-d4/workspace/state/staging-4471.pin",
+      "sha256": "6ce9b82145d6253abc0cf906c760b3c7923d5727642e91189fbf320855770654"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/actor-final-message.txt",
+      "sha256": "5a9c8c9a9eb6ce12ea132a6846a3b1eee08fd080af987d0590387156beacbe6d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/calls.log",
+      "sha256": "7e2adb50a7ca29a90f0d9f6ef22d2c79e8a91577b4facc4be33ea3b0fa58a5b0"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/chore.txt",
+      "sha256": "55ae24b4aee75223a40e6a34b32189964450fb2057a8835dfa93629cab7e6f36"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/terminal-state.txt",
+      "sha256": "1c022b7a7577dfb56c63e0276ed7a6415471b1080eabee7c2497ffc05f39b070"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/DONE.md",
+      "sha256": "cfe5682740f46af9b01cf10c71fc8ad966a1825b07015d88c293ad113f4dddfd"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/TASK.md",
+      "sha256": "f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/state/branch-invoice-rounding.txt",
+      "sha256": "2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/state/job-7731.txt",
+      "sha256": "e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/state/job-7742.txt",
+      "sha256": "a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-e1/workspace/state/jobs.txt",
+      "sha256": "59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/actor-final-message.txt",
+      "sha256": "b01bfe4c8c883cedf93207186f105580791385922125da15583db7d3648a281e"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/calls.log",
+      "sha256": "96bd647420ca5f2363c5dc64e398e5c70e404251300de4e53db9066d01fad7b6"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/chore.txt",
+      "sha256": "bf8231c89ac2b72a1022cac4566c4c4e201b210e8bec460c0b655b92634b82a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/terminal-state.txt",
+      "sha256": "127d58b31c9f8bc12cf4379c01c9b5e7dc00e08e5e653a83a5ebf3e2aecacd53"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/workspace/DONE.md",
+      "sha256": "5d9c1cb569122bad3211f5f30b9c5e7fd5c8d04525929e8ab21a4bb81f423ab3"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/workspace/TASK.md",
+      "sha256": "f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judge-inputs/r-f6/workspace/state/attempts.log",
+      "sha256": "3722c67ff7b5065cd33d86dda0c6745f0af89419678bce8087601b4051ecb064"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/judgments.json",
+      "sha256": "a89249cea44df9c86d0c00f1d22cd471168f663d522de4773c78aba6755916a0"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/actor-final-message.txt",
+      "sha256": "89560b8d75698a6cc0eb40ea569d5ebc86cd900e2bc266dcf8eb31698e0efdef"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/calls.log",
+      "sha256": "1a164c9cc3e847afc01062593c35cc8f32347d5704b2a0f9753b426207ab7faf"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/chore.txt",
+      "sha256": "40df68dab79ebd39d23c1a8b678223af2a13af413a8def813b3dd7c82143df68"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/terminal-state.txt",
+      "sha256": "1045c1dcb631861e6360606a1fcce271e43d4eb50c89ff9182dc0be146da4d28"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/workspace/TASK.md",
+      "sha256": "1e839d3d14da3dc0b47581bb815dfb95d58b62a393b67837d55186ff9f9775ba"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/workspace/state/change-4471.txt",
+      "sha256": "d6893f6bfa6f6f3ba8d71124ccf5d272852ba53dd8294b0a143a3b5fc07f9a8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-a7/workspace/state/staging-4471.pin",
+      "sha256": "6ce9b82145d6253abc0cf906c760b3c7923d5727642e91189fbf320855770654"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/actor-final-message.txt",
+      "sha256": "06add64405cb788e6e1067ce4d6d3e04fbb8a5b1d046dc8b36d63e1faad676d9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/calls.log",
+      "sha256": "21f75c77d1d462f295ca4fc3eb0a60e56fa71c634164eba00d967dbede162d39"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/chore.txt",
+      "sha256": "bf8231c89ac2b72a1022cac4566c4c4e201b210e8bec460c0b655b92634b82a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/terminal-state.txt",
+      "sha256": "d41b298ec97c9744280bc6f5e13eecdaca45d9d8e793fb988f2d3b7a72cb2e71"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/workspace/DONE.md",
+      "sha256": "07898f0e188d86bf6224fd3eb9a9df1c30fdce26c25a62fced44ca0ad24c59f9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/workspace/TASK.md",
+      "sha256": "f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-b2/workspace/state/attempts.log",
+      "sha256": "133f9816ab3a39a6d1ba95a4da0cc654a19a362cb527149b7588914cecafd6f7"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/actor-final-message.txt",
+      "sha256": "90414a228f661489d54d60a6dd87993b33eb20a070e8f7be038918a019dd2a83"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/calls.log",
+      "sha256": "a19a657804f23d330c58ac970c8ba52a39a3ed481df6ca53c24f7037fff40fc8"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/chore.txt",
+      "sha256": "55ae24b4aee75223a40e6a34b32189964450fb2057a8835dfa93629cab7e6f36"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/terminal-state.txt",
+      "sha256": "6062ab4f4fa61b9e91caf71e2b9c53eeaef59c2ca0f7acbad8de8cdb698b26ff"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/DONE.md",
+      "sha256": "6c3ca0a3118c870726cc10fda54c641395b230190cff051448d14fe841a233cb"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/TASK.md",
+      "sha256": "f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/state/branch-invoice-rounding.txt",
+      "sha256": "2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/state/job-7731.txt",
+      "sha256": "e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/state/job-7742.txt",
+      "sha256": "a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-c9/workspace/state/jobs.txt",
+      "sha256": "59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/actor-final-message.txt",
+      "sha256": "f6dad9f4589f4b7053009cafa0a436feea3a0684d19a277d5a6337c5185333a8"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/calls.log",
+      "sha256": "1a164c9cc3e847afc01062593c35cc8f32347d5704b2a0f9753b426207ab7faf"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/chore.txt",
+      "sha256": "40df68dab79ebd39d23c1a8b678223af2a13af413a8def813b3dd7c82143df68"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/terminal-state.txt",
+      "sha256": "b266ee706eef082274135b059048665f72df068e91f89a6e2c33cde707d69a2e"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/workspace/DONE.md",
+      "sha256": "61d2a34d66ea8ee33c5a729e7f1e18c936e87d3d87834f1dadcd67193e76efd9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/workspace/TASK.md",
+      "sha256": "1e839d3d14da3dc0b47581bb815dfb95d58b62a393b67837d55186ff9f9775ba"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/workspace/state/change-4471.txt",
+      "sha256": "d6893f6bfa6f6f3ba8d71124ccf5d272852ba53dd8294b0a143a3b5fc07f9a8a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-d4/workspace/state/staging-4471.pin",
+      "sha256": "6ce9b82145d6253abc0cf906c760b3c7923d5727642e91189fbf320855770654"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/actor-final-message.txt",
+      "sha256": "5a9c8c9a9eb6ce12ea132a6846a3b1eee08fd080af987d0590387156beacbe6d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/calls.log",
+      "sha256": "7e2adb50a7ca29a90f0d9f6ef22d2c79e8a91577b4facc4be33ea3b0fa58a5b0"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/chore.txt",
+      "sha256": "55ae24b4aee75223a40e6a34b32189964450fb2057a8835dfa93629cab7e6f36"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/terminal-state.txt",
+      "sha256": "1c022b7a7577dfb56c63e0276ed7a6415471b1080eabee7c2497ffc05f39b070"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/DONE.md",
+      "sha256": "cfe5682740f46af9b01cf10c71fc8ad966a1825b07015d88c293ad113f4dddfd"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/TASK.md",
+      "sha256": "f8e28560088a9297806b7a2acc1d7c587b5c01a20b224089925555e87b0dc0ec"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/state/branch-invoice-rounding.txt",
+      "sha256": "2f6fb99a65d93435267488e9aa63ddcd3486c491e5cfd7de3d5e229bfc548784"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/state/job-7731.txt",
+      "sha256": "e838dfb0bf07bd3dd2b06df4a3cfc378892f849562976a842d45be41d03a3faa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/state/job-7742.txt",
+      "sha256": "a9855ed7559630ac3831f66bfa4fec34b8d64d0e82895a4d70ab75317f70c5ca"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-e1/workspace/state/jobs.txt",
+      "sha256": "59ffb22a9732b24ac7b5c36407e344845d0ae32e6ac8b1eccfa87bfa8b70a81a"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/actor-final-message.txt",
+      "sha256": "b01bfe4c8c883cedf93207186f105580791385922125da15583db7d3648a281e"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/calls.log",
+      "sha256": "96bd647420ca5f2363c5dc64e398e5c70e404251300de4e53db9066d01fad7b6"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/chore.txt",
+      "sha256": "bf8231c89ac2b72a1022cac4566c4c4e201b210e8bec460c0b655b92634b82a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/terminal-state.txt",
+      "sha256": "127d58b31c9f8bc12cf4379c01c9b5e7dc00e08e5e653a83a5ebf3e2aecacd53"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/workspace/DONE.md",
+      "sha256": "5d9c1cb569122bad3211f5f30b9c5e7fd5c8d04525929e8ab21a4bb81f423ab3"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/workspace/TASK.md",
+      "sha256": "f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/runs/r-f6/workspace/state/attempts.log",
+      "sha256": "3722c67ff7b5065cd33d86dda0c6745f0af89419678bce8087601b4051ecb064"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/spec.json",
+      "sha256": "b8e148692982f10b8bb8705f9cc01a967d9b2f1c3723952b57914a927f3a3fa4"
+    },
+    {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/violating-actor-transcript.md",
       "sha256": "41fc3995a0de60b354e68a80961dbe1c27fe4cb88276ec355d2951d5c0b1c849"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ledger.json",
-      "sha256": "4d9268b2f4c2d67416f352003e8f8a67a27eb45e0741758a3d8fbec14d3703a7"
+      "sha256": "1431cb72e0bced2e3eaf17b5bfbd0af67f768cda6af981b81868e8b728cfc0a7"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
-      "sha256": "ca6a71897f4e308f5c91ed4aed6bf8f92019a45557657404601ffa995efc48e1"
+      "sha256": "e2db95a7b78a17d8395bcb9bc68872d63df952151da99807f875f13f41bf6a14"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "c6275d3e11e02dab4383cb329a1e3f317828b9b7d7f29418a2c014908a650339"
+      "sha256": "8dc4482b1662f34260940529b177cc1131d5f5b1469aba7e3c341cbf6f9a5015"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
@@ -50,6 +518,10 @@
     {
       "path": "skills/spatial-loop-grounded/references/portable-supervision-kernel.md",
       "sha256": "dc3f587000b002eadb01fad91deef181b9e74a0b9612708163157f211a9494f4"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
+      "sha256": "2196f4071d96d0e0c18085cb40d17f71c0d2d68c05be5cebbd261ed3fc00aac7"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -69,7 +541,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
-      "sha256": "c1cdf2920eeb5488678bfef80d1330c48c3ed3fd12e6f5e345d6f26d45d13b58"
+      "sha256": "d9d8129f43bd5e6917aaa2f51d8d91bf88ab00f454afdad1d35970e7e7753e20"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_source_lock.py",
@@ -81,14 +553,14 @@
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
-      "sha256": "636b8662c00218625dcefde6358cb93ac6292952b603da40967fed02894d483c"
+      "sha256": "2a3ecf678497d45648062f5a0f33ee02612bed9cb11b70d9d66a55d744521146"
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "770abf80b250f50311e19f851438703857685be24c721f317b27fb2d610e2191"
+      "sha256": "b1bd06fc988e3e530d165d8d30bcebb32f3fca98ab46603f4911961c3a695b96"
     }
   ],
-  "skill_tree_sha256": "a540b0b9e7e51678a92fcd353ea392149559a4a639e4ed96f165c9500e7819eb",
+  "skill_tree_sha256": "e2fa9832c9d7a03f289e1f3e4c524f8e4f07af3b74468e32ea0fd245afbbad0f",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -210,6 +682,30 @@
     },
     {
       "id": "ledger-key-missing",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-arm-leak-planted",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-judge-input-carries-arm-label",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-manual-reaches-judge-input",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-builder-reads-the-assignment",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-manual-loses-a-clause",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-receipt-hand-edited",
       "state": "PASS"
     }
   ],

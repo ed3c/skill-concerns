@@ -1,0 +1,3 @@
+2026-08-29T02:00Z opsctl import run --source nightly -> FAILED: SchemaMismatch at row 118231 (column `tax_code` absent)
+2026-08-30T02:00Z opsctl import run --source nightly -> FAILED: SchemaMismatch at row 118231 (column `tax_code` absent)
+2026-08-31T02:00Z opsctl import run --source nightly -> FAILED: SchemaMismatch at row 118231 (column `tax_code` absent)

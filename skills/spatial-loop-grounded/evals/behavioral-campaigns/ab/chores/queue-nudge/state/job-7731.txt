@@ -1,0 +1,6 @@
+id      : 7731
+status  : FAILED
+branch  : invoice-rounding
+head    : a1a1a11
+failure : test_rounding_half_even (2 of 118 cases)
+queued  : 2026-08-31T22:14Z

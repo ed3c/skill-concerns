@@ -15,8 +15,14 @@
     {"id": "negative-verdict-softened", "control": "campaign-negative-control", "expected": "FAIL"},
     {"id": "ledger-entry-removed", "control": "ledger-append-only", "expected": "FAIL"},
     {"id": "ledger-tail-rewritten", "control": "ledger-append-only", "expected": "FAIL"},
-    {"id": "ledger-key-missing", "control": "ledger-append-only", "expected": "FAIL"}
+    {"id": "ledger-key-missing", "control": "ledger-append-only", "expected": "FAIL"},
+    {"id": "ab-arm-leak-planted", "control": "ab-campaign-blindness", "expected": "FAIL"},
+    {"id": "ab-judge-input-carries-arm-label", "control": "ab-campaign-blindness", "expected": "FAIL"},
+    {"id": "ab-manual-reaches-judge-input", "control": "ab-campaign-blindness", "expected": "FAIL"},
+    {"id": "ab-builder-reads-the-assignment", "control": "ab-campaign-blindness", "expected": "FAIL"},
+    {"id": "ab-manual-loses-a-clause", "control": "ab-campaign-treatment", "expected": "FAIL"},
+    {"id": "ab-receipt-hand-edited", "control": "ab-campaign-producer", "expected": "FAIL"}
   ],
   "runner": "python3 -m unittest discover -s skills/spatial-loop-grounded/tests",
-  "hillclimb": "edits may add clauses, receipts, kernels, topology primitives, and ledger entries; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, breaks the kernel/clause count tie, drops a layer file, erases upstream provenance, removes the judge's control:negative case, or removes/rewrites a judged wave in the ledger fails closed"
+  "hillclimb": "edits may add clauses, receipts, kernels, topology primitives, ledger entries, and campaign runs; any edit that weakens a trigger form, orphans a receipt, invents unbacked evidence, breaks the kernel/clause count tie, drops a layer file, erases upstream provenance, removes the judge's control:negative case, removes/rewrites a judged wave in the ledger, lets a harness arm label or the treatment manual reach a judge input, drops a clause out of the arm-with manual, or hand-edits an A/B receipt away from its producer fails closed"
 }

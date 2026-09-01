@@ -24,3 +24,13 @@ Receipt chain: clause → `receipts.json` → PR physical-receipt-anchor comment
 Hillclimb rule: edits may add clauses and receipts; any edit that weakens a
 trigger form, orphans a receipt, invents unbacked evidence, or erases the
 upstream provenance pointer fails the validator.
+
+What the campaigns do and do not establish: `evals/behavioral-campaigns/ab/`
+runs each disguised chore twice — once in a workspace carrying these clause
+bytes, once in a byte-identical workspace carrying nothing — with the arm
+assignment stripped from everything the judge sees. In the first such campaign
+(2026-09-01) the arms tie on all fourteen mechanically decidable criteria, judge
+and mechanical oracle agreeing 14/14. So: the clauses are receipted and
+un-degradable, and their *contribution* to actor behavior is unproven at this
+sample size. Re-read the numbers with
+`python3 skills/spatial-loop-grounded/scripts/ab_campaign.py score`.

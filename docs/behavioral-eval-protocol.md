@@ -67,6 +67,39 @@ transcript (`evals/behavioral-campaigns/fixtures/`) with
   fails closed (`negative-control-dropped`, `negative-verdict-softened`,
   `negative-transcript-missing`).
 
+## The without-skill control arm
+
+A single-armed campaign measures the actor+skill pair, never the skill. Every
+green before 2026-09-01 was of that kind, and the pilot's own ledger entry
+recorded the gap. The cure is a second arm: each disguised chore is run twice,
+once in a workspace carrying the admitted clause bytes and once in a
+byte-identical workspace carrying nothing. `ab_campaign.py stage` is the only
+place the arms differ, and `diff -rq` between two staged workspaces prints
+exactly one line.
+
+- **The treatment is the admitted bytes.** The arm-with workspace receives the
+  skill's own clause block, verbatim, under an innocuous filename; the excluded
+  prefix and suffix are the parts that would tell the actor it is inside a
+  skill evaluation. A test asserts every clause in `SKILL.md` is in the shipped
+  slice, so a clause added outside it cannot silently stop being under test.
+- **Blindness is exactly one invariant:** no judge input carries a
+  harness-authored label of which arm produced it. The producer refuses to
+  write judge inputs when any byte matches a hard label, it derives its token
+  list from the runs directory rather than from the assignment, and a planted
+  arm-leak fixture makes that refusal a CI-asserted test.
+- **What blindness does NOT claim.** An actor holding the manual can cite it,
+  and that citation survives into the judge input. That residual is a different
+  quantity - actor-produced, not harness-authored - so it is counted per run
+  and reported in the receipt as `treatment_traces` rather than asserted away.
+  In the first campaign the judge flagged the trace itself, unprompted.
+- **Two arrivals, not one.** Criteria decidable from bytes are ALSO decided
+  mechanically from the call log and terminal state by the same script, and
+  judge/oracle agreement lands in the receipt. A judge that stops reading the
+  call log becomes visible instead of authoritative.
+- **A tie is a result.** The scorer is deterministic and stdlib-only, and a tie
+  is a finding about the skill, not a failure of the campaign. Reporting a null
+  result is the whole point of having a control arm.
+
 ## Cross-wave judge ledger
 
 `evals/behavioral-campaigns/ledger.json` carries one entry per judged wave -
