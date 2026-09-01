@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-09-01-ab-control-arm.json",
-      "sha256": "de7b5a221c56a453bdee769c35f2a5a33f974bc5a6f6ce437173fde6645892cb"
+      "sha256": "dbccc00b7f1cfe7eadfd39334f2b0d2d3701b9d52a8feb64700fffcfb7b4fc93"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/assignment.json",
@@ -521,7 +521,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
-      "sha256": "04f9959fa9ed9e5434a1aa1e9fe867504f974f88f92749f2cc768973ac8182ca"
+      "sha256": "2196f4071d96d0e0c18085cb40d17f71c0d2d68c05be5cebbd261ed3fc00aac7"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -557,10 +557,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "1432d5932784981e849b057912be1f560dd75a1f0d76e6d237768f105a59d6c1"
+      "sha256": "b1bd06fc988e3e530d165d8d30bcebb32f3fca98ab46603f4911961c3a695b96"
     }
   ],
-  "skill_tree_sha256": "7e377accc5eb56c1eedbc6d24065892c2db86eb8c4a96de70e63caca4f6ca90a",
+  "skill_tree_sha256": "e2fa9832c9d7a03f289e1f3e4c524f8e4f07af3b74468e32ea0fd245afbbad0f",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

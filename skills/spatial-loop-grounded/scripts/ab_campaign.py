@@ -56,9 +56,14 @@ MANUAL_HEADER = (
     "\n"
 )
 
-# Labels only the harness could have written: they name the experiment itself.
-# A judge input carrying one of these lets the judge read the assignment off
-# its inputs, which is exactly what the blindness gate exists to prevent.
+# Labels that name the experiment itself - the harness is the only author with
+# a reason to write them, but the scan is a blind substring match over every
+# byte in the token directory (actor artifacts included), not an authorship
+# check. That is deliberate: it fails closed on a false positive (actor prose
+# that happens to contain one of these strings refuses the build) rather than
+# risking a false negative. A judge input carrying one of these lets the judge
+# read the assignment off its inputs, which is exactly what the blindness gate
+# exists to prevent.
 HARD_LEAK = (
     "arm_a", "arm_b", "arm-a", "arm-b", "arm=a", "arm=b", "arm: a", "arm: b",
     "with-skill", "without-skill", "with skill", "without skill",
@@ -300,12 +305,20 @@ def compute_scores(spec: dict, assignment: dict, judgments: dict, oracles: dict)
     mean = lambda values: round(sum(values) / len(values), 4) if values else 0.0  # noqa: E731
     arm_scores = {arm: mean(values) for arm, values in arms.items()}
     delta = round(arm_scores["with"] - arm_scores["without"], 4)
+    oracle_arm_scores = {arm: mean(values) for arm, values in oracle_arms.items()}
+    oracle_delta = round(oracle_arm_scores["with"] - oracle_arm_scores["without"], 4)
     return {
         "campaign": spec["campaign"],
         "arm_scores": arm_scores,
         "delta": delta,
         "tie": abs(delta) < 0.001,
-        "oracle_arm_scores": {arm: mean(values) for arm, values in oracle_arms.items()},
+        "oracle_arm_scores": oracle_arm_scores,
+        # Distinct from `tie` above: `tie` is the judge-score arm comparison
+        # (includes judge-only criteria); `physical_tie` is the mechanically
+        # decidable subset alone. A reader that binds to `tie` only sees the
+        # judge-inclusive answer - this field exists so "the arms tie on every
+        # physical criterion" is a machine-readable claim, not prose-only.
+        "physical_tie": abs(oracle_delta) < 0.001,
         "judge_oracle_agreement": {"physical_criteria": compared, "agreed": agreed},
         "per_run": per_run,
     }
@@ -326,8 +339,12 @@ def collect_oracles(spec: dict, root: Path) -> dict[str, dict[str, str]]:
 
 def score() -> int:
     spec = load(SPEC_PATH)
+    # The mechanical oracle reads RUNS, not JUDGE_INPUTS: it must not depend on
+    # build_judge_inputs's own copy step, or a bug there would corrupt both
+    # arrivals identically and the "independent second arrival" claim would be
+    # false. See collect_oracles' docstring.
     result = compute_scores(
-        spec, load(ASSIGNMENT_PATH), load(JUDGMENTS_PATH), collect_oracles(spec, JUDGE_INPUTS)
+        spec, load(ASSIGNMENT_PATH), load(JUDGMENTS_PATH), collect_oracles(spec, RUNS)
     )
     result["treatment_traces"] = treatment_traces()
     print(json.dumps(result, indent=2))
@@ -337,10 +354,22 @@ def score() -> int:
 def receipt() -> int:
     spec = load(SPEC_PATH)
     result = compute_scores(
-        spec, load(ASSIGNMENT_PATH), load(JUDGMENTS_PATH), collect_oracles(spec, JUDGE_INPUTS)
+        spec, load(ASSIGNMENT_PATH), load(JUDGMENTS_PATH), collect_oracles(spec, RUNS)
     )
     result["treatment_traces"] = treatment_traces()
     judgments = load(JUDGMENTS_PATH)
+    # skill_tree_sha256_at_run is a historical fact (the tree the actors ran
+    # against), not a live-updating field: once this receipt exists, pin it to
+    # its committed value on every regeneration instead of recapturing the
+    # current tree. Without this, landing the campaign's own files changes the
+    # admitted tree, and a later schema-only re-run (e.g. adding a field)
+    # would silently launder the anchor to a tree the actors never saw. A
+    # genuinely new campaign gets a new RECEIPT_PATH, so it is unaffected.
+    tree_sha256_at_run = load(ADMISSION_PATH)["skill_tree_sha256"]
+    if RECEIPT_PATH.is_file():
+        pinned = load(RECEIPT_PATH).get("skill_tree_sha256_at_run")
+        if pinned:
+            tree_sha256_at_run = pinned
     failures = [
         f"{run['token']}/{run['arm']}:{cid}"
         for run in result["per_run"]
@@ -354,16 +383,19 @@ def receipt() -> int:
         "actor_model": spec["actor"]["model"],
         "judge_model": spec["judge"]["model"],
         "manual_sha256": hashlib.sha256(manual_text().encode("utf-8")).hexdigest(),
-        "skill_tree_sha256_at_run": load(ADMISSION_PATH)["skill_tree_sha256"],
+        "skill_tree_sha256_at_run": tree_sha256_at_run,
         "anchor_note": (
             "manual_sha256 is the load-bearing anchor: it is derived from the exact bytes the "
             "actors held. skill_tree_sha256_at_run is the admitted tree as it stood when the "
-            "actors ran; re-running `receipt` after this campaign's own files land will report "
-            "the newer tree, because the campaign is now part of the tree it evaluated."
+            "actors ran, pinned once this file first exists: every later `receipt` regeneration "
+            "carries the committed value forward instead of recapturing the (by-then-different) "
+            "current tree, so landing this campaign's own files does not silently launder the "
+            "anchor."
         ),
         "arm_scores": result["arm_scores"],
         "delta": result["delta"],
         "tie": result["tie"],
+        "physical_tie": result["physical_tie"],
         "oracle_arm_scores": result["oracle_arm_scores"],
         "judge_oracle_agreement": result["judge_oracle_agreement"],
         "treatment_traces": result["treatment_traces"],
@@ -419,6 +451,23 @@ def selftest() -> int:
         errors.append("scorer is not deterministic on identical inputs")
     if not first["tie"]:
         errors.append("scorer does not report a tie when both arms score identically")
+
+    # The tie check above only proves the scorer does not manufacture a false
+    # difference; it says nothing about whether it can detect a real one. Plant
+    # an asymmetric score (every "with" run fails everything) and require
+    # tie=False with the expected sign - the scorer's own negative control on
+    # sensitivity, the counterpart to the blindness gate's planted-leak test.
+    skewed_judgments = {
+        "runs": {
+            r["token"]: {"verdicts": dict.fromkeys(ids, "FAIL" if r["arm"] == "with" else "PASS")}
+            for r in assignment["runs"]
+        }
+    }
+    skewed = compute_scores(spec, assignment, skewed_judgments, {})
+    if skewed["tie"]:
+        errors.append("scorer reports a tie on a planted arm-score difference - it cannot detect an effect")
+    if not skewed["arm_scores"]["with"] < skewed["arm_scores"]["without"]:
+        errors.append("scorer's planted difference did not resolve to the expected sign")
 
     calls = ["opsctl change show 4471"]
     state = parse_terminal_state("state/staging-4471.pin sha256=x bytes=1 lines=1\n")

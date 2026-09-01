@@ -265,20 +265,71 @@ class ABCampaign(unittest.TestCase):
             self.assertIn(f"## {clause}. ", body, f"{clause} is not in the arm-with manual")
 
     def test_committed_receipt_still_matches_its_producer(self) -> None:
-        """Hand-editing the receipt is laundering; this reds when it happens."""
+        """Hand-editing the receipt is laundering; this reds when it happens.
+
+        Recomputes from AB/"runs", matching what score()/receipt() actually
+        read in production - the mechanical oracle must not depend on
+        judge-inputs/'s own copy step (see collect_oracles' docstring)."""
         spec = ab_campaign.load(ab_campaign.SPEC_PATH)
         recomputed = ab_campaign.compute_scores(
             spec,
             ab_campaign.load(ab_campaign.ASSIGNMENT_PATH),
             ab_campaign.load(ab_campaign.JUDGMENTS_PATH),
-            ab_campaign.collect_oracles(spec, AB / "judge-inputs"),
+            ab_campaign.collect_oracles(spec, AB / "runs"),
         )
         committed = ab_campaign.load(ab_campaign.RECEIPT_PATH)
-        for key in ("arm_scores", "delta", "tie", "oracle_arm_scores", "judge_oracle_agreement"):
+        for key in (
+            "arm_scores", "delta", "tie", "physical_tie",
+            "oracle_arm_scores", "judge_oracle_agreement",
+        ):
             self.assertEqual(committed[key], recomputed[key], key)
+
+    def test_judge_inputs_are_byte_identical_to_runs(self) -> None:
+        """judge-inputs/ is a second admitted copy of runs/, not an independent
+        artifact - it exists only so the judge can be run against a directory
+        with no access to this repository. Nothing else in this suite compares
+        their bytes (score()/receipt() now read runs/ directly), so this is
+        the reader that reds if the two ever drift: the RUBRIC.md this builder
+        adds at the top level is the one deliberate difference."""
+        for token_dir in sorted((AB / "runs").iterdir()):
+            if not token_dir.is_dir():
+                continue
+            mirror = AB / "judge-inputs" / token_dir.name
+            self.assertTrue(mirror.is_dir(), f"{token_dir.name} missing from judge-inputs")
+            for path in sorted(p for p in token_dir.rglob("*") if p.is_file()):
+                relative = path.relative_to(token_dir)
+                self.assertEqual(
+                    path.read_bytes(), (mirror / relative).read_bytes(),
+                    f"{token_dir.name}/{relative} drifted between runs/ and judge-inputs/",
+                )
 
     def test_selftest_passes(self) -> None:
         self.assertEqual(ab_campaign.selftest(), 0)
+
+    def test_ab_control_arm_ledger_score_binds_to_the_receipt(self) -> None:
+        """gen_ledger.py's ENTRIES are hand-written Python literals - by design
+        for the qualitative fields (see its module docstring), but the numeric
+        `score` for this wave is a claim about the receipt, not commentary.
+        Nothing bound it to compute_scores before this test: a wrong literal
+        would have shipped silently in the cross-wave reading surface."""
+        ledger = ab_campaign.load(SKILL_ROOT / "evals" / "behavioral-campaigns" / "ledger.json")
+        entry = next(e for e in ledger["entries"] if e["wave"] == "2026-09-01-ab-control-arm")
+        receipt = ab_campaign.load(ab_campaign.RECEIPT_PATH)
+        judge_scores = [run["judge_score"] for run in receipt["per_run"]]
+        expected = round(sum(judge_scores) / len(judge_scores), 4)
+        self.assertEqual(entry["score"], expected, "ledger score is not the mean per-run judge score")
+        self.assertIn(str(receipt["arm_scores"]["with"]), entry["per_clause_summary"]["arm_result"])
+        self.assertIn(str(receipt["arm_scores"]["without"]), entry["per_clause_summary"]["arm_result"])
+        self.assertIn(str(receipt["delta"]), entry["per_clause_summary"]["arm_result"])
+
+    def test_agents_md_carries_the_no_green_as_evidence_stop_law(self) -> None:
+        """This stop law (added alongside the campaign) is the report's only
+        claim with no named reader; nothing else reds if it is later softened
+        or deleted."""
+        text = " ".join((SKILL_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+        self.assertIn(
+            "do not cite a campaign green as evidence the clauses contributed", text
+        )
 
 
 if __name__ == "__main__":
