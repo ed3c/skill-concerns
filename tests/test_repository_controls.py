@@ -612,10 +612,15 @@ class CureAuthorizationTests(unittest.TestCase):
             for path in modules
             if "cure_authorization.refuse(" in path.read_text(encoding="utf-8")
         ]
+        # Hand-listed on purpose, against this repository's usual preference for
+        # a glob: a new BUILD carrier reaching the rule is exactly the change a
+        # reviewer must see, so it lands as an edit here rather than as a row
+        # that quietly appears.
         self.assertEqual(
             [
                 "scripts/maintain_skills.py",
                 "skills/arrival-engineering/scripts/audit_islands.py",
+                "skills/red-team/scripts/shadow_driver.py",
             ],
             callers,
         )

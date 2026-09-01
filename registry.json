@@ -89,6 +89,16 @@
       "source_lock": "intake/arrival-engineering/source-lock.json",
       "admission": "admissions/arrival-engineering.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "red-team",
+      "path": "skills/red-team",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/red-team/skill.json",
+      "source_lock": "intake/red-team/source-lock.json",
+      "admission": "admissions/red-team.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

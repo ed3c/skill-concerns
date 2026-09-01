@@ -95,6 +95,10 @@ SKILL_CHECKS: dict[str, tuple[tuple[str, ...], ...]] = {
         ("skills/arrival-engineering/scripts/validate_arrival_engineering.py",),
         (*DISCOVER, "skills/arrival-engineering/tests"),
     ),
+    "red-team": (
+        ("skills/red-team/scripts/validate_red_team.py",),
+        (*DISCOVER, "skills/red-team/tests"),
+    ),
 }
 
 

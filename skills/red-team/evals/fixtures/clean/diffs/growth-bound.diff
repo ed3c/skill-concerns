@@ -1,0 +1,11 @@
+diff --git a/fitness/limits.json b/fitness/limits.json
+--- a/fitness/limits.json
++++ b/fitness/limits.json
+@@ -1,4 +1,7 @@
+ {
+   "note": "shape chosen after measuring three candidates, not copied",
++  "enforcement": "per-atom bound derived from the measured distribution",
++  "threshold": 36,
++  "cure-authorization": "discriminating-measurement=ed3c/skill-concerns#93",
+   "owner": "fitness"
+ }

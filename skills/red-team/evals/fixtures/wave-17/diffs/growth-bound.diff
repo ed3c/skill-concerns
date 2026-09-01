@@ -1,0 +1,11 @@
+diff --git a/fitness/limits.json b/fitness/limits.json
+--- a/fitness/limits.json
++++ b/fitness/limits.json
+@@ -1,4 +1,6 @@
+ {
+   "note": "mirroring the elder claim's shape",
++  "enforcement": "monotonic ratchet on a report-only growth metric",
++  "threshold": 36,
++  "on_increase": "the change is refused as architectural regression",
+   "owner": "fitness"
+ }

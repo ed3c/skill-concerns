@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "purpose": "one record per SHADOW boundary run, so the skill measures its own effect instead of presuming it: known-class recurrence per wave must trend to zero as classes gate, and a curve that has not bent after three post-admission waves is itself a finding about the architecture.",
+  "record_schema": [
+    "run_id",
+    "wave",
+    "boundary",
+    "classes_sampled",
+    "hits",
+    "novel_class_candidates",
+    "judge_gaps",
+    "duplicate_blocks"
+  ],
+  "append_only": "records are appended by scripts/shadow_driver.py --append-record and never rewritten; scripts/validate_red_team.py checks the shape of every record, and scripts/shadow_driver.curve() reads the recurrence series off this file.",
+  "producer": "skills/red-team/scripts/shadow_driver.py --append-record",
+  "records": [
+    {
+      "run_id": "2026-09-02T00:00:00+00:00",
+      "wave": "wave-17",
+      "boundary": "admission-fixture",
+      "classes_sampled": [
+        "blind-observer",
+        "free-exit",
+        "trusted-current-literal",
+        "duplicate-discovery",
+        "spec-first-lifecycle"
+      ],
+      "hits": {
+        "blind-observer": 1,
+        "free-exit": 1,
+        "trusted-current-literal": 1,
+        "duplicate-discovery": 1,
+        "spec-first-lifecycle": 1
+      },
+      "novel_class_candidates": [],
+      "judge_gaps": 5,
+      "duplicate_blocks": 1
+    }
+  ]
+}
