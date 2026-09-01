@@ -1,0 +1,2 @@
+{"type": "spawned", "payload": {"message": "codex session started", "provider": "codex"}, "timestamp": "2026-09-01T11:20:00Z", "session_id": "fixture-healthy"}
+{"type": "cost", "payload": {"cost_usd": 0, "tokens_in": 0, "tokens_out": 0}, "timestamp": "2026-09-01T11:52:40Z", "session_id": "fixture-healthy"}

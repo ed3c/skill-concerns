@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "session": "2026-09-01 dynamic-workflow authoring under the pinned create-verification-skill procedure",
+  "note": "Every L1 shape and every classification law carries a physical receipt from reading real on-disk dispatch archives read-only. The L2 driver's selftest replays those laws against planted fixtures; these receipts are what the fixtures were planted from.",
+  "evidence": {
+    "step-4-real-wave-observation": {
+      "claim": "the create-verification-skill step-4 bar: the generated Skill's own instructions were executed once end to end against a REAL completed wave, and the evidence survives at the location the Skill names",
+      "how": "python3 skills/dynamic-workflow/scripts/liveness_driver.py --observe <projects>/-Users-neon-noodles/d4332216-1347-4dc5-8057-7772de22e49c/subagents/workflows/wf_cb45448b-233 -> 4 lanes, all `complete`, oldest write 104110s (28.9h) old and still NOT dead. Evidence at /tmp/claude-501/dynamic-workflow/observation-claude-code-workflow-wf_cb45448b-233.json, sha256 ef1a0f1ac7069b8184acc0fb103e92c4d94e191aed7cc95ed2f76bf4f32df36f, 1400 bytes, present after the run (Cleanup is N/A by construction for a reader)"
+    },
+    "step-4-real-wave-with-dead-lanes": {
+      "claim": "the same instructions against a real wave that lost lanes classify 6 complete and 3 dead, each dead lane carrying its own death signature - not its age",
+      "how": "python3 skills/dynamic-workflow/scripts/liveness_driver.py --observe .../workflows/wf_691fb81b-763 -> summary {complete: 6, dead: 3, stalled-suspect: 0}; every dead lane's receipt is its transcript tail '[Request interrupted by user for tool use]'. Evidence sha256 bc5ac19e70a140143c2e85673af82bbcbb7f6a710cde7e34cf65356502023cbd"
+    },
+    "claude-code-workflow-shapes": {
+      "claim": "the wave journal's lane index and completion notification were read off real archives, not inferred: journal.jsonl carries `started` {type,key,agentId} and `result` {type,key,agentId,result}; per-lane transcripts are agent-<agentId>.jsonl with an ISO-8601 timestamp on every line; agent-<agentId>.meta.json carries agentType/spawnDepth/model and no state field at all",
+      "how": "read 20 workflow directories / 196 lane transcripts under the Claude Code projects tree; 14 waves had a `result` row for every `started` lane; all 13 lanes lacking one end on a death-signature line"
+    },
+    "codex-session-shapes": {
+      "claim": ".noodle session directories carry spawn.json, process.json, heartbeat.json (ttl_seconds 30), meta.json, events.ndjson ({type,payload,timestamp,session_id}; spawned/action/cost), canonical.ndjson ({provider,type,message,timestamp}; init/action/error/result), raw.ndjson and stderr.log; the completion notification is canonical.ndjson's `result` line",
+      "how": "read 599 real session directories; this Skill's own driver then classified 600 of them: 487 complete, 79 stalled-suspect, 33 dead, 1 healthy"
+    },
+    "falsely-alive-stamp": {
+      "claim": "a rollup field is not an observation: a session stamped status=running / alive=true / health=green carried a heartbeat 166814s (46h) past its own 30s TTL while its canonical ledger already held a terminal `result` line, and every one of the 599 meta.json files showed an mtime age of 0 minutes in the same scan because that file is bulk-rewritten",
+      "how": "compare meta.json fields against heartbeat.json age, events.ndjson newest timestamp and meta.json mtime for the sessions stamped `running`; the daemon's own claim_contract.py states the same rule - liveness is derived only from ledger event ages, never from a process table"
+    },
+    "liveness-source-is-the-ledger-not-mtime": {
+      "claim": "ages are derived from timestamps inside the records, never from file mtime",
+      "how": "two independent reasons observed: a git checkout rewrites every mtime, and one runtime bulk-rewrites its rollup file's mtime for all 599 sessions at once while their ledgers had not moved in days"
+    },
+    "still-running-not-crashed": {
+      "claim": "the grounding misread: a monitored dispatch run was diagnosed as crashed from artifact and process absence while it was still running, and manual work then raced its own land agents",
+      "refs": ["ed3c/noodles#243", "ed3c/noodles#244"],
+      "how": "owned by spatial-loop-grounded's receipt of the same name; this Skill points at it rather than restating it. It is why `stalled-suspect` exists as a class and can never resolve to `dead` on age"
+    },
+    "max-observed-live-write-gap": {
+      "claim": "the widest write gap inside any live lane transcript observed was 590 seconds (9m50s), so a multi-hour gap is far out of distribution - and still not a death certificate",
+      "how": "max consecutive-timestamp delta across all 196 lane transcripts in 20 workflow directories"
+    },
+    "terminal-stamp-is-not-a-notification": {
+      "claim": "79 of 600 real codex sessions stamped `exited` carry neither a `result` line nor a failure stamp, so this reader holds them at stalled-suspect indefinitely rather than promoting a stamp to a death certificate",
+      "how": "classify every session directory with observe_codex_session(); recorded as a DEFERRED lens-drift filing in domain/dispatch-runtime-topology.json, owner dynamic-workflow, for the maintenance sweep to consume - never cured by widening the law"
+    },
+    "dispatcher-side-single-source": {
+      "claim": "NOT EXERCISED at admission: a wave script that references references/prompts/monitor-prompt.md and references/prompts/judge-prompt.md by path instead of inlining them, with its judge citing those bytes",
+      "how": "that byte lives in the dispatcher's harness, outside this repository. Filed for the dispatcher's ledger append; this admission claims L3_HERMETIC only"
+    }
+  }
+}

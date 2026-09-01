@@ -1,0 +1,12 @@
+{
+ "session_id": "fixture-healthy",
+ "status": "exited",
+ "health": "yellow",
+ "alive": false,
+ "stuck": false,
+ "idle_seconds": 440,
+ "retry_count": 0,
+ "last_activity": "2026-09-01T11:52:40Z",
+ "provider": "codex",
+ "runtime": "process"
+}

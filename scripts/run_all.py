@@ -87,6 +87,10 @@ SKILL_CHECKS: dict[str, tuple[tuple[str, ...], ...]] = {
         ("skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",),
         (*DISCOVER, "skills/context-closure-engineering/tests"),
     ),
+    "dynamic-workflow": (
+        ("skills/dynamic-workflow/scripts/validate_dynamic_workflow.py",),
+        (*DISCOVER, "skills/dynamic-workflow/tests"),
+    ),
 }
 
 

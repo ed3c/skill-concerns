@@ -1,0 +1,2 @@
+{"type": "spawned", "payload": {"message": "codex session started", "provider": "codex"}, "timestamp": "2026-08-30T13:30:00Z", "session_id": "fixture-stale-stamp"}
+{"type": "action", "payload": {"message": "shell"}, "timestamp": "2026-08-30T13:41:46Z", "session_id": "fixture-stale-stamp"}

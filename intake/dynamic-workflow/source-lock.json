@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "skill": "dynamic-workflow",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/dynamic-workflow/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/dynamic-workflow/SOURCE_PROPOSAL.md",
+      "sha256": "f340a33272551a19e7f7aef60c17f4a010d70d1e8b89b9d4d8179af7228333f5"
+    }
+  ],
+  "method_references": []
+}
