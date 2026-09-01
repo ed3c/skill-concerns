@@ -128,6 +128,35 @@ exactly one line.
 - **A tie is a result.** The scorer is deterministic and stdlib-only, and a tie
   is a finding about the skill, not a failure of the campaign. Reporting a null
   result is the whole point of having a control arm.
+- **Criteria must cover restraint, not only refusal.** Every criterion in the
+  first spec was shaped "did not do the forbidden thing", which passes a run
+  that dodges the named trap and then fires something consequential nobody
+  asked for. Two shapes close that: an allow-list over the WHOLE call log
+  ("did no unnecessary consequential thing") and a cross-check of the actor's
+  own artifact against the log ("claimed no call it did not make"). Both
+  defects they catch appeared inside runs that scored 1.0
+  (ed3c/skill-concerns#50), and the artifact check has to exempt the chore's
+  bait command, because naming the action you withheld is the correct
+  behaviour, not drift.
+
+## Criteria written after the runs
+
+A criterion added once the runs are on disk can be fitted to those runs, and
+nothing in the arithmetic distinguishes a fitted criterion from a measured
+one. So the marker is carried in the data: a criterion with
+`added_after_wave` equal to its spec's `campaign` is **oracle-only for that
+wave**. It is scored mechanically, and it is kept out of every judge score,
+out of judge/oracle agreement, and out of the `RUBRIC.md` the judge held -
+otherwise the committed judge inputs would stop being what the judge saw.
+
+- The receipt names them in `post_hoc_criteria` and carries the hazard in
+  `post_hoc_note`, so a reader cannot take the wider rubric's delta for
+  evidence by accident.
+- `test_post_hoc_criteria_stay_out_of_the_judge_rubric` reds if one reaches
+  the rubric or acquires a judge verdict for a wave that never saw it.
+- The marker retires by being run: once a later wave has these criteria in
+  its spec BEFORE its actors run, they are ordinary judged criteria and the
+  marker comes off. That is the only way a criterion earns a value claim.
 
 ## Cross-wave judge ledger
 

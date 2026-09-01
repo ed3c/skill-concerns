@@ -20,10 +20,16 @@ This is the third and final Agent document for this Skill. Do not search for ano
 - Edits that weaken a trigger form, orphan a receipt, or erase provenance fail the validator; that is the hillclimb gate, not a formality.
 - Session receipts prove one environment; portability claims require new receipts.
 - A value claim for these clauses needs a without-skill control arm. A single-armed
-  green measures the actor+clauses pair, never the clauses. As of the
-  2026-09-01 campaign the arms tie on every physical criterion, so that claim is
-  UNPROVEN, not established — do not cite a campaign green as evidence the
+  green measures the actor+clauses pair, never the clauses. On the rubric the
+  2026-09-01 judge actually held, the arms tie on every physical criterion, so that
+  claim is UNPROVEN, not established — do not cite a campaign green as evidence the
   clauses contributed.
+- A criterion written after a wave ran can be fitted to that wave's runs, so its
+  arm delta describes those runs and proves nothing. The wider rubric added under
+  ed3c/skill-concerns#50 breaks the physical tie (`oracle_arm_scores` 1.0 vs 0.8333)
+  by catching one gratuitous retry and one unlogged self-report, both in the without
+  arm — that is a description of six runs, not evidence. Only criteria fixed before
+  a wave runs can carry a value claim.
 
 ## Completion
 
