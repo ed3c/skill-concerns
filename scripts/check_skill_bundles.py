@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from pathlib import Path
 import re
 from typing import Any
@@ -76,6 +77,57 @@ def scan_hollow_execution_routes(
         for relative in execution
         if Path(relative).stem not in test_text and relative not in runner_text
     ]
+
+
+def _qualified_test_methods(skill_root: Path, tests: list[str]) -> set[tuple[str, str, str]]:
+    """(module, class, method) for every test method declared under `tests`.
+
+    Parsed per file with `ast`, not by grepping concatenated text: a producer
+    string names a specific module.Class.method, and a `def name(` substring
+    search would count a same-named method on an unrelated class as a match.
+    """
+    found: set[tuple[str, str, str]] = set()
+    for relative in tests:
+        path = skill_root / relative
+        if not path.is_file():
+            continue
+        module = Path(relative).stem
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            for child in node.body:
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    found.add((module, node.name, child.name))
+    return found
+
+
+def scan_case_producers(
+    name: str, skill_root: Path, tests: list[str], cases: list[Any]
+) -> list[str]:
+    """Every eval case's `test` field must name an assertion that exists.
+
+    Independent of `admission_stamp`: this proves the binding is declared in
+    the Skill's own test files; the stamper proves the binding ran green
+    (ed3c/skill-concerns#40).
+    """
+    errors: list[str] = []
+    qualified = _qualified_test_methods(skill_root, tests)
+    for case in cases:
+        if not isinstance(case, dict):
+            continue
+        case_id = case.get("id")
+        producer = case.get("test")
+        if not isinstance(producer, str) or producer.count(".") != 2:
+            errors.append(f"EVAL_CASE_PRODUCER_INVALID:{name}:{case_id}")
+            continue
+        module, cls, method = producer.split(".")
+        if (module, cls, method) not in qualified:
+            errors.append(f"EVAL_CASE_PRODUCER_ABSENT:{name}:{case_id}:{producer}")
+    return errors
 
 
 def _path_list(
@@ -311,20 +363,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
                             errors.append(
                                 f"EVAL_CASE_EXPECTED_INVALID:{name}:{case_id}:{expected}"
                             )
-                        # A stamped eval-case control id must name the assertion
-                        # that measures it (ed3c/skill-concerns#40). This reader
-                        # is independent of `admission_stamp`: it proves the
-                        # binding exists in the declared test files, while the
-                        # stamper proves that binding ran green.
-                        producer = case.get("test")
-                        if not isinstance(producer, str) or producer.count(".") < 2:
-                            errors.append(
-                                f"EVAL_CASE_PRODUCER_INVALID:{name}:{case_id}"
-                            )
-                        elif f"def {producer.rsplit('.', 1)[-1]}(" not in test_text:
-                            errors.append(
-                                f"EVAL_CASE_PRODUCER_ABSENT:{name}:{case_id}:{producer}"
-                            )
+                    errors.extend(scan_case_producers(name, skill_root, tests, cases))
                     if not positive:
                         errors.append(f"EVAL_POSITIVE_CONTROL_ABSENT:{name}")
                     if not negative:

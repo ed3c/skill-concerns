@@ -117,8 +117,28 @@ class StampRefused(RuntimeError):
 
 
 def unittest_path(root: Path) -> str:
-    """The sys.path a bare `test_<module>` id needs, matching `discover -s`."""
+    """The sys.path a bare `test_<module>` id needs, matching `discover -s`.
+
+    `root/tests` is searched first, so a module name that exists in both
+    `root/tests` and some `skills/*/tests` would silently resolve to the root
+    copy -- rebinding whichever mandatory ids point at the skill copy without
+    either `MANDATORY_PRODUCERS` or the receipt changing. Refuse instead of
+    letting that happen quietly.
+    """
     directories = [root / "tests", *sorted((root / "skills").glob("*/tests"))]
+    mandatory_modules = {producer.split(".", 1)[0] for producer in MANDATORY_PRODUCERS.values()}
+    seen: dict[str, Path] = {}
+    shadowed: set[str] = set()
+    for directory in directories:
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("test_*.py"):
+            module = path.stem
+            if module in mandatory_modules and module in seen:
+                shadowed.add(module)
+            seen.setdefault(module, directory)
+    if shadowed:
+        raise StampRefused(f"{REFUSAL}:MODULE_NAME_SHADOWED:{','.join(sorted(shadowed))}")
     return os.pathsep.join(str(directory) for directory in directories)
 
 

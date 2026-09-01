@@ -170,6 +170,20 @@ class AdmissionStampRefusalTests(unittest.TestCase):
                 ]
                 self.assertEqual(stamped, list(bound))
 
+    def test_root_level_module_shadowing_a_mandatory_producer_refuses(self) -> None:
+        # `unittest_path()` puts `root/tests` ahead of `skills/*/tests`, so a
+        # future root-level module sharing a mandatory producer's module name
+        # would silently rebind every id that resolves through it. A planted
+        # `tests/test_feature_map.py` must refuse, not stamp against whichever
+        # copy import order happens to pick.
+        root = scratch_copy(self)
+        (root / "tests" / "test_feature_map.py").write_text(
+            "class FeatureMapTests:\n    pass\n", encoding="utf-8"
+        )
+        with self.assertRaises(admission_stamp.StampRefused) as ctx:
+            admission_stamp.unittest_path(root)
+        self.assertIn("MODULE_NAME_SHADOWED:test_feature_map", str(ctx.exception))
+
     def test_unknown_skill_refuses_rather_than_stamping_nothing(self) -> None:
         root = scratch_copy(self)
         import admission_stamp
