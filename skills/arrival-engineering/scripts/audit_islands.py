@@ -30,6 +30,13 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+# The BUILD cure-authorization refusal is a repository-wide rule with one
+# implementation (ed3c/skill-concerns#93). This bundle's BUILD verb consumes
+# that implementation rather than carrying a second reading of it, the same way
+# `scripts/gen_admission.py` consumes the one stamp surface.
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+import cure_authorization  # noqa: E402
+
 # surface -> what a consumer arriving through it looks like on disk.
 # Order is the reporting order and the order clause A1 lists them in.
 SURFACES: dict[str, str] = {
@@ -61,7 +68,13 @@ DIAGNOSTICS = (
     "DOCUMENTED_PIN_FALSE",
     "POINTER_DANGLING",
     "TOPOLOGY_ROW_WITHOUT_RECEIPT",
+    cure_authorization.DIAGNOSTIC,
 )
+
+# The two diagnostics the BUILD append raises. They can never appear in a
+# SHADOW report, so the audit's own coverage assertion must exclude them by
+# name rather than by remembering one literal.
+APPEND_ONLY_DIAGNOSTICS = {"TOPOLOGY_ROW_WITHOUT_RECEIPT", cure_authorization.DIAGNOSTIC}
 
 SKIP_DIRS = {".git", "__pycache__", "node_modules"}
 
@@ -447,12 +460,25 @@ def append_row(topology: dict, row: Any, tree: Path) -> dict:
     Continuous intake: each adjudication that names an automation need becomes
     one row here. The refusal is what keeps it a ledger rather than a backlog -
     a row nothing can re-read is an intention, and intentions belong on issues.
+
+    Two refusals, and they are about different things. A row without a receipt
+    is aspirational. A row that introduces or alters an ENFORCEMENT shape and
+    names no cure-authorization is unadjudicated - it may be perfectly true and
+    still be the copy-nearest-shape error (ed3c/skill-concerns#93), so the row
+    carries `cure_authorization` and the decision is the shared one.
     """
     if not isinstance(row, dict) or not row.get("id"):
         raise AppendRefused("TOPOLOGY_ROW_WITHOUT_RECEIPT:<unidentified>:row has no id")
     row_id = row["id"]
     if any(existing.get("id") == row_id for existing in topology.get("rows", [])):
         raise AppendRefused(f"TOPOLOGY_ROW_DUPLICATE:{row_id}")
+    cure = cure_authorization.refuse(
+        row_id,
+        json.dumps({key: value for key, value in row.items() if key != "cure_authorization"}),
+        row.get("cure_authorization"),
+    )
+    if cure is not None:
+        raise AppendRefused(str(cure))
     if supported_arrival(row, tree) is None:
         raise AppendRefused(
             f"TOPOLOGY_ROW_WITHOUT_RECEIPT:{row_id}:no receipt resolves, so no arrival level is supported"
@@ -482,7 +508,7 @@ def selftest() -> int:
     before = tree_fingerprint(planted_tree)
     report = audit(planted_tree, planted, planted_path)
     seen = {item["diagnostic"] for item in report["findings"]}
-    expected = set(DIAGNOSTICS) - {"TOPOLOGY_ROW_WITHOUT_RECEIPT"}
+    expected = set(DIAGNOSTICS) - APPEND_ONLY_DIAGNOSTICS
     record(
         "every_planted_island_class_is_detected",
         expected <= seen,
@@ -559,6 +585,58 @@ def selftest() -> int:
         tree_fingerprint(clean_tree) == clean_before,
         "append_row is pure; only --append-row writes, and only the file it was given",
     )
+
+    # BUILD, ed3c/skill-concerns#93: the canonical refused case. A row that is
+    # fully receipted and would otherwise append, refused because the shape it
+    # carries was copied rather than measured.
+    ratchet_row = {
+        "id": "planted-copied-ratchet-row",
+        "capability": cure_authorization.COPY_NEAREST_RATCHET,
+        "carrier": "capabilities.json",
+        "exit": None,
+        "bound_exit": None,
+        "arrival": "DECLARED",
+        "receipts": [{"kind": "bytes", "ref": "ed3c/skill-concerns#93"}],
+    }
+    try:
+        append_row(clean, ratchet_row, clean_tree)
+        record("unauthorized_enforcement_shape_is_refused", False, "append returned instead of refusing")
+    except AppendRefused as exc:
+        record(
+            "unauthorized_enforcement_shape_is_refused",
+            str(exc).startswith(f"{cure_authorization.DIAGNOSTIC}:planted-copied-ratchet-row"),
+            str(exc),
+        )
+    # Planted negative control: the SAME row with a named adjudication appends.
+    # Without this arm the refusal above could be a gate that refuses every row.
+    authorized_row = {
+        **ratchet_row,
+        "id": "planted-adjudicated-ratchet-row",
+        "cure_authorization": dict(cure_authorization.ADJUDICATED_AUTHORIZATION),
+    }
+    try:
+        adjudicated = append_row(clean, authorized_row, clean_tree)
+        record(
+            "an_adjudicated_enforcement_shape_appends",
+            len(adjudicated["rows"]) == len(clean["rows"]) + 1,
+            f"rows {len(clean['rows'])} -> {len(adjudicated['rows'])}",
+        )
+    except AppendRefused as exc:
+        record("an_adjudicated_enforcement_shape_appends", False, str(exc))
+    # A SHADOW detection is where adjudication starts, not a license to cure.
+    try:
+        append_row(
+            clean,
+            {**authorized_row, "cure_authorization": {"kind": "shadow-detection", "ref": "ed3c/skill-concerns#93"}},
+            clean_tree,
+        )
+        record("a_shadow_detection_never_authorizes_a_row", False, "append returned instead of refusing")
+    except AppendRefused as exc:
+        record(
+            "a_shadow_detection_never_authorizes_a_row",
+            "SHADOW detections never authorize" in str(exc),
+            str(exc),
+        )
 
     # A SHADOW pass that mutated its subject must refuse its own report.
     scratch = Path(tempfile.mkdtemp(prefix="arrival-audit-selftest-"))

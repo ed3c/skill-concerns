@@ -57,6 +57,14 @@ not apply them anywhere a reader would mistake for a landing:
                   `REPOSITORY_PRODUCERS` are excluded because their output is a
                   repository artifact (`admissions/`, `intake/`) by contract,
                   not the Skill's own directory.
+  adjudicated     a proposal whose added lines introduce or alter an
+                  enforcement shape (gate, ratchet, threshold, refusal,
+                  escape-hatch) must name a cure-authorization, or it is
+                  refused with `BUILD_CURE_UNAUTHORIZED`. The decision is
+                  `cure_authorization.refuse()` and lives there once; this
+                  carrier and `skills/arrival-engineering`'s topology append
+                  call the same function rather than each reading the rule
+                  (ed3c/skill-concerns#93).
   proven          the subject's own `run_all.SKILL_CHECKS` row runs against
                   the proposal before it becomes a commit; a red row blocks
                   the pass rather than shipping bytes nobody re-ran. A skill
@@ -112,6 +120,7 @@ from typing import Any, Iterable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import cure_authorization  # noqa: E402
 from common import (  # noqa: E402
     REPO_ROOT,
     compare_digest_entries,
@@ -719,7 +728,65 @@ def restore(root: Path) -> list[str]:
     return worktree_changes(root)
 
 
-def build_pass(root: Path, skill: str) -> dict[str, Any]:
+def proposal_additions(root: Path, scope: str) -> str:
+    """Every line the proposal ADDS under `scope`, tracked and untracked alike.
+
+    Added lines only: a producer that rewrites a file leaves the unchanged
+    context lines in the diff, and scanning those would make an existing gate's
+    own vocabulary read as a gate the proposal introduced. `--unified=0` drops
+    the context; the untracked half has no committed side, so its whole text is
+    the addition.
+    """
+    diff = _git(root, "diff", "--unified=0", "--", scope)
+    added = [
+        line[1:]
+        for line in diff["stdout"].splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    ]
+    new_files = _git(root, "ls-files", "--others", "--exclude-standard", "--", scope)
+    for relative in new_files["stdout"].splitlines():
+        path = root / relative.strip()
+        if path.is_file():
+            try:
+                added.append(path.read_text(encoding="utf-8"))
+            except (UnicodeDecodeError, OSError):
+                continue
+    return "\n".join(added)
+
+
+def abort_proposal(root: Path, report: dict[str, Any], base: str, base_head: str) -> dict[str, Any]:
+    """Undo the proposal, return to the base branch, and block the pass.
+
+    One exit for every refusal after the branch exists (out-of-scope producer,
+    unproven correction, unauthorized cure), so a new refusal cannot ship a
+    fourth restore path that forgets one of these four assertions.
+    """
+    residue = restore(root)
+    _git(root, "checkout", base)
+    if report.get("branch"):
+        _git(root, "branch", "-D", report["branch"])
+    report["branch"] = None
+    report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+    report["base"]["untouched"] = report["base"]["head_after"] == base_head
+    # Assert the restore, never announce it: a refusal that leaves the bytes
+    # behind is the failure it claims to have prevented.
+    if residue or worktree_changes(root):
+        report["refusals"].append(
+            finding(
+                root,
+                "BUILD_RESTORE_FAILED",
+                residue[0] if residue else "worktree",
+                f"refused writes survived the restore: {residue}",
+                "restore this checkout by hand before running any further pass",
+            )
+        )
+    report["outcome"] = "blocked"
+    return report
+
+
+def build_pass(
+    root: Path, skill: str, authorization: dict[str, str] | None = None
+) -> dict[str, Any]:
     root = root.resolve()
     report: dict[str, Any] = {
         "schema_version": 1,
@@ -799,27 +866,25 @@ def build_pass(root: Path, skill: str) -> dict[str, Any]:
             break
 
     if report["refusals"]:
-        residue = restore(root)
-        _git(root, "checkout", base)
-        _git(root, "branch", "-D", branch)
-        report["branch"] = None
-        # Assert the restore, never announce it: a refusal that leaves the
-        # bytes behind is the failure it claims to have prevented.
-        if residue or worktree_changes(root):
-            report["refusals"].append(
-                finding(
-                    root,
-                    "BUILD_RESTORE_FAILED",
-                    residue[0] if residue else "worktree",
-                    f"refused writes survived the restore: {residue}",
-                    "restore this checkout by hand before running any further pass",
-                )
-            )
-        report["outcome"] = "blocked"
-        return report
+        return abort_proposal(root, report, base, base_head)
 
     proposed = [path for path in worktree_changes(root) if path.startswith(scope)]
     if proposed:
+        # ed3c/skill-concerns#93: before the proposal is proven, it has to be
+        # ADJUDICATED. Detection is the beginning of an adjudication, so a
+        # proposal that introduces or alters an enforcement shape without
+        # naming the measurement that chose that shape is refused here rather
+        # than proven and shipped. `refuse()` is the shared decision every
+        # BUILD carrier in this repository makes; there is no copy of it here.
+        cure = cure_authorization.refuse(
+            f"skills/{skill}", proposal_additions(root, scope), authorization
+        )
+        if cure is not None:
+            report["refusals"].append(
+                finding(root, cure.diagnostic, cure.subject, cure.detail, cure.action)
+            )
+            report["corrections"] = []
+            return abort_proposal(root, report, base, base_head)
         # "One PR of PROVEN corrections" (pstack donor, step 6). Regenerated
         # bytes nobody re-ran are a proposal about a Skill, not a correction
         # to it, so the subject's own declared row runs against the proposal
@@ -863,24 +928,7 @@ def build_pass(root: Path, skill: str) -> dict[str, Any]:
                     "a correction that reds the Skill's own row is a regression; fix the producer, not the receipt",
                 )
             )
-            residue = restore(root)
-            _git(root, "checkout", base)
-            _git(root, "branch", "-D", branch)
-            report["branch"] = None
-            report["outcome"] = "blocked"
-            report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
-            report["base"]["untouched"] = report["base"]["head_after"] == base_head
-            if residue:
-                report["refusals"].append(
-                    finding(
-                        root,
-                        "BUILD_RESTORE_FAILED",
-                        residue[0],
-                        f"unproven writes survived the restore: {residue}",
-                        "restore this checkout by hand before running any further pass",
-                    )
-                )
-            return report
+            return abort_proposal(root, report, base, base_head)
         _git(root, "add", "--", f"skills/{skill}")
         commit = _git(
             root,
@@ -1174,6 +1222,91 @@ def selftest() -> int:
             f"outcome={unproven['outcome']} "
             f"refusals={[f['diagnostic'] for f in unproven['refusals']]}",
         )
+        # Planted control, ed3c/skill-concerns#93: the canonical refused case is
+        # the copy-nearest-ratchet shape from the trigger chain. The producer is
+        # healthy and its output PASSES the subject's own row, so the only thing
+        # that can refuse this proposal is the cure-authorization gate - a proof
+        # failure would prove nothing about this rule.
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_evidence.py").write_text(
+            "import json\n"
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            f"body = json.loads({cure_authorization.COPY_NEAREST_RATCHET!r})\n"
+            "body['regenerated'] = True\n"
+            "(root / 'skills' / 'demo-subject' / 'evidence.json').write_text(\n"
+            "    json.dumps(body, indent=2) + '\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        (build_root / "skills" / "demo-subject" / "evidence.json").write_text(
+            '{"regenerated": true}\n', encoding="utf-8"
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "plant the copied ratchet", identity=True)
+        ratchet_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+
+        unauthorized = build_pass(build_root, "demo-subject")
+        record(
+            "planted_unauthorized_cure_is_refused",
+            unauthorized["outcome"] == "blocked"
+            and cure_authorization.DIAGNOSTIC
+            in [f["diagnostic"] for f in unauthorized["refusals"]]
+            and unauthorized["branch"] is None
+            and unauthorized["corrections"] == []
+            and not worktree_changes(build_root)
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == ratchet_head,
+            f"outcome={unauthorized['outcome']} "
+            f"refusals={[f['diagnostic'] for f in unauthorized['refusals']]}",
+        )
+        record(
+            "the_refusal_names_the_shapes_and_the_rule",
+            any(
+                "ratchet" in f["detail"] and "ed3c/skill-concerns#93" in f["detail"]
+                for f in unauthorized["refusals"]
+            ),
+            f"details={[f['detail'] for f in unauthorized['refusals']]}",
+        )
+
+        # A SHADOW detection is the beginning of an adjudication, never its
+        # conclusion: naming one must not unlock the same proposal.
+        detected = build_pass(
+            build_root,
+            "demo-subject",
+            {"kind": "shadow-detection", "ref": "ed3c/skill-concerns#93"},
+        )
+        record(
+            "a_shadow_detection_never_authorizes_a_cure",
+            detected["outcome"] == "blocked"
+            and any(
+                f["diagnostic"] == cure_authorization.DIAGNOSTIC
+                and "SHADOW detections never authorize" in f["detail"]
+                for f in detected["refusals"]
+            ),
+            f"refusals={[(f['diagnostic'], f['detail'][:60]) for f in detected['refusals']]}",
+        )
+
+        # Planted negative control: the SAME bytes with a valid authorization
+        # reach the branch behind the existing proof gate, unchanged in every
+        # other respect. Without this arm the refusal above could be a gate
+        # that refuses everything.
+        authorized = build_pass(
+            build_root, "demo-subject", dict(cure_authorization.ADJUDICATED_AUTHORIZATION)
+        )
+        on_branch = _git(
+            build_root, "show", f"{authorized['branch']}:skills/demo-subject/evidence.json"
+        )
+        record(
+            "an_authorized_cure_reaches_the_branch_behind_the_proof_gate",
+            authorized["outcome"] == "changed"
+            and authorized["corrections"] == ["skills/demo-subject/evidence.json"]
+            and on_branch["returncode"] == 0
+            and "ratchet" in on_branch["stdout"]
+            and authorized["proof"]
+            and authorized["base"]["untouched"]
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == ratchet_head,
+            f"outcome={authorized['outcome']} branch={authorized['branch']} "
+            f"corrections={authorized['corrections']}",
+        )
+
         del run_all.SKILL_CHECKS["demo-subject"]
 
         # Planted negative: a skill with proposable bytes but no row in
@@ -1275,6 +1408,16 @@ def main(argv: list[str] | None = None) -> int:
         "skills/SKILL/ only. Without it the default SHADOW pass runs, which "
         "has no write verb at all.",
     )
+    parser.add_argument(
+        "--cure-authorization",
+        dest="cure_authorization",
+        metavar="KIND=REF",
+        help="BUILD mode: the adjudication that authorizes an enforcement-shape "
+        "cure, e.g. discriminating-measurement=ed3c/skill-concerns#93 or "
+        "operator-adjudication=operator:2026-09-01:<subject>. Without it a "
+        "proposal that introduces or alters a gate, ratchet, threshold, "
+        "refusal or escape-hatch condition is refused.",
+    )
     parser.add_argument("--selftest", action="store_true")
     args = parser.parse_args(argv)
 
@@ -1282,7 +1425,12 @@ def main(argv: list[str] | None = None) -> int:
         return selftest()
 
     if args.build_skill:
-        report = build_pass(args.root, args.build_skill)
+        authorization = (
+            cure_authorization.parse(args.cure_authorization)
+            if args.cure_authorization
+            else None
+        )
+        report = build_pass(args.root, args.build_skill, authorization)
         path = write_report(report, args.report_dir)
         print(log_line(report, path))
         for item in report["refusals"]:

@@ -45,6 +45,24 @@
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_append_without_receipt_is_refused"
     },
     {
+      "id": "adjudicated-cure-appends",
+      "expected": "PASS",
+      "note": "The planted negative control for the refusal below: the same enforcement-shape row with one named adjudication appends. Without this arm the refusal could be a gate refusing the class rather than the missing authorization.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_an_adjudicated_enforcement_shape_appends"
+    },
+    {
+      "id": "unadjudicated-cure-refused",
+      "expected": "FAIL",
+      "note": "The canonical refused case from ed3c/skill-concerns#93: a fully receipted row carrying a ratchet copied from the nearest precedent instead of chosen by measurement.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_unadjudicated_enforcement_shape_is_refused_at_append"
+    },
+    {
+      "id": "shadow-detection-never-authorizes",
+      "expected": "FAIL",
+      "note": "A SHADOW detection named as the authorization is refused by name rather than swallowed by the unknown-kind branch: detection is the beginning of adjudication.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_a_shadow_detection_does_not_authorize_an_append"
+    },
+    {
       "id": "kernel-clause-count-untied",
       "expected": "FAIL",
       "note": "Deleting one L0 kernel entry breaks the count tie with the clauses.",

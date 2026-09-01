@@ -112,6 +112,7 @@ The island audit driver emits exactly these, and only these:
 - `DOCUMENTED_PIN_FALSE` - a "recorded in X" whose value is absent from X (A4).
 - `POINTER_DANGLING` - a cross-repo or cross-tree pointer that does not resolve (A5).
 - `TOPOLOGY_ROW_WITHOUT_RECEIPT` - an aspirational row, refused at append (A3/A6).
+- `BUILD_CURE_UNAUTHORIZED` - an appended row introduces or alters an enforcement shape (gate, ratchet, threshold, refusal, escape-hatch) and names no cure-authorization, so the shape was picked before anything discriminated between candidate shapes (A2/A6). The rule and its decision live once in the repository's `scripts/cure_authorization.py`, which every BUILD carrier calls; a SHADOW detection never authorizes.
 
 ## Knowledge placement
 
@@ -124,7 +125,7 @@ Concern layers, not arrival levels:
 ```sh
 python3 scripts/audit_islands.py --tree <dir> --topology <file>   # SHADOW: read-only
 python3 scripts/audit_islands.py --selftest
-python3 scripts/audit_islands.py --append-row <row.json>          # BUILD: refuses a receipt-less row
+python3 scripts/audit_islands.py --append-row <row.json>          # BUILD: refuses a receipt-less or unadjudicated row
 python3 scripts/validate_arrival_engineering.py [--selftest]
 python3 scripts/gen_receipts.py                                   # BUILD: receipts.json's only author
 ```
@@ -137,3 +138,4 @@ python3 scripts/gen_receipts.py                                   # BUILD: recei
 - No context projection. `context-closure-engineering` owns compiled context packs and the closure laws A6 points at.
 - No cross-repo writes in either mode. BUILD's entire write surface is this directory on a branch in its own clone; the audit driver never writes to the tree it audits.
 - No auto-cure and no aspirational rows: BUILD proposes, the machine ceremony lands, and a row without a receipt is refused at append rather than parked as a to-do.
+- No unadjudicated enforcement shapes. A row that introduces or alters a gate, ratchet, threshold, refusal or escape-hatch condition must name the measurement or adjudication that chose that shape (ed3c/skill-concerns#93). This bundle does not own that rule and does not restate it: it calls the repository's single implementation, so the maintain loop's write verb and this append cannot drift into two readings.
