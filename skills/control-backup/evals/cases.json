@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "cases": [
-    {"id": "control-backup-positive", "control": "positive", "expected": "PASS"},
-    {"id": "l2-driver-selftest", "control": "positive", "expected": "PASS"},
-    {"id": "missing-layer-file", "control": "mutation", "expected": "FAIL"},
-    {"id": "unbacked-receipt-removed", "control": "evidence-promotion", "expected": "FAIL"},
-    {"id": "openrsync-admitted", "control": "boundary", "expected": "FAIL"},
-    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL"}
+    {"id": "control-backup-positive", "control": "positive", "expected": "PASS", "test": "test_control_backup.ControlBackupEvals.test_positive_control_passes"},
+    {"id": "l2-driver-selftest", "control": "positive", "expected": "PASS", "test": "test_control_backup.ControlBackupEvals.test_l2_driver_selftest_passes"},
+    {"id": "missing-layer-file", "control": "mutation", "expected": "FAIL", "test": "test_control_backup.ControlBackupEvals.test_missing_layer_file_fails"},
+    {"id": "unbacked-receipt-removed", "control": "evidence-promotion", "expected": "FAIL", "test": "test_control_backup.ControlBackupEvals.test_unbacked_receipt_removed_fails"},
+    {"id": "openrsync-admitted", "control": "boundary", "expected": "FAIL", "test": "test_control_backup.ControlBackupEvals.test_openrsync_admitted_fails"},
+    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL", "test": "test_control_backup.ControlBackupEvals.test_driver_negative_control_defused_fails"}
   ],
   "runner": "python3 -m unittest discover -s skills/control-backup/tests",
   "hillclimb": "edits may add tiers+receipts; weakening the three-layer structure, admitting an unbacked copier, or defusing a driver negative control fails closed"

@@ -509,7 +509,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "8dc4482b1662f34260940529b177cc1131d5f5b1469aba7e3c341cbf6f9a5015"
+      "sha256": "4a08083f9200384b3c2f7ee5111f4030b8400fabf50f5b32480f3a8a39b90502"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
@@ -560,7 +560,7 @@
       "sha256": "b1bd06fc988e3e530d165d8d30bcebb32f3fca98ab46603f4911961c3a695b96"
     }
   ],
-  "skill_tree_sha256": "e2fa9832c9d7a03f289e1f3e4c524f8e4f07af3b74468e32ea0fd245afbbad0f",
+  "skill_tree_sha256": "6c8262b0bf860e3c3907910b5e8c5c9a450ffdf67ed545000a8a78900a93e3ef",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

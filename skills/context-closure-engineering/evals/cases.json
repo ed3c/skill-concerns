@@ -5,47 +5,56 @@
     {
       "id": "context-pack-positive",
       "expected": "PASS",
-      "note": "The fixture pack satisfies every mechanized law, with its baseline bound."
+      "note": "The fixture pack satisfies every mechanized law, with its baseline bound.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_positive_control_passes"
     },
     {
       "id": "context-pack-selftest",
       "expected": "PASS",
-      "note": "All five mechanized planted negatives go red inside the L2 selftest."
+      "note": "All five mechanized planted negatives go red inside the L2 selftest.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_context_pack_selftest_passes"
     },
     {
       "id": "law-clause-dropped",
       "expected": "FAIL",
-      "note": "Removing one L0 clause breaks the count tie with the L1 law ledger."
+      "note": "Removing one L0 clause breaks the count tie with the L1 law ledger.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_law_clause_dropped_fails"
     },
     {
       "id": "negative-demoted-to-prose",
       "expected": "FAIL",
-      "note": "Flipping a MECHANIZED row to NOT_MECHANIZED without owner and reason fails."
+      "note": "Flipping a MECHANIZED row to NOT_MECHANIZED without owner and reason fails.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_negative_demoted_without_owner_fails"
     },
     {
       "id": "checker-assertion-defused",
       "expected": "FAIL",
-      "note": "Weakening the edge-class comparison makes the selftest, and the gate, red."
+      "note": "Weakening the edge-class comparison makes the selftest, and the gate, red.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_checker_assertion_defused_fails"
     },
     {
       "id": "stale-projection-discriminated",
       "expected": "FAIL",
-      "note": "A snapshot id that no longer names the pack's own baseline commit, and a --head the pack was not compiled over, both red."
+      "note": "A snapshot id that no longer names the pack's own baseline commit, and a --head the pack was not compiled over, both red.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_stale_projection_check_defused_fails"
     },
     {
       "id": "task-packet-unbounded",
       "expected": "FAIL",
-      "note": "A candidate packet with no forbidden-promotion cell, or a pack with no candidate-packet section at all, red."
+      "note": "A candidate packet with no forbidden-promotion cell, or a pack with no candidate-packet section at all, red.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_context_pack_selftest_passes"
     },
     {
       "id": "stage-p0-check-dead",
       "expected": "FAIL",
-      "note": "A STAGE-P0 discrimination naming a check the L2 checker does not emit fails the count tie."
+      "note": "A STAGE-P0 discrimination naming a check the L2 checker does not emit fails the count tie.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_stage_p0_discrimination_naming_a_dead_check_fails"
     },
     {
       "id": "consumer-canary-overclaimed",
       "expected": "FAIL",
-      "note": "Claiming a canary state above NOT_EXERCISED/BLOCKED from this hermetic tree fails."
+      "note": "Claiming a canary state above NOT_EXERCISED/BLOCKED from this hermetic tree fails.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_consumer_canary_overclaim_fails"
     }
   ]
 }

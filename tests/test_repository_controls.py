@@ -88,6 +88,23 @@ class RepositoryControlTests(unittest.TestCase):
                 errors,
             )
 
+    def test_hollow_executable_route_fails(self) -> None:
+        # The negative control behind the `executable-route` mandatory id: a
+        # declared mechanism nothing runs must be named, or the id would be a
+        # claim about a checker that has never been seen to refuse anything.
+        self.assertEqual(
+            ["EXECUTABLE_ROUTE_HOLLOW:demo:scripts/unreached.py"],
+            check_skill_bundles.scan_hollow_execution_routes(
+                "demo", ["scripts/unreached.py"], "no tests mention it", "no runner row"
+            ),
+        )
+        self.assertEqual(
+            [],
+            check_skill_bundles.scan_hollow_execution_routes(
+                "demo", ["scripts/unreached.py"], "import unreached", "no runner row"
+            ),
+        )
+
     def test_tree_digest_changes_when_bytes_change(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)
@@ -114,6 +131,40 @@ class RepositoryControlTests(unittest.TestCase):
             self.assertEqual("git", lock["source_kind"])
             self.assertEqual(1, len(lock["locked_files"]))
             self.assertEqual("skills/demo/SKILL.md", lock["locked_files"][0]["path"])
+
+    def test_case_producer_must_match_the_declared_class_not_just_the_method_name(
+        self,
+    ) -> None:
+        # The old check was `f"def {method}(" in concatenated_test_text`, which
+        # a producer naming the wrong class -- but the right method name -- on
+        # a different class in the same file would satisfy. This is the
+        # negative control behind the `EVAL_CASE_PRODUCER_ABSENT` id: a
+        # binding that claims a class it isn't actually defined on must be
+        # named, not accepted because *some* class has a same-named method.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "tests").mkdir()
+            (skill_root / "tests" / "test_demo.py").write_text(
+                "class Other:\n"
+                "    def test_thing(self) -> None:\n"
+                "        pass\n"
+                "\n"
+                "class Real:\n"
+                "    def test_other_thing(self) -> None:\n"
+                "        pass\n",
+                encoding="utf-8",
+            )
+            cases = [
+                {"id": "wrong-class", "test": "test_demo.Real.test_thing"},
+                {"id": "right-class", "test": "test_demo.Other.test_thing"},
+            ]
+            errors = check_skill_bundles.scan_case_producers(
+                "demo", skill_root, ["tests/test_demo.py"], cases
+            )
+            self.assertEqual(
+                ["EVAL_CASE_PRODUCER_ABSENT:demo:wrong-class:test_demo.Real.test_thing"],
+                errors,
+            )
 
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))

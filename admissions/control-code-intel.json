@@ -25,7 +25,7 @@
     },
     {
       "path": "skills/control-code-intel/evals/cases.json",
-      "sha256": "fa5fc4a57d674d0efa91cbde9e16b427379938182edf4f61e011ec1ab0710825"
+      "sha256": "8eff5e66a6834707f54aae05579b1d8acd0070a4ee8b4c0cb5aaed9e0499ae53"
     },
     {
       "path": "skills/control-code-intel/receipts.json",
@@ -68,7 +68,7 @@
       "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
     }
   ],
-  "skill_tree_sha256": "a8c6005e479da4780893fb5d172377dd5b2103f4ec012a621fc265584d1d80cf",
+  "skill_tree_sha256": "6101cb09bfbf31daffa416bfa8624bb1d7e868b2c3ddd1cb8bb383ef1f924d2e",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
