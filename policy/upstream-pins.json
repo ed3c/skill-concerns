@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "note": "Upstream facts this repository's method rests on. scripts/maintain_skills.py re-checks them on a cadence and reports drift; nothing in the admission or CI path reads this file.",
+  "pins": [
+    {
+      "id": "pstack-canonical-head",
+      "repository": "cursor/plugins",
+      "branch": "main",
+      "pinned_commit": "b9ddc83c32972210b8a94d389130713e8eed346e",
+      "local_readonly_clone": "/Users/neon/github_projects/plugins",
+      "why_pinned": "owner directive 2026-09-01 (ed3c/skill-concerns#46, ed3c/skill-concerns#45): this is the canonical pstack for the ecosystem; the local clone is read-only and is never pulled.",
+      "action_on_drift": "re-read the two verification skills below for upstream changes before citing pstack shape again",
+      "watched_files": [
+        {
+          "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+          "blob_sha": "a2680b91fead45a0b4963d8c367a854956bea59d"
+        },
+        {
+          "path": "pstack/skills/create-verification-skill/SKILL.md",
+          "blob_sha": "f869e26122991252373d5b8f6357e5b9ff195a00"
+        }
+      ],
+      "ancestry": {
+        "fact": "the pinned commit must remain an ancestor of cursor/plugins main",
+        "why": "the providers-lock records this commit as the canonical pstack. A force-push or history rewrite upstream would leave the pin off main, and every pstack citation in this repository would name bytes no longer reachable from the branch we claim to follow. A moved head is routine; an unreachable pin is not.",
+        "check": "GET repos/cursor/plugins/compare/<pinned_commit>...main -> status must be 'identical' or 'ahead'"
+      }
+    }
+  ]
+}

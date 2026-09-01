@@ -135,6 +135,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `scripts/run_all.py` | `SKILL_CHECKS`: the single declaration of each Skill's check argv, and the suite that runs it |
 | `scripts/admission_stamp.py` | the one stamp surface: re-runs a Skill's `run_all.SKILL_CHECKS` row and refuses to write a receipt when any of it is red |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
+| `policy/upstream-pins.json` | the upstream facts this repository's method rests on: the canonical pstack commit, the requirement that it stay reachable from that repository's branch, and the files to re-read when the branch moves |
 | GitHub Actions run | execution arrival for one checked-out commit |
 
 Markdown may explain these files but cannot override them.
@@ -156,6 +157,14 @@ Stop with `FAIL`, `ABSENT`, or `BLOCKED` when:
 - failed or blocked controls are removed from the denominator;
 - the claimed evidence layer exceeds the executed layer;
 - cleanup or exact-subject identity is unknown.
+
+## Content freshness (N-class)
+
+Admission proves a Skill's content at one commit. It says nothing about the day after: receipts pin paths, digests, provider refs, and upstream commits that keep moving while nothing re-reads them. `scripts/maintain_skills.py` is the cadence owner for that decay — daily under `ops/com.neon.maintain-skills.plist`, and by hand with `python3 scripts/maintain_skills.py`.
+
+The sweep re-runs each Skill's own `run_all.SKILL_CHECKS` row and the three repository gates, then re-checks the pins no gate can see: every receipt ref must still resolve at the provider, and `policy/upstream-pins.json` must still hold. It reports one of three outcomes — `clean`, `changed` (drift found), `blocked` (coverage unfinished) — and never patches what it finds: each drift leaves as a finding with a `path:line` destination in this tree. A ref that names a host artifact is reported unreachable with its prerequisite, never as a pass.
+
+The sweep is **N-class: it gates nothing.** No admission, stamp, or CI path reads its exit code or its report, and `tests/test_maintain_skills.py::test_sweep_gates_nothing` reds if one ever starts. Its own falsifier is `python3 scripts/maintain_skills.py --selftest`: planted drift must be detected, filed with a destination, and left unfixed.
 
 ## Change procedure
 

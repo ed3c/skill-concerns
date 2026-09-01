@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "label": "com.neon.maintain-skills",
+  "note": "First live run of the cadence sweep, executed with the interpreter and argv shape the plist names. Report bytes stay host-archived; this file binds their digest. Chain: plist -> this receipt -> report sha256 -> host bytes.",
+  "run": {
+    "utc": "2026-09-01T05:09:02+00:00",
+    "interpreter": "/usr/bin/python3 (Python 3.9.6, the plist's ProgramArguments[0])",
+    "command": "/usr/bin/python3 scripts/maintain_skills.py --root . --report-dir <report-dir>",
+    "log_line": "maintain-skills: clean checks=15 pins=29 findings=0 unreachable=2 report=<report-dir>/maintain-skills-20260901T050902+0000.json",
+    "exit_code": 0,
+    "outcome": "clean",
+    "report_sha256": "6dda893b1d64ca8dec6e59a0681f07dccc56806276bd9b6ac738d3b25fb1fe07",
+    "report_bytes": 9634
+  },
+  "observed_upstream_pins": {
+    "cursor/plugins main head": "b9ddc83c32972210b8a94d389130713e8eed346e",
+    "pinned commit ancestry vs main": "identical",
+    "pstack/skills/maintain-verification-skill/SKILL.md": "a2680b91fead45a0b4963d8c367a854956bea59d",
+    "pstack/skills/create-verification-skill/SKILL.md": "f869e26122991252373d5b8f6357e5b9ff195a00"
+  },
+  "unreachable": [
+    {
+      "pin": "host:~/.noodles-ops/backups/backup-noodles.log",
+      "prerequisite": "a host artifact this sweep cannot observe (log file, launchctl label)",
+      "destination": "skills/spatial-loop-grounded/receipts.json:75"
+    },
+    {
+      "pin": "host:launchctl-list:com.neon.noodles-backup",
+      "prerequisite": "a host artifact this sweep cannot observe (log file, launchctl label)",
+      "destination": "skills/spatial-loop-grounded/receipts.json:75"
+    }
+  ],
+  "negative_controls_run": {
+    "planted-drift-offline": "python3 scripts/maintain_skills.py --selftest -> a deleted pin subject in a scratch copy produced SOURCE_LOCK_FILE_ABSENT at intake/control-backup/source-lock.json:7, was never restored, and the real tree's digest was unchanged",
+    "planted-defect-on-the-instrument": "with _gate_findings' parse loop disabled in a throwaway copy, the same selftest exited 1 - the instrument reds when detection breaks",
+    "unresolvable-ref-on-the-wire": "a scratch copy citing ed3c/skill-concerns#999999 alongside ed3c/skill-concerns#46 produced RECEIPT_REF_UNRESOLVED for the first and RESOLVED for the second"
+  },
+  "not_claimed": [
+    "the launchd job is NOT installed on the host by this change; loading it (launchctl bootstrap gui/$UID ops/com.neon.maintain-skills.plist) is an operator step and the StartCalendarInterval firing unattended is unproven here",
+    "L4_MATCHED_LIVE_RUNTIME for the Skills the sweep re-checks: the sweep re-runs their hermetic gates, it does not drive their live subjects"
+  ]
+}
