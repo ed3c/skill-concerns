@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
-"""Validate complete content-bound source locks and admission receipts."""
+"""Validate complete content-bound source locks and admission receipts.
+
+TIGHTENING HAZARD -- read before narrowing any field check here.
+
+`verify.yml` runs this file from the **default branch** against the candidate
+tree. A pull request that tightens a check *and* changes the value that check
+reads is graded by the *old*, unmerged copy of this file, which still demands
+the old value: such a PR can never go green on its own trust model, no matter
+how correct it is. `check_skill_bundles.EXECUTABLE_ROUTE_HOLLOW` carries the
+same hazard and names it in `run_all.py`'s docstring; nothing named it here
+until ed3c/skill-concerns#44 hit it head-on (PR #43 failed with five
+`AUTHORING_COMMAND_INVALID` rows for exactly this reason).
+
+Split any such change into two landings: first loosen this file to accept both
+the old and new value, with no data change, so the trusted copy on the default
+branch accepts either; then change the data and narrow back down. The
+`authoring_command` check below is currently mid-split -- it accepts both.
+"""
 
 from __future__ import annotations
 
@@ -29,6 +46,22 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 # running that id's producer, and this gate requires the same twelve ids. A
 # second literal here let the two sets drift silently (ed3c/skill-concerns#40).
 MANDATORY_CONTROLS = set(MANDATORY_PRODUCERS)
+
+
+def authoring_commands(name: str) -> set[str]:
+    """The commands a receipt for `name` may claim as its producer.
+
+    `python3 scripts/run_all.py` is what every committed receipt says today and
+    it names a command that structurally cannot have produced those bytes --
+    `run_all.py` never calls `gen_admission.py`. The honest value is the
+    per-Skill delegate. Both are accepted during the split described in this
+    module's docstring; the second landing drops the run_all value and
+    regenerates the five receipts (ed3c/skill-concerns#44).
+    """
+    return {
+        "python3 scripts/run_all.py",
+        f"python3 skills/{name}/scripts/gen_admission.py",
+    }
 
 
 def produced_control_ids(skill_root: Path) -> set[str]:
@@ -299,7 +332,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
             for level in sorted(required_higher - set(not_claimed)):
                 errors.append(f"HIGHER_LAYER_NOT_EXPLICIT:{name}:{level}")
 
-        if admission.get("authoring_command") != "python3 scripts/run_all.py":
+        if admission.get("authoring_command") not in authoring_commands(name):
             errors.append(f"AUTHORING_COMMAND_INVALID:{name}")
         if admission.get("hosted_evidence") not in {
             "READ_FROM_GITHUB",
