@@ -105,6 +105,7 @@ def main() -> int:
         for argv in checks:
             run(*argv)
     run("scripts/check_admissions.py")
+    run("scripts/check_receipt_provenance.py")
     print("skill-concerns: PASS")
     return 0
 
