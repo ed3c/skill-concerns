@@ -189,9 +189,18 @@ def observe_codex_session(path: Path, now: float, threshold: int) -> list[Lane]:
     age = (now - max(stamps)) if stamps else None
     has_completion = any(r.get("type") == "result" for r in canonical)
 
+    # K10 applies uniformly: meta.json status/health/alive are a rollup stamp,
+    # never observed at read time (this is documented for `exited` in L1 and
+    # must hold just as much for `failed` -- the same bulk-rewritten pass
+    # writes both). The only signature this reader trusts is a record inside
+    # the true event ledger itself: canonical.ndjson's own tail entry, the
+    # same "last thing recorded, with nothing after it" shape the Claude-code
+    # transcript-tail signature uses.
+    tail_type = canonical[-1].get("type") if canonical else None
+    signature = "canonical.ndjson tail: {\"type\": \"error\"}" if not has_completion and tail_type == "error" else None
+
     meta_path = path / "meta.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.is_file() else {}
-    signature = "meta.json status=failed" if meta.get("status") == "failed" and not has_completion else None
 
     receipt = (
         f'canonical.ndjson: {{"type": "result", "message": "{next((r.get("message") for r in canonical if r.get("type") == "result"), "")}"}}'
@@ -221,6 +230,8 @@ def selftest(verbose: bool = True) -> int:
     dead = observe_claude_workflow(fixtures / "dead-wave", now, threshold)
     codex_live = observe_codex_session(fixtures / "codex-healthy-session", now, threshold)
     codex_stale = observe_codex_session(fixtures / "codex-stale-stamp-session", now, threshold)
+    codex_dead = observe_codex_session(fixtures / "codex-dead-session", now, threshold)
+    codex_failed_stamp = observe_codex_session(fixtures / "codex-failed-stamp-not-dead-session", now, threshold)
 
     checks: list[Assertion] = [
         # unit-level law
@@ -259,6 +270,18 @@ def selftest(verbose: bool = True) -> int:
             f"{[lane.lane_class for lane in codex_stale]} - the stamp is not believed, and silence is not death",
         ),
         Assertion(
+            "fixture_codex_dead_is_dead_from_ledger_tail",
+            [lane.lane_class for lane in codex_dead] == ["dead"],
+            f"a session whose canonical.ndjson tail record is type=error classified {[lane.lane_class for lane in codex_dead]}",
+        ),
+        Assertion(
+            "fixture_codex_failed_stamp_alone_is_not_dead",
+            [lane.lane_class for lane in codex_failed_stamp] == ["stalled-suspect"],
+            "a session stamped status=failed whose canonical.ndjson tail is a plain action record "
+            f"(no ledger error, no result) classified {[lane.lane_class for lane in codex_failed_stamp]} "
+            "- the meta.json stamp alone must never promote to dead",
+        ),
+        Assertion(
             "severity_ladder_is_wired",
             [lane.severity for lane in stuck + dead + healthy] == ["S1", "S2", "S0", "S0"],
             f"severities {[lane.severity for lane in stuck + dead + healthy]}",
@@ -283,6 +306,15 @@ def selftest(verbose: bool = True) -> int:
                 "the session stamped alive=true/health=green must not read as healthy: its ledger is 46h silent",
             ),
             "a stamped alive field must never become liveness evidence",
+        ),
+        _expect_false(
+            Assertion(
+                "failed_stamp_alone_reads_dead",
+                codex_failed_stamp[0].lane_class == "dead",
+                "the session stamped status=failed with no ledger error tail must not read as dead: "
+                "the stamp is the same untrusted rollup pass as status=exited",
+            ),
+            "a stamped failed status must never become a death certificate on its own",
         ),
     ]
 
@@ -323,7 +355,13 @@ def observe(path: Path, runtime: str, now: float, out: Path | None) -> dict:
 
     # Adjudication 3: the lens degrades itself when its own selftest is red
     # NOW. Triggered, never applied -- the maintain pass is scheduled, not run.
-    lens_ok = selftest(verbose=False) == 0
+    # selftest() reads the bundled fixtures via the same ABSENT-raising readers
+    # used on a real subject; if the fixtures themselves are missing, that is
+    # still "the lens is broken", not a crash of the real observation.
+    try:
+        lens_ok = selftest(verbose=False) == 0
+    except SystemExit:
+        lens_ok = False
     findings = []
     if not lens_ok:
         findings.append(
@@ -364,6 +402,13 @@ def observe(path: Path, runtime: str, now: float, out: Path | None) -> dict:
     }
 
     target = out or (evidence_dir() / f"observation-{runtime}-{path.name}.json")
+    target_resolved = target.resolve() if target.is_absolute() else (Path.cwd() / target).resolve()
+    subject_resolved = path.resolve()
+    if target_resolved == subject_resolved or subject_resolved in target_resolved.parents:
+        raise SystemExit(
+            f"REFUSED: --out {target} resolves inside the observed subject {path}; "
+            "the reader never writes to the observed system (docstring line 7)"
+        )
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     report["evidence_path"] = str(target)

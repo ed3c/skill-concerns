@@ -1,0 +1,12 @@
+{
+ "session_id": "fixture-dead",
+ "status": "failed",
+ "health": "red",
+ "alive": false,
+ "stuck": false,
+ "idle_seconds": 6900,
+ "retry_count": 0,
+ "last_activity": "2026-09-01T10:11:05Z",
+ "provider": "codex",
+ "runtime": "process"
+}

@@ -21,11 +21,43 @@
     },
     {
       "path": "skills/dynamic-workflow/domain/dispatch-runtime-topology.json",
-      "sha256": "54ff6f0b5a7d58c89f071dd8c75b00283c52f0538e56089e72a8ca8b120ebf4c"
+      "sha256": "0f0499ec40c6b6d7ddbc7769e37080d6438d2125f73aac0dd8bafa86e93b3fdc"
     },
     {
       "path": "skills/dynamic-workflow/evals/cases.json",
-      "sha256": "1b255a6d004336ff571bd5e9571fc43b7fcf43e203d3c0c5034c3bed9a454d66"
+      "sha256": "539fd3b78e9daa25726da362185284a2616e82d420e2ece32602882cca1b9b1f"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/canonical.ndjson",
+      "sha256": "5b5793fb41408b4435b6569084e4656cca4e5f282930b8c29d088b2e2ab9949c"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/events.ndjson",
+      "sha256": "ad8922350e97d15bbb8fb618379f0c06203551071173b8f3511639e0ccbe074c"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/heartbeat.json",
+      "sha256": "d217b51667fda258f7e8aa9619fdee26cbfaeaac97d98de9dc28cf2ba9ae3163"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/meta.json",
+      "sha256": "15f4bb185f04219541ee30dc9f6b4800b378e5f2245ab832459101038ac6ec38"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/canonical.ndjson",
+      "sha256": "a120a0553704f8003ae6994cb5c90a1c0fa8e7121b5c03da8a071f2faae338f3"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/events.ndjson",
+      "sha256": "a31c3a338a50b53e15e7a6a61fa08af348d276780c4ab49aeffaa4093139d4c5"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/heartbeat.json",
+      "sha256": "0808f7b342262486fcd3cdde42f6fc6045223bd338cafde7a0df77d3b3bb13e2"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/meta.json",
+      "sha256": "9d18f0d3fb89a6c5515244bc654c1cd0e14d0357370bd679f41b8dea7a3960ca"
     },
     {
       "path": "skills/dynamic-workflow/evals/fixtures/codex-healthy-session/canonical.ndjson",
@@ -89,7 +121,7 @@
     },
     {
       "path": "skills/dynamic-workflow/receipts.json",
-      "sha256": "044f1331556de1021400403b2df67380b42ecb556d85799dd4657160152565dd"
+      "sha256": "c801896075c137354437fcb9722c015a57634e1471ab1ccf43ca8a1df333f581"
     },
     {
       "path": "skills/dynamic-workflow/references/README.md",
@@ -117,11 +149,11 @@
     },
     {
       "path": "skills/dynamic-workflow/scripts/liveness_driver.py",
-      "sha256": "ff0066ddd5fbbe568e88fe79cc33b19b9b82b1c6bdf16e0a077b3a069e885046"
+      "sha256": "870755070fbb4b9d94bb96988c3391e7e727e3e6bf5822fe690553ae10bacb11"
     },
     {
       "path": "skills/dynamic-workflow/scripts/validate_dynamic_workflow.py",
-      "sha256": "736507e3038e0d34ebc31a50bdaa099ce0e9979cd14cb89bfd7becc6c9abe0df"
+      "sha256": "be85dcc483933e5a54c9efb27c26823ea29d7491dced4172517ea04458493f80"
     },
     {
       "path": "skills/dynamic-workflow/skill.json",
@@ -129,10 +161,10 @@
     },
     {
       "path": "skills/dynamic-workflow/tests/test_dynamic_workflow.py",
-      "sha256": "f6122e42881efd9e31848be78222e8812ee13ad05210fa34c7a461d0c12b52dd"
+      "sha256": "87e7bec58495c763435661359ea7b3b0069d76cf0fcda772815e5a420fea8547"
     }
   ],
-  "skill_tree_sha256": "c5eb0797b3e1ba7b36bb4d073a0cd2c600b2742f2303384395f254394f811e73",
+  "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -246,6 +278,22 @@
     },
     {
       "id": "red-selftest-degrades-to-lens-suspect",
+      "state": "PASS"
+    },
+    {
+      "id": "boundary-term-absent-from-owner",
+      "state": "PASS"
+    },
+    {
+      "id": "codex-failed-stamp-alone-not-dead",
+      "state": "PASS"
+    },
+    {
+      "id": "observe-refuses-write-inside-subject",
+      "state": "PASS"
+    },
+    {
+      "id": "observe-degrades-when-fixtures-absent",
       "state": "PASS"
     }
   ],

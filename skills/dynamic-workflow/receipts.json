@@ -17,7 +17,7 @@
     },
     "codex-session-shapes": {
       "claim": ".noodle session directories carry spawn.json, process.json, heartbeat.json (ttl_seconds 30), meta.json, events.ndjson ({type,payload,timestamp,session_id}; spawned/action/cost), canonical.ndjson ({provider,type,message,timestamp}; init/action/error/result), raw.ndjson and stderr.log; the completion notification is canonical.ndjson's `result` line",
-      "how": "read 599 real session directories; this Skill's own driver then classified 600 of them: 487 complete, 79 stalled-suspect, 33 dead, 1 healthy"
+      "how": "read 599 real session directories; at admission this Skill's own driver classified 600 of them: 487 complete, 79 stalled-suspect, 33 dead, 1 healthy. SUPERSEDED (ed3c/skill-concerns#59 reconcile, see domain/dispatch-runtime-topology.json `death_signature_correction`): the 33 `dead` came from trusting meta.json `status == failed`, the same untrusted rollup pass as `exited`; the driver now requires a canonical.ndjson tail `error` record instead, so a fresh scan is needed for a current split and none was re-run against real archives during this reconcile"
     },
     "falsely-alive-stamp": {
       "claim": "a rollup field is not an observation: a session stamped status=running / alive=true / health=green carried a heartbeat 166814s (46h) past its own 30s TTL while its canonical ledger already held a terminal `result` line, and every one of the 599 meta.json files showed an mtime age of 0 minutes in the same scan because that file is bulk-rewritten",

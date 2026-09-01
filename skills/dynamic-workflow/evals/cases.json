@@ -13,6 +13,10 @@
     {"id": "judge-rule-removed", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_judge_rule_removed_fails"},
     {"id": "unbacked-receipt-removed", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_unbacked_receipt_removed_fails"},
     {"id": "reader-gains-exec-surface", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_reader_gaining_exec_surface_fails"},
-    {"id": "red-selftest-degrades-to-lens-suspect", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_red_selftest_degrades_report_to_lens_suspect"}
+    {"id": "red-selftest-degrades-to-lens-suspect", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_red_selftest_degrades_report_to_lens_suspect"},
+    {"id": "boundary-term-absent-from-owner", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_boundary_term_absent_from_owner_fails"},
+    {"id": "codex-failed-stamp-alone-not-dead", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_meta_json_failed_stamp_promoted_to_dead_is_not_covered_by_a_stale_fixture"},
+    {"id": "observe-refuses-write-inside-subject", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_observe_refuses_to_write_inside_the_observed_subject"},
+    {"id": "observe-degrades-when-fixtures-absent", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_observe_degrades_to_lens_suspect_when_fixtures_are_absent"}
   ]
 }

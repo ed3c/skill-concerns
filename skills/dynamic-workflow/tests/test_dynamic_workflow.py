@@ -141,6 +141,81 @@ class DynamicWorkflowEvals(unittest.TestCase):
         driver.write_text("import subprocess\n" + driver.read_text())
         self.assertTrue(any("write/exec surface" in e for e in validate(root)), validate(root))
 
+    def test_boundary_term_absent_from_owner_fails(self) -> None:
+        """Pointing at nothing is not a boundary: the term must land in control-noodle too."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        # owner_path is a sibling-skill pointer (../../control-noodle/SKILL.md); the
+        # mutated copy only isolates dynamic-workflow, so bring the real sibling along.
+        shutil.copytree(
+            SKILL_ROOT.parent / "control-noodle",
+            root.parent / "control-noodle",
+            ignore=shutil.ignore_patterns("__pycache__"),
+        )
+        path = root / "domain" / "dispatch-runtime-topology.json"
+        topology = json.loads(path.read_text())
+        topology["ceremony_boundary"]["not_owned_here"].append("a phrase nobody wrote")
+        path.write_text(json.dumps(topology, indent=2))
+        self.assertTrue(
+            any("does not appear in the claimed owner" in e for e in validate(root)), validate(root)
+        )
+
+    def test_meta_json_failed_stamp_promoted_to_dead_is_not_covered_by_a_stale_fixture(self) -> None:
+        """Regression guard for the K10 violation this reconcile fixed: a bare status=failed
+        stamp (no ledger error tail) must classify stalled-suspect, never dead."""
+        lanes = liveness_driver.observe_codex_session(
+            SKILL_ROOT / "evals" / "fixtures" / "codex-failed-stamp-not-dead-session",
+            liveness_driver.parse_iso("2026-09-01T12:00:00Z"),
+            liveness_driver.stall_threshold(),
+        )
+        self.assertEqual([lane.lane_class for lane in lanes], ["stalled-suspect"])
+
+    def test_observe_refuses_to_write_inside_the_observed_subject(self) -> None:
+        """The reader never writes to the observed system (docstring line 7), mechanically."""
+        subject = SKILL_ROOT / "evals" / "fixtures" / "healthy-wave"
+        with self.assertRaises(SystemExit):
+            liveness_driver.observe(
+                subject,
+                "claude-code-workflow",
+                liveness_driver.parse_iso("2026-09-01T12:00:00Z"),
+                subject / "observation.json",
+            )
+
+    def test_observe_degrades_to_lens_suspect_when_fixtures_are_absent(self) -> None:
+        """A missing evals/fixtures/ tree must degrade the report, never crash a real observation."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        shutil.rmtree(root / "evals" / "fixtures")
+        with tempfile.TemporaryDirectory(prefix="dwf-absent-fixtures-") as scratch:
+            subject = Path(scratch) / "real-subject"
+            subject.mkdir()
+            (subject / "journal.jsonl").write_text(
+                '{"type": "started", "key": "v2:real", "agentId": "areal"}\n'
+                '{"type": "result", "key": "v2:real", "agentId": "areal"}\n'
+            )
+            (subject / "agent-areal.jsonl").write_text(
+                '{"timestamp": "2026-09-01T11:59:00Z", "type": "text"}\n'
+            )
+            out = Path(scratch) / "observation.json"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(root / "scripts" / "liveness_driver.py"),
+                    "--observe",
+                    str(subject),
+                    "--now",
+                    "2026-09-01T12:00:00Z",
+                    "--out",
+                    str(out),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            report = json.loads(out.read_text())
+        self.assertEqual(report["lens"], "lens-suspect")
+        self.assertEqual(report["maintain_pass"], "SCHEDULED")
+
     # ---- adjudication 3: triggered, never applied ---------------------------
     def test_red_selftest_degrades_report_to_lens_suspect(self) -> None:
         temp, root = mutated_copy()

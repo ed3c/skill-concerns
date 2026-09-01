@@ -7,7 +7,9 @@ whose selftest passes. Also enforces the three owner adjudications of
 ed3c/skill-concerns#59 mechanically rather than in prose:
 
 - boundary: L1 must POINT at the ceremony owner and must not restate it, so
-  every term it declares as not-owned-here may appear exactly once in the file;
+  every term it declares as not-owned-here may appear exactly once in the file
+  AND must actually appear in the claimed owner's bytes - a boundary that
+  points at nothing is not a boundary;
 - filing-not-reflex: the reader must stay a reader, so the driver may not carry
   a subprocess or filesystem-removal surface it could invoke maintenance with;
 - trigger-not-apply: the driver must degrade its own report to `lens-suspect`
@@ -115,6 +117,14 @@ def validate(root: Path) -> list[str]:
         if boundary.get("owner") != "control-noodle":
             errors.append("L1 ceremony_boundary must name control-noodle as owner")
         terms = boundary.get("not_owned_here")
+        owner_path = boundary.get("owner_path")
+        owner_text = None
+        if isinstance(owner_path, str):
+            owner_file = (l1.parent / owner_path).resolve()
+            if owner_file.is_file():
+                owner_text = owner_file.read_text(encoding="utf-8")
+            else:
+                errors.append(f"L1 ceremony_boundary owner_path {owner_path!r} does not resolve to a file")
         if not isinstance(terms, list) or not terms:
             errors.append("L1 ceremony_boundary declares no not_owned_here terms")
         else:
@@ -123,6 +133,11 @@ def validate(root: Path) -> list[str]:
                     errors.append(
                         f"L1 restates ceremony term {term!r} ({raw.count(term)} occurrences); "
                         "point at control-noodle, never restate"
+                    )
+                if owner_text is not None and term not in owner_text:
+                    errors.append(
+                        f"L1 ceremony term {term!r} does not appear in the claimed owner "
+                        f"{owner_path!r}; a boundary pointing at nothing is not a boundary"
                     )
 
     if monitor:
