@@ -1,0 +1,4 @@
+read src/index.py
+edit src/index.py +lookup_symbol
+write docs/USAGE.md
+read docs/USAGE.md

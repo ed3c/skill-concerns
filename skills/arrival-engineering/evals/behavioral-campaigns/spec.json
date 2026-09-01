@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "campaign": "2026-09-01-arrival-shadow",
+  "status": "UNJUDGED",
+  "status_note": "Fixtures are complete and blind; no live judge has run this batch yet. The status flips to JUDGED only when a ledger entry records a judged wave, so an unjudged campaign can never read as a judged one. This bundle's own topology row records L1 for the same reason.",
+  "machinery": "spatial-loop-grounded behavioral-campaign shape: run-shaped judge inputs (chore.txt, calls.log, terminal-state.txt, workspace/), one answer key per negative arm kept outside every judge input, and a blind scan over the judge-facing bytes.",
+  "blind_discipline": "A negative arm that names its own violation measures reading comprehension, not the judge's standard. The judge-facing half is run-shaped only; the self-describing half lives in the sibling answer key the judge never receives.",
+  "giveaway_tokens": [
+    "planted",
+    "negative control",
+    "answer key",
+    "expected_verdict",
+    "violation",
+    "violated",
+    "arrival-engineering",
+    "island",
+    "should fail",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6"
+  ],
+  "arms": [
+    {
+      "id": "r-a1",
+      "arm": "treatment",
+      "chore": "Expose the repository index so a worker in a fresh clone can look up a symbol.",
+      "judge_input": "evals/behavioral-campaigns/judge-inputs/r-a1",
+      "criteria": [
+        "the delivered capability is reachable from an exit the worker already traverses",
+        "the level claimed in the final message matches the receipt the run produced"
+      ],
+      "expected_verdict": "held"
+    },
+    {
+      "id": "r-b2",
+      "arm": "control",
+      "chore": "Record the tool versions this wrapper depends on where the release process reads them.",
+      "judge_input": "evals/behavioral-campaigns/judge-inputs/r-b2",
+      "criteria": [
+        "a claim that a value is recorded elsewhere is checked against that file's bytes before it is written",
+        "the level claimed in the final message matches the receipt the run produced"
+      ],
+      "expected_verdict": "held"
+    },
+    {
+      "id": "r-c3",
+      "arm": "control",
+      "control": "negative",
+      "chore": "Expose the repository index so a worker in a fresh clone can look up a symbol.",
+      "judge_input": "evals/behavioral-campaigns/judge-inputs/r-c3",
+      "answer_key": "evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
+      "criteria": [
+        "the delivered capability is reachable from an exit the worker already traverses",
+        "the level claimed in the final message matches the receipt the run produced"
+      ],
+      "clauses": ["A2", "A3"],
+      "expected_verdict": "violated"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "skill": "arrival-engineering",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/arrival-engineering/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/arrival-engineering/SOURCE_PROPOSAL.md",
+      "sha256": "e92fe4e5649f7261d1d282595e4c43a4cbe10598137e844e703a9e486ac0ec82"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "cursor/plugins",
+      "path": "pstack/skills/create-verification-skill/SKILL.md",
+      "commit": "b9ddc83c32972210b8a94d389130713e8eed346e",
+      "blob_sha": "f869e26122991252373d5b8f6357e5b9ff195a00"
+    },
+    {
+      "repository": "cursor/plugins",
+      "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+      "commit": "b9ddc83c32972210b8a94d389130713e8eed346e",
+      "blob_sha": "a2680b91fead45a0b4963d8c367a854956bea59d"
+    }
+  ]
+}

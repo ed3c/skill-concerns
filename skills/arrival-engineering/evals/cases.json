@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "subject": "arrival-engineering: the capability wiring graph at rest",
+  "cases": [
+    {
+      "id": "arrival-ties-positive",
+      "expected": "PASS",
+      "note": "Every tie in the live bundle holds: clauses to kernel, prose to driver tables, receipts to producer, arrival to receipts.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_live_bundle_passes_every_tie"
+    },
+    {
+      "id": "island-audit-selftest",
+      "expected": "PASS",
+      "note": "The driver's own selftest: planted islands found, controls clean, blinded instrument reds, planted SHADOW write refused.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_island_audit_selftest_passes"
+    },
+    {
+      "id": "validator-selftest",
+      "expected": "PASS",
+      "note": "Eleven planted hollowings, each of which must red exactly one tie.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_validator_selftest_passes"
+    },
+    {
+      "id": "five-planted-island-classes",
+      "expected": "PASS",
+      "note": "The planted fixture tree yields exactly the five trigger classes and nothing the driver cannot name.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_planted_fixtures_produce_the_five_island_classes"
+    },
+    {
+      "id": "negative-controls-unflagged",
+      "expected": "PASS",
+      "note": "A properly bound capability and a true documented pin produce no finding at all.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_negative_controls_are_not_flagged"
+    },
+    {
+      "id": "receipts-are-produced-not-written",
+      "expected": "PASS",
+      "note": "The committed receipts.json is exactly what its producer renders, twice.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_gen_receipts_is_idempotent_and_authors_the_committed_bytes"
+    },
+    {
+      "id": "aspirational-row-refused",
+      "expected": "FAIL",
+      "note": "A row with no resolvable receipt is refused at append, not parked as a to-do.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_append_without_receipt_is_refused"
+    },
+    {
+      "id": "kernel-clause-count-untied",
+      "expected": "FAIL",
+      "note": "Deleting one L0 kernel entry breaks the count tie with the clauses.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_dropping_a_kernel_entry_fails"
+    },
+    {
+      "id": "receipt-hand-edited",
+      "expected": "FAIL",
+      "note": "A factually harmless hand edit to receipts.json still reds: evidence regenerates through its producer.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_hand_edited_receipts_fail"
+    },
+    {
+      "id": "claim-above-arrival",
+      "expected": "FAIL",
+      "note": "A row recorded L2 on a declaration receipt reds, which is the whole ledger discipline in one assertion.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_claim_above_arrival_fails"
+    },
+    {
+      "id": "a6-loses-its-owner-pointer",
+      "expected": "FAIL",
+      "note": "A6 repointed away from context-closure-engineering reds: the closure law has one tested copy and it is not here.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_a6_restating_the_owner_laws_fails"
+    },
+    {
+      "id": "diagnostic-dropped-from-doc",
+      "expected": "FAIL",
+      "note": "A diagnostic the driver emits but the page stops documenting reds the doc/driver tie.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_undocumented_diagnostic_fails"
+    },
+    {
+      "id": "negative-arm-announces-itself",
+      "expected": "FAIL",
+      "note": "A judge input carrying a giveaway token measures reading comprehension instead of a refusal.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_self_announcing_negative_arm_fails"
+    },
+    {
+      "id": "l-numbering-undisambiguated",
+      "expected": "FAIL",
+      "note": "Deleting the disambiguation lets an arrival level be read as an admitted evidence ceiling.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_undisambiguated_l_numbering_fails"
+    }
+  ]
+}

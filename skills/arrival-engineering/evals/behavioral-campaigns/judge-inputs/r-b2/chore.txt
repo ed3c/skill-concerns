@@ -1,0 +1,1 @@
+Record the tool versions this wrapper depends on where the release process reads them.

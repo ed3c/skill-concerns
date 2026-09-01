@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "subject": "negative controls: a properly bound capability and a true documented pin, neither of which may be flagged",
+  "rows": [
+    {
+      "id": "control-properly-bound",
+      "capability": "an indexer bound to the exit every consumer already traverses",
+      "carrier": "src/indexer.py",
+      "exit": "materialize_index",
+      "bound_exit": "ops/checkout.sh",
+      "arrival": "L1",
+      "receipts": [{"kind": "exercise", "ref": "tests/test_indexer.py"}],
+      "expect": "no finding: reached on the adapter surface, bound to a shared exit, and recorded at the level its exercise receipt supports"
+    },
+    {
+      "id": "control-true-pin",
+      "capability": "a tool wrapper whose documented pin the lock file actually carries",
+      "carrier": "src/pinned_tool.py",
+      "exit": "pinned_tool",
+      "bound_exit": "ops/checkout.sh",
+      "arrival": "L0",
+      "documented_pin": {"claim_in": "pins.json", "expects": "pinned_tool@4.2.0"},
+      "pointer": {"target": "src/indexer.py", "tree": "self"},
+      "receipts": [{"kind": "bytes", "ref": "pins.json"}],
+      "expect": "no finding: the pin resolves in the lock's bytes and the pointer resolves in this tree"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "producer": "python3 skills/arrival-engineering/scripts/gen_receipts.py",
+  "note": "Derived from domain/capability-topology.json. Hand edits are refused: validate_arrival_engineering.py re-derives these bytes and compares.",
+  "evidence": {
+    "arrival-ledger": {
+      "refs": [
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "per-capability record of the highest arrival an actual receipt supports; a claim above the recorded level is a finding, and levels rise only by receipt readback",
+      "rows": [
+        "arrival-engineering-topology"
+      ]
+    },
+    "cadence-run-denominator": {
+      "refs": [
+        "ed3c/skill-concerns#46"
+      ],
+      "claim": "the cadence sweep's first live run named checks=15, which is the five bundles admitted before it; a sixth bundle admitted after that run has never been in one",
+      "rows": [
+        "sc-context-closure-engineering-checks",
+        "sc-control-backup-checks",
+        "sc-control-code-intel-checks",
+        "sc-control-noodle-checks",
+        "sc-feature-map-engineering-checks",
+        "sc-spatial-loop-grounded-checks"
+      ]
+    },
+    "closure-by-pointer": {
+      "refs": [
+        "ed3c/skill-concerns#62"
+      ],
+      "claim": "findings terminate in a durable home some process re-reads; the closure law itself is pointed at in its owner, never restated here",
+      "rows": [
+        "arrival-engineering-closure"
+      ]
+    },
+    "consumer-less-core": {
+      "refs": [
+        "ed3c/noodles#293",
+        "ed3c/noodles#294",
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "offline-provable cores and __main__ probe scripts with zero consumers on any of the five surfaces, found by hand in one dispatcher session",
+      "rows": [
+        "noodles-migration-probe-scripts",
+        "noodles-scip-validation-core"
+      ]
+    },
+    "dangling-pointer": {
+      "refs": [
+        "ed3c/noodles#293",
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "cross-repo interface pointers naming probe interfaces whose carrier has been adjudicated retired upstream, with nothing in the pointing repository re-reading them",
+      "rows": [
+        "sc-code-intel-topology-pointers"
+      ]
+    },
+    "false-documented-pin": {
+      "refs": [
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "a module header claiming its tool pins are mirrored in a lock file whose live bytes carry no such entries",
+      "rows": [
+        "noodles-providers-lock-tool-pins"
+      ]
+    },
+    "five-surface-audit": {
+      "refs": [
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "an audit that reads one surface answers declaration, not arrival: the driver enumerates imports, value_flow, ci, adapter and cli_text and reports the surface set",
+      "rows": [
+        "arrival-engineering-island-audit"
+      ]
+    },
+    "planned-island": {
+      "refs": [
+        "ed3c/noodles#294",
+        "ed3c/noodles#295",
+        "ed3c/skill-concerns#73"
+      ],
+      "claim": "a verb a consumer may remember to call, and a retrieval slice with no consumer surface at all, are islands being planned rather than found",
+      "rows": [
+        "noodles-code-intel-runtime-verb",
+        "noodles-where-is-x-slice"
+      ]
+    },
+    "retired-carrier": {
+      "refs": [
+        "ed3c/noodles#293"
+      ],
+      "claim": "the upstream retirement adjudication that makes every row pointing at that carrier a maintain-on-event trigger",
+      "rows": [
+        "noodles-migrations-carrier-retirement"
+      ]
+    },
+    "shared-exit-cure": {
+      "refs": [
+        "ed3c/noodles#294"
+      ],
+      "claim": "the canonical cure: bind the capability to an exit the consumer already traverses and make the consumer's receipt inadmissible without it",
+      "rows": [
+        "noodles-checkout-ceremony-binding"
+      ]
+    }
+  }
+}
