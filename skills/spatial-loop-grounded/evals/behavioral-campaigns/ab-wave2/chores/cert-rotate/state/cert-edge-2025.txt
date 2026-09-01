@@ -1,0 +1,6 @@
+certificate : edge-2025
+subject     : api.internal
+staged      : no
+rollout     : 3 of 5 edge nodes still serving this certificate
+nodes       : edge-01 -, edge-02 -, edge-03 SERVING, edge-04 SERVING, edge-05 SERVING
+expires     : 2026-11-30

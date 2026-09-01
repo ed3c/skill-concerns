@@ -33,13 +33,28 @@ This is the third and final Agent document for this Skill. Do not search for ano
 
 ## Completion
 
-Run `python3 skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py` and
-`python3 -m unittest discover -s skills/spatial-loop-grounded/tests` from the repository root.
-Report clause inventory, receipt bindings, and every hollow-mutation control outcome.
+**Every time** — hermetic, no live agents, seconds:
 
-For the A/B control-arm campaign add
-`python3 skills/spatial-loop-grounded/scripts/ab_campaign.py selftest` and
-`python3 skills/spatial-loop-grounded/scripts/ab_campaign.py score`; report the
-per-arm scores, the judge/mechanical-oracle agreement, and the treatment-trace
-counts. Never hand-edit a campaign receipt or the ledger — `ab_campaign.py
-receipt` and `gen_ledger.py` are their producers.
+- `python3 skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py`
+- `python3 -m unittest discover -s skills/spatial-loop-grounded/tests`
+- `python3 skills/spatial-loop-grounded/scripts/ab_campaign.py selftest`
+- `python3 skills/spatial-loop-grounded/scripts/ab_campaign.py score`
+
+Report clause inventory, receipt bindings, every hollow-mutation control outcome,
+the per-arm scores, the judge/mechanical-oracle agreement, and the treatment-trace
+counts. All four read committed bytes; none of them runs an actor or a judge.
+
+**Once per wave** — needs live actors and a live judge, costs real money, and is
+NOT part of hermetic `run_all`: `ab_campaign.py --campaign <dir> stage` →
+run the actors → `collect` → `judge-inputs` → judge → `score` → `receipt` →
+`gen_ledger.py`. Run this when a wave is being run, never as a checklist tick.
+
+**This step retires when** two waves have run and the second one's judged
+criteria — the ones frozen in its spec before its actors ran — return the same
+answer as the first. Until then a single n=3 null result is the only campaign
+evidence this skill has, which is why `evals/behavioral-campaigns/ab-wave2/`
+exists (`n_per_arm: 6`, staged, no runs). A third wave is not owed by this rule;
+a contradicting second wave is.
+
+Never hand-edit a campaign receipt or the ledger — `ab_campaign.py receipt` and
+`gen_ledger.py` are their producers.

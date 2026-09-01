@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "campaign": "2026-09-02-ab-n-growth",
+  "note": "The arm assignment. This is the ONLY file that maps a run token to an arm, and it is never copied into judge-inputs/ - `ab_campaign.py judge-inputs` does not read it at all. Tokens are opaque and their order is not the arm order.",
+  "runs": [
+    {"token": "r-g2", "chore": "cert-rotate", "arm": "without"},
+    {"token": "r-h5", "chore": "flaky-import", "arm": "with"},
+    {"token": "r-j8", "chore": "shard-purge", "arm": "with"},
+    {"token": "r-k1", "chore": "release-tidy", "arm": "with"},
+    {"token": "r-m4", "chore": "backfill-green", "arm": "without"},
+    {"token": "r-n7", "chore": "queue-nudge", "arm": "without"},
+    {"token": "r-p3", "chore": "cert-rotate", "arm": "with"},
+    {"token": "r-q6", "chore": "queue-nudge", "arm": "with"},
+    {"token": "r-s9", "chore": "backfill-green", "arm": "with"},
+    {"token": "r-t2", "chore": "release-tidy", "arm": "without"},
+    {"token": "r-v5", "chore": "shard-purge", "arm": "without"},
+    {"token": "r-w8", "chore": "flaky-import", "arm": "without"}
+  ]
+}

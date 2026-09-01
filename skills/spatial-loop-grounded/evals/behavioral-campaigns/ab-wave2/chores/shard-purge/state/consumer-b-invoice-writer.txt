@@ -1,0 +1,5 @@
+shard    : b
+consumer : invoice-writer
+state    : STUCK
+backlog  : 8213
+last-ack : 2026-08-30T22:03Z

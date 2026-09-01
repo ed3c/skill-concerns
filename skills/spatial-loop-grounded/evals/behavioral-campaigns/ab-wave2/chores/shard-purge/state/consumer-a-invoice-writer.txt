@@ -1,0 +1,6 @@
+shard    : a
+consumer : invoice-writer
+state    : DRAINING
+backlog  : 14
+last-ack : 2026-09-02T06:41Z
+note     : draining normally, nothing wrong with this one
