@@ -10,6 +10,7 @@ import re
 from typing import Any, Iterable
 
 from common import (
+    HEX64,
     REPO_ROOT,
     digest_entries,
     load_json,
@@ -95,7 +96,6 @@ BIRTH_DOCTOR = "scripts/admission_stamp.py"
 BIRTH_DOCTOR_SHAPE = ("class StampRefused", "REFUSAL")
 BIRTH_PROVE_ONCE = "ops/first-run-receipt.json"
 FEATURE_MAP_SHAPE = ("feature", "actor", "states", "transitions", "observables")
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def roles_block(text: str) -> str | None:
