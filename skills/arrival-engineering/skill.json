@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "name": "arrival-engineering",
+  "version": "0.1.0",
+  "kind": "domain-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-arrival-kernel.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "domain/capability-topology.json",
+    "receipts.json"
+  ],
+  "execution_paths": [
+    "scripts/audit_islands.py",
+    "scripts/validate_arrival_engineering.py",
+    "scripts/gen_receipts.py"
+  ],
+  "test_paths": [
+    "tests/test_arrival_engineering.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "domain/capability-topology.json"
+  ],
+  "forbidden_domain_literals": [
+    "noodles",
+    "skill-concerns",
+    "scip",
+    "maintain_skills",
+    "capability-topology.json"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json"
+  ]
+}

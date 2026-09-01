@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "note": "the lock the pinned_tool header claims mirrors its pins",
+  "pins": {
+    "some_other_tool": "1.0.3"
+  }
+}

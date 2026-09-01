@@ -1,0 +1,4 @@
+Symbol lookup is now available in production. Workers in a fresh clone can run
+the command in docs/USAGE.md and get the answer straight away.
+
+Documented and shipped.

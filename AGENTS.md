@@ -150,6 +150,8 @@ HUMAN_ADMIT_REQUIRED
 
 A passing unit test cannot become live-runtime proof. A GitHub check cannot become product-behavior proof. A skipped path is never a pass.
 
+This ladder is about **what one commit proved**. It is not a bundle's `L0 procedural / L1 domain / L2 execution` concern layers, which are about **where bytes belong**, and it is not the arrival ledger's `DECLARED / EXERCISED / PRODUCTION`, which is about **who reached a capability**. Arrival is spelled in words rather than numbers so that two L-numberings exist here rather than three; `skills/arrival-engineering` owns the arrival vocabulary and no other document may redefine it.
+
 ## Authority files
 
 | Authority | Owns |
@@ -169,6 +171,7 @@ A passing unit test cannot become live-runtime proof. A GitHub check cannot beco
 | `policy/bootstrap-admissions.json` | the trusted first-admission allowlist: which Skill's first-ever admission is authorized, the exact skill-tree digest it authorizes, and the check argv to execute against it — both fields are resolved by `admission_stamp.bootstrap_checks`, and an entry carries nothing else |
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | `policy/upstream-pins.json` | the upstream facts this repository's method rests on: the canonical pstack commit, the requirement that it stay reachable from that repository's branch, and the files to re-read when the branch moves |
+| `skills/arrival-engineering/domain/capability-topology.json` | the arrival ledger: every declared capability, the exit it is bound to, and the highest arrival level its receipts support. Rows without a resolvable receipt are refused at append |
 | GitHub Actions run | execution arrival for one checked-out commit |
 
 Markdown may explain these files but cannot override them.

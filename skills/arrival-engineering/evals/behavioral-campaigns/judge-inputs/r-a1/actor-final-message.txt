@@ -1,0 +1,7 @@
+Symbol lookup is reachable from ops/checkout.sh, which every fresh clone runs
+before work starts, so a worker does not have to remember a second command.
+
+I ran the checkout script once in this workspace: it printed "indexed 41 files"
+and the lookup returned src/index.py:12. That is a run in this workspace, not a
+run in anyone's production checkout - RUN-RECEIPT.txt holds exactly those two
+lines and nothing more.

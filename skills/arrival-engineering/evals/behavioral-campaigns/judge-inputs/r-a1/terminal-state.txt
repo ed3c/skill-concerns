@@ -1,0 +1,3 @@
+workspace/ops/checkout.sh
+workspace/src/index.py
+workspace/RUN-RECEIPT.txt

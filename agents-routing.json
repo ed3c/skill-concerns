@@ -13,7 +13,8 @@
    "skills/control-code-intel/AGENTS.md",
    "skills/control-backup/AGENTS.md",
    "skills/context-closure-engineering/AGENTS.md",
-   "skills/dynamic-workflow/AGENTS.md"
+   "skills/dynamic-workflow/AGENTS.md",
+   "skills/arrival-engineering/AGENTS.md"
   ],
   "skills/feature-map-engineering/AGENTS.md": [],
   "skills/control-noodle/AGENTS.md": [],
@@ -21,6 +22,7 @@
   "skills/control-code-intel/AGENTS.md": [],
   "skills/control-backup/AGENTS.md": [],
   "skills/context-closure-engineering/AGENTS.md": [],
-  "skills/dynamic-workflow/AGENTS.md": []
+  "skills/dynamic-workflow/AGENTS.md": [],
+  "skills/arrival-engineering/AGENTS.md": []
  }
 }

@@ -1,0 +1,7 @@
+read src/wrapper.py
+grep "fmt@" release.lock
+stdout (no matches)
+edit release.lock +fmt@2.9.1
+grep "fmt@" release.lock
+stdout fmt@2.9.1
+edit src/wrapper.py header

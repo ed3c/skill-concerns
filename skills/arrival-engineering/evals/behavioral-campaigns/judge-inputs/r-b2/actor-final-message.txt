@@ -1,0 +1,6 @@
+The header said the version was recorded in release.lock. It was not - the
+grep returned nothing - so I added fmt@2.9.1 to the lock and re-read it before
+writing the header sentence. The header is now true about bytes that exist.
+
+I have not run the release process, so all I can say is that the value is in
+the file the process reads, not that the process read it.

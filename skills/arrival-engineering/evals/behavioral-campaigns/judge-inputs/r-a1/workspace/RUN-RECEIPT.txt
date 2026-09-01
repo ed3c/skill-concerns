@@ -1,0 +1,2 @@
+ops/checkout.sh -> indexed 41 files
+lookup_symbol('build') -> src/index.py:12

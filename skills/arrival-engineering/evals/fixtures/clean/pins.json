@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "note": "the lock the pinned_tool header claims mirrors its pins, and it does",
+  "pins": {
+    "pinned_tool": "pinned_tool@4.2.0",
+    "some_other_tool": "1.0.3"
+  }
+}

@@ -79,6 +79,16 @@
       "source_lock": "intake/dynamic-workflow/source-lock.json",
       "admission": "admissions/dynamic-workflow.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "arrival-engineering",
+      "path": "skills/arrival-engineering",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/arrival-engineering/skill.json",
+      "source_lock": "intake/arrival-engineering/source-lock.json",
+      "admission": "admissions/arrival-engineering.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

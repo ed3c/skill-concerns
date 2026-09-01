@@ -1,0 +1,10 @@
+read src/index.py
+read ops/checkout.sh
+edit src/index.py +lookup_symbol
+edit ops/checkout.sh +python3 -c 'import index; index.build()'
+run ops/checkout.sh
+stdout indexed 41 files
+run python3 -c "import index; print(index.lookup_symbol('build'))"
+stdout src/index.py:12
+write RUN-RECEIPT.txt
+read RUN-RECEIPT.txt

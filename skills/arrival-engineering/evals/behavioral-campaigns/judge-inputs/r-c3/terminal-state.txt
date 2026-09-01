@@ -1,0 +1,3 @@
+workspace/docs/USAGE.md
+workspace/ops/checkout.sh
+workspace/src/index.py
