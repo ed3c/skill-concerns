@@ -53,7 +53,13 @@ not apply them anywhere a reader would mistake for a landing:
                   `REPOSITORY_PRODUCERS` are excluded because their output is a
                   repository artifact (`admissions/`, `intake/`) by contract,
                   not the Skill's own directory.
-  three outcomes  clean (nothing to propose), changed (a proposal commit sits
+  proven          the subject's own `run_all.SKILL_CHECKS` row runs against
+                  the proposal before it becomes a commit; a red row blocks
+                  the pass rather than shipping bytes nobody re-ran. That row
+                  and no more: `check_admissions.py` reds by construction here
+                  (the receipt pins the bytes BUILD just moved) and the
+                  re-stamp is a landing act, not a proposing one.
+  three outcomes  clean (nothing to propose), changed (a proven proposal sits
                   on the branch), blocked (a refusal; nothing ships).
 
 Adjudications carried here as bytes rather than left on ed3c/skill-concerns#59
@@ -728,6 +734,7 @@ def build_pass(root: Path, skill: str) -> dict[str, Any]:
         "branch": None,
         "producers": [],
         "corrections": [],
+        "proof": [],
         "refusals": [],
         "filing_route": (
             f"corrections are PROPOSED on a branch under skills/{skill}/ and land "
@@ -813,6 +820,49 @@ def build_pass(root: Path, skill: str) -> dict[str, Any]:
 
     proposed = [path for path in worktree_changes(root) if path.startswith(scope)]
     if proposed:
+        # "One PR of PROVEN corrections" (pstack donor, step 6). Regenerated
+        # bytes nobody re-ran are a proposal about a Skill, not a correction
+        # to it, so the subject's own declared row runs against the proposal
+        # before it becomes a commit.
+        #
+        # Only that row. `check_admissions.py` reds by construction here - the
+        # admission receipt pins bytes BUILD just moved, and the re-stamp
+        # (gen_admission.py -> admissions/) is a repository artifact outside
+        # BUILD's edit scope on purpose. Re-stamping belongs to the landing
+        # ceremony, not to a pass that may only propose.
+        proof, proof_findings = drive_checks(
+            root, [(f"skill:{skill}", list(argv)) for argv in run_all.SKILL_CHECKS.get(skill, ())]
+        )
+        report["proof"] = proof
+        if proof_findings:
+            report["refusals"].extend(proof_findings)
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_PROPOSAL_UNPROVEN",
+                    f"skills/{skill}",
+                    f"{len(proof_findings)} of the subject's own checks red on the proposal",
+                    "a correction that reds the Skill's own row is a regression; fix the producer, not the receipt",
+                )
+            )
+            residue = restore(root)
+            _git(root, "checkout", base)
+            _git(root, "branch", "-D", branch)
+            report["branch"] = None
+            report["outcome"] = "blocked"
+            report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+            report["base"]["untouched"] = report["base"]["head_after"] == base_head
+            if residue:
+                report["refusals"].append(
+                    finding(
+                        root,
+                        "BUILD_RESTORE_FAILED",
+                        residue[0],
+                        f"unproven writes survived the restore: {residue}",
+                        "restore this checkout by hand before running any further pass",
+                    )
+                )
+            return report
         _git(root, "add", "--", f"skills/{skill}")
         commit = _git(
             root,
@@ -1063,6 +1113,48 @@ def selftest() -> int:
             and not worktree_changes(build_root)
             and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == escaped_head,
             f"branch={refused['branch']} dirty={worktree_changes(build_root)}",
+        )
+        # Planted negative: a producer whose output reds the subject's own
+        # declared row. BUILD must refuse to commit bytes that regress the
+        # Skill, or "proven corrections" is a word rather than a gate.
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_escape.py").unlink()
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_evidence.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'skills' / 'demo-subject' / 'evidence.json').write_text(\n"
+            "    '{\"regenerated\": \"regressed\"}\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        (build_root / "skills" / "demo-subject" / "check.py").write_text(
+            "import json, sys\n"
+            "from pathlib import Path\n"
+            "body = json.loads((Path(__file__).parent / 'evidence.json').read_text())\n"
+            "if body.get('regenerated') is not True:\n"
+            "    print('EVIDENCE_REGRESSED:skills/demo-subject/evidence.json')\n"
+            "    sys.exit(1)\n",
+            encoding="utf-8",
+        )
+        (build_root / "skills" / "demo-subject" / "evidence.json").write_text(
+            '{"regenerated": true}\n', encoding="utf-8"
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "plant the regression", identity=True)
+        regressed_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+        run_all.SKILL_CHECKS["demo-subject"] = (("skills/demo-subject/check.py",),)
+        try:
+            unproven = build_pass(build_root, "demo-subject")
+        finally:
+            del run_all.SKILL_CHECKS["demo-subject"]
+        record(
+            "planted_unproven_correction_is_refused",
+            unproven["outcome"] == "blocked"
+            and "BUILD_PROPOSAL_UNPROVEN"
+            in [f["diagnostic"] for f in unproven["refusals"]]
+            and unproven["branch"] is None
+            and not worktree_changes(build_root)
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == regressed_head,
+            f"outcome={unproven['outcome']} "
+            f"refusals={[f['diagnostic'] for f in unproven['refusals']]}",
         )
         record(
             "build_excludes_producers_that_write_repository_artifacts",
