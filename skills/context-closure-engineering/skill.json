@@ -29,9 +29,8 @@
     "domain/context-closure-topology.json"
   ],
   "forbidden_domain_literals": [
-    "ed3c/noodles",
+    "noodles",
     "docs/design/context-closure",
-    "noodles-depends-on",
     "skills-shared"
   ],
   "shared_contracts": [

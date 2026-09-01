@@ -4,13 +4,20 @@
 Fails closed unless the three layers are present and tied to each other: L0
 portable laws, L1 domain topology, L2 executable checker whose selftest passes.
 
-The tie is a count, not a cross-reference: L1 declares how many portable laws
-and how many planted negatives exist, and this gate refuses when the L0 clause
-headings or the topology rows disagree with those numbers. Dropping a law or
-quietly demoting a mechanized negative to prose therefore reds here instead of
-shrinking the contract behind a still-green suite. Every negative declared
-MECHANIZED must name checks that exist in the L2 checker's bytes; every
-NOT_MECHANIZED one must name an owner and a reason.
+The tie is a count plus an id set, not a cross-reference: L1 declares how many
+portable laws and how many planted negatives exist, and this gate refuses when
+the L0 clause headings or the topology rows disagree with those numbers.
+Dropping a law or quietly demoting a mechanized negative to prose therefore
+reds here instead of shrinking the contract behind a still-green suite. Every
+negative declared MECHANIZED must name checks that exist in the L2 checker's
+bytes; every NOT_MECHANIZED one must name an owner and a reason.
+
+A count alone is self-referential: a topology.json edit that removes one row
+and decrements its count field in the same edit leaves `count == len(rows)`
+true throughout, so that tie alone cannot see it. Each id set below is also
+checked against a copy hard-coded in this file's own bytes, not read from the
+topology, so the same-file edit that fools the count still reds against a
+set the edit never touched.
 """
 
 from __future__ import annotations
@@ -22,6 +29,19 @@ import sys
 from pathlib import Path
 
 LAW_HEADING = re.compile(r"^## (LAW-[A-Z-]+)\s*$", re.MULTILINE)
+
+# Independent-of-JSON ground truth: hard-coded here so that editing the L1
+# topology's row list and its own count field together -- which a purely
+# self-referential `count == len(rows)` tie cannot see, since both numbers
+# move together -- still reds against a set this file does not share bytes
+# with. Precedent: skills/control-backup/scripts/validate_control_backup.py
+# hard-codes its ADMITTED provider set the same way.
+EXPECTED_LAW_IDS = {
+    "LAW-DENOMINATOR", "LAW-ANCHOR", "LAW-NO-PROMOTION", "LAW-EDGE-SPLIT",
+    "LAW-ONE-CONVERGENCE-OWNER", "LAW-TRACE-GAP", "LAW-NO-MUTATION",
+    "LAW-EXTERNAL-CLAIM",
+}
+EXPECTED_NEGATIVE_IDS = {"PN-1", "PN-2", "PN-3", "PN-4", "PN-5", "PN-6", "PN-7"}
 
 
 def validate(root: Path) -> list[str]:
@@ -65,6 +85,10 @@ def validate(root: Path) -> list[str]:
         errors.append(
             f"L0 carries {len(clause_ids)} law clauses, L1 declares {declared_count}"
         )
+    if law_ids != EXPECTED_LAW_IDS:
+        errors.append(
+            f"L1 law ids {sorted(law_ids)} != hard-coded expected {sorted(EXPECTED_LAW_IDS)}"
+        )
 
     # L1 <-> L2: a mechanized negative names checks the checker actually emits;
     # an unmechanized one names who owns it and why it stays open.
@@ -73,6 +97,12 @@ def validate(root: Path) -> list[str]:
         errors.append(
             f"L1 planted_negative_count {topology.get('planted_negative_count')} "
             f"!= {len(negatives)} declared rows"
+        )
+    negative_ids = {negative.get("id") for negative in negatives}
+    if negative_ids != EXPECTED_NEGATIVE_IDS:
+        errors.append(
+            f"L1 planted_negative ids {sorted(negative_ids)} != hard-coded "
+            f"expected {sorted(EXPECTED_NEGATIVE_IDS)}"
         )
     for negative in negatives:
         identifier = negative.get("id")

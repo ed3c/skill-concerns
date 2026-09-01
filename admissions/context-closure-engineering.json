@@ -4,7 +4,7 @@
   "status": "ADMITTED",
   "source_lock": {
     "path": "intake/context-closure-engineering/source-lock.json",
-    "sha256": "0dda2922cf3e2f598f0cecbc5a1a9791d8fcb827f6d887bcba08f67cd53e8317"
+    "sha256": "42c65e0bb8065fb1d895b74ffaa1392598620957d7738c907cb80bf3342ebd9b"
   },
   "subject_files": [
     {
@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/context-closure-engineering/domain/context-closure-topology.json",
-      "sha256": "c22965eaab40c49489d6520721e20e6698805a27014b6032be785916de7bc210"
+      "sha256": "1b2c75a29773e2fe1686b49022ece6d76b2c0ef8396a7536d759e1dd0dabcb08"
     },
     {
       "path": "skills/context-closure-engineering/evals/cases.json",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/pack/DRIFT.md",
-      "sha256": "423b8b821e15a32fa5aaddda8b0b150748a75426d93684b9523bff126f2647d1"
+      "sha256": "b531830cf634489670f9ec75f0560fb0af25b3d07ffcc96aa53f607a65aa4799"
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/pack/README.md",
@@ -77,18 +77,18 @@
     },
     {
       "path": "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",
-      "sha256": "f61a402a36af2292e93d57343ac0901469e0b84935cdd08be7a99e609ebb0ec2"
+      "sha256": "dad9c585fd6551011987030a176ec062ab71748ddb3fd068fdb230e8c8add418"
     },
     {
       "path": "skills/context-closure-engineering/skill.json",
-      "sha256": "df245557cbaaae3c58d46f75a3348f07d7dc44b6c8207b5e8b48c46542b5d433"
+      "sha256": "29656911713b24e0a80165e2a56348735e331068537527a0540aa3294942b509"
     },
     {
       "path": "skills/context-closure-engineering/tests/test_context_closure_engineering.py",
       "sha256": "839e4da8a30dadf54e3a180db9b5cbe840ee8cd1bd6e73b36920a4d2b46e16f8"
     }
   ],
-  "skill_tree_sha256": "56b13f8bcf6bd02523e47c4491a5ad9e7f83d612edffb453c65dd710400f1596",
+  "skill_tree_sha256": "f45de08e59d8d2585e343fea641405ff1719cdaab63e7f6679b880d94a782b5d",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

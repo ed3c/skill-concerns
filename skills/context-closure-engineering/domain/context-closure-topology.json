@@ -38,6 +38,7 @@
   ],
   "anchor_authority_classes": ["N", "P"],
   "promoted_authority_classes": ["L", "R"],
+  "classification_vs_authority_note": "L_REFERENCE and R_REFERENCE are classification tokens describing what kind of statement an anchor is (a local- or remote-provider reference), not the promoted authority letters L/R above. A statement classified L_REFERENCE or R_REFERENCE with anchor authority N or P is the ordinary, expected shape; EVIDENCE_PROMOTION is governed by the authority field alone, per LAW-NO-PROMOTION.",
   "edge_classes": {
     "S": "start-readiness: a readable interface or fact is enough to begin bounded reversible work",
     "C": "completion-readiness: the predecessor must close through its own evidence lane",
