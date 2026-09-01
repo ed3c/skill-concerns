@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/arrival-engineering/domain/capability-topology.json",
-      "sha256": "bd6b1493c4a50032d8f6c918b7b8f4c8ed62fc0ae877fe90acc54930f1f9d1ff"
+      "sha256": "ebbc8419d442b45274c309e202c9ac033ff4c5fed80084e02cc3c09c422f6ce1"
     },
     {
       "path": "skills/arrival-engineering/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
@@ -113,7 +113,7 @@
     },
     {
       "path": "skills/arrival-engineering/evals/cases.json",
-      "sha256": "80e2a7744598259f479d09a10b7030a604c3538da7d49463f7c8791a1dd0c7f6"
+      "sha256": "a7bec90c1a9cf66bd4368bf2f49e25b970a63fc16f05912008d1646796a4c0c6"
     },
     {
       "path": "skills/arrival-engineering/evals/fixtures/clean/capabilities.json",
@@ -197,7 +197,7 @@
     },
     {
       "path": "skills/arrival-engineering/scripts/validate_arrival_engineering.py",
-      "sha256": "4470e4bde353a648de33adde583bec9617c1faf5b8198bc80a04bc8bc368c688"
+      "sha256": "c0d1548a388dfcdca1cd5a090ce6b517b2a184b763237b3fa91d6a15f6d452d3"
     },
     {
       "path": "skills/arrival-engineering/skill.json",
@@ -205,10 +205,10 @@
     },
     {
       "path": "skills/arrival-engineering/tests/test_arrival_engineering.py",
-      "sha256": "86b4d64dde3f745b76839aa43429387a83c10ab4c2446faf160632c5cf3d2de3"
+      "sha256": "a0a0d4af6189e164367dd78206e56b1ca9a626afe882ad01c53597012ed7a27e"
     }
   ],
-  "skill_tree_sha256": "0e57fe030f066fad2f8d35e6de543b49cf14d6cc9359979332e3d16e24b07c2c",
+  "skill_tree_sha256": "ad7d6771ca80a1083a3e12e3101db745894f59dc6c26dd265b56f41369c3bd78",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -326,6 +326,10 @@
     },
     {
       "id": "negative-arm-announces-itself",
+      "state": "PASS"
+    },
+    {
+      "id": "retired-numbering-in-a-row-note",
       "state": "PASS"
     },
     {

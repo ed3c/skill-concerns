@@ -17,7 +17,7 @@
     {
       "id": "validator-selftest",
       "expected": "PASS",
-      "note": "Twelve planted hollowings, each of which must red exactly one tie.",
+      "note": "Thirteen planted hollowings, each of which must red exactly one tie.",
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_validator_selftest_passes"
     },
     {
@@ -85,6 +85,12 @@
       "expected": "FAIL",
       "note": "A judge input carrying a giveaway token measures reading comprehension instead of a refusal.",
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_self_announcing_negative_arm_fails"
+    },
+    {
+      "id": "retired-numbering-in-a-row-note",
+      "expected": "FAIL",
+      "note": "A row note still reasoning in the retired L0/L1/L2 numbering reds: the ledger's prose must speak the vocabulary its own column speaks, which is A4's shape inside the ledger that names A4.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_retired_numbering_in_a_row_note_fails"
     },
     {
       "id": "arrival-level-undefined",

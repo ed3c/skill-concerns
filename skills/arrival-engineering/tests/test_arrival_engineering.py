@@ -190,6 +190,26 @@ class ArrivalEngineeringEvals(unittest.TestCase):
             any("announces itself" in error for error in validator.validate(copy, REPO_ROOT))
         )
 
+    def test_retired_numbering_in_a_row_note_fails(self) -> None:
+        """The ledger's prose must speak the vocabulary its own column speaks.
+
+        This is the defect that escaped the rename: three notes still reasoned
+        in `L1, not L2` after every `arrival` value had moved. True sentences
+        about a numbering this bundle had just stopped owning -- A4's shape,
+        inside the ledger that names A4.
+        """
+        copy = self.copy()
+        path = copy / "domain" / "capability-topology.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["rows"][0]["note"] = "this row stays L0 until a run receipt names it"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "still names the retired numbering" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
     def test_undefined_arrival_level_fails(self) -> None:
         copy = self.copy()
         self.edit(copy / "SKILL.md", "**EXERCISED**", "EXERCISED")

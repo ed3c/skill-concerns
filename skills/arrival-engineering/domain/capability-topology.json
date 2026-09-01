@@ -79,7 +79,7 @@
       "receipts": [
         {"kind": "bytes", "ref": "ed3c/noodles#294"}
       ],
-      "note": "the amendment that converted the planned island above into a traversed exit. Adjudicated, not yet exercised here: the binding's own arrival is L0 until a run receipt names it."
+      "note": "the amendment that converted the planned island above into a traversed exit. Adjudicated, not yet exercised here: the binding's own arrival stays DECLARED until a run receipt names it."
     },
     {
       "id": "noodles-where-is-x-slice",
@@ -226,7 +226,7 @@
         {"kind": "exercise", "ref": "admissions/context-closure-engineering.json"},
         {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
       ],
-      "note": "L1, not L2, and the difference is byte-derived: the cadence receipt records checks=15 (three repository gates plus the twelve argv of the five bundles that existed at 2026-09-01T05:09:02Z), while this bundle's admission landed at 2026-09-01T06:16Z. Its row has never run in a production sweep. Recording it L2 alongside its siblings would be the A3 finding this ledger exists to catch."
+      "note": "EXERCISED, not PRODUCTION, and the difference is byte-derived twice over: the cadence receipt records checks=15 (three repository gates plus the twelve argv of the five bundles that existed at 2026-09-01T05:09:02Z) while this bundle's admission landed at 2026-09-01T06:16Z, and this row carries no run-kind receipt, which is what the arrival tie reads. Recording it PRODUCTION alongside its siblings would be the A3 finding this ledger exists to catch; the tie reds either way now, since the column must equal what the receipts support."
     },
     {
       "id": "arrival-engineering-island-audit",
@@ -241,7 +241,7 @@
         {"kind": "exercise", "ref": "skills/arrival-engineering/evals/cases.json"},
         {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
       ],
-      "note": "exercised against planted fixtures and negative controls; no production SHADOW pass over live read-only clones has produced a run receipt yet, so this stays L1."
+      "note": "exercised against planted fixtures and negative controls; no production SHADOW pass over live read-only clones has produced a run receipt yet, so this stays EXERCISED."
     },
     {
       "id": "arrival-engineering-topology",
