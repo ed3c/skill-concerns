@@ -36,6 +36,30 @@ LEDGER_ENTRY_KEYS = (
 )
 GENESIS = "0" * 64
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md. `CLAUSE_RE` above ties the C-numbered
+# clauses only; the framing sections around them -- clause form, the layer/role
+# split, the non-claims -- were untied, and dropping one of those is exactly how
+# a skill loses its boundaries while every clause still parses.
+# `scripts/check_skill_bundles.py` reads this tuple out of these bytes, parsed
+# and never imported.
+SKILL_MD_CLAUSES = (
+    "Clause form",
+    "Concern layers and roles",
+    "C1. Monitor is a reader, never a writer",
+    "C2. Count decompression layers before any claim",
+    "C3. FIRST_GREEN is a review point, not a completion",
+    "C4. Repeated failure escalates to a quarantine packet",
+    "C5. Evidence regenerates through its producer, never by hand",
+    "C6. Teardown mirrors construction, gated on terminal readback",
+    "C7. Newly reachable invalid states are first-class deltas",
+    "C8. Bind every action to its exact subject",
+    "C9. An oldest-first queue starves behind a permanently failing head",
+    "C10. No completion notification means still running",
+    "C11. Exit-code residue is not current state",
+    "Non-claims",
+)
+
 
 def entry_digest(entry: dict) -> str:
     """Chain digest of one ledger entry, prev_sha256 included."""

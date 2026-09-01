@@ -26,6 +26,23 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md. This CLI never reads SKILL.md itself,
+# which is exactly why the tie has to be declared here -- without it a section
+# could be lost with every check still green. `scripts/check_skill_bundles.py`
+# reads this tuple out of these bytes, parsed and never imported, and reds on
+# any drift.
+SKILL_MD_CLAUSES = (
+    "The one law",
+    "Doctor — is this lane worth reading?",
+    "Drive — observe a run",
+    "Evidence — where the proof goes",
+    "What a supervisor may say",
+    "Two lenses on one lane",
+    "Findings, and why this reader cannot fix itself",
+    "Knowledge placement",
+)
+
 REQUIRED_CLASSES = {"complete", "healthy", "stalled-suspect", "dead"}
 REQUIRED_RUNTIMES = {"claude-code-workflow", "codex-noodle-session"}
 RUNTIME_KEYS = {

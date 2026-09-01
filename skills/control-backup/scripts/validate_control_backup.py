@@ -15,6 +15,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md. `scripts/check_skill_bundles.py` reads
+# this tuple out of these bytes -- parsed, never imported -- and reds when the
+# entrypoint's headings differ, so a hollowed SKILL.md cannot pass behind a
+# still-green validator. Editing SKILL.md's section structure is meant to force
+# an edit here; that is the tie, not an inconvenience.
+SKILL_MD_CLAUSES = (
+    "Decision boundary",
+    "Hard constraints",
+    "Knowledge placement",
+)
+
 ADMITTED = {"gnu-rsync", "link-dest", "launchd", "mcp-drive-text"}
 LOAD_BEARING_RECEIPTS = (
     "openrsync-hot-source-fatal",

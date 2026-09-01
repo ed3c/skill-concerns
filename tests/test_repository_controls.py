@@ -202,6 +202,279 @@ class RepositoryControlTests(unittest.TestCase):
                 [], check_skill_bundles.scan_role_declarations("demo", skill_root)
             )
 
+    # ----------------------------------------------------------------------
+    # Dual-standard conformance (ed3c/skill-concerns#74).
+    #
+    # One planted negative per assertion. A sweep that has only ever been run
+    # against a conformant tree is a single arrival: every green it produced is
+    # unfalsified, not verified.
+
+    def write_validator(self, skill_root: Path, clauses: str | None) -> None:
+        (skill_root / "scripts").mkdir(parents=True, exist_ok=True)
+        body = "" if clauses is None else f"SKILL_MD_CLAUSES = {clauses}\n"
+        (skill_root / "scripts" / "validate_demo.py").write_text(
+            f'"""demo validator."""\n{body}', encoding="utf-8"
+        )
+
+    def test_validator_absent_from_the_declared_execution_paths_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            self.assertEqual(
+                ["SKILL_VALIDATOR_ABSENT:demo"],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/driver.py"], ["skills/demo/tests"]
+                ),
+            )
+
+    def test_validator_not_wired_into_the_runner_row_fails(self) -> None:
+        # Present and count-tied, but nothing runs it: a validator no row names
+        # is a checker that has never refused anything in this repository.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            self.write_validator(skill_root, '("Only section",)')
+            (skill_root / "SKILL.md").write_text(
+                "# demo\n\n## Only section\n\nbody\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                ["SKILL_VALIDATOR_UNWIRED:demo:scripts/validate_demo.py",
+                 "SKILL_TESTS_UNWIRED:demo"],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/validate_demo.py"], ["unrelated"]
+                ),
+            )
+            self.assertEqual(
+                ["SKILL_CHECKS_ROW_ABSENT:demo"],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/validate_demo.py"], None
+                ),
+            )
+
+    def test_hollowed_skill_md_breaks_the_count_tie(self) -> None:
+        # The assertion issue #74 names by example: a validator can stay green
+        # while the SKILL.md it exists for loses a section, because nothing
+        # counted the sections.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            row = ["skills/demo/scripts/validate_demo.py", "skills/demo/tests"]
+            self.write_validator(skill_root, '("Decision boundary", "Hard constraints")')
+            entrypoint = skill_root / "SKILL.md"
+            entrypoint.write_text(
+                "# demo\n\n## Decision boundary\n\na\n\n## Hard constraints\n\nb\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                [],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/validate_demo.py"], row
+                ),
+            )
+            entrypoint.write_text("# demo\n\n## Decision boundary\n\na\n", encoding="utf-8")
+            self.assertEqual(
+                ["SKILL_CLAUSE_COUNT_UNTIED:demo:declared=2:observed=1"
+                 ":drift=Hard constraints"],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/validate_demo.py"], row
+                ),
+            )
+            self.write_validator(skill_root, None)
+            self.assertEqual(
+                ["SKILL_CLAUSE_CONTRACT_ABSENT:demo:scripts/validate_demo.py"],
+                check_skill_bundles.scan_validator_contract(
+                    "demo", skill_root, ["scripts/validate_demo.py"], row
+                ),
+            )
+
+    def test_fenced_headings_do_not_count_as_sections(self) -> None:
+        # Several SKILL.md files carry ```text diagrams whose lines start with
+        # `#`. Counting those would tie the contract to illustration bytes.
+        self.assertEqual(
+            ["Real"],
+            check_skill_bundles.markdown_sections(
+                "## Real\n\n```text\n## Not a section\n```\n"
+            ),
+        )
+
+    def test_runner_rows_are_read_per_skill_not_as_one_blob(self) -> None:
+        # A substring search over the whole runner would read a path as wired
+        # for every Skill, including the one whose row does not contain it.
+        with tempfile.TemporaryDirectory() as directory:
+            runner = Path(directory) / "run_all.py"
+            runner.write_text(
+                'DISCOVER = ("-m", "unittest")\n'
+                "SKILL_CHECKS = {\n"
+                '    "a": (("skills/a/scripts/validate_a.py",), (*DISCOVER, "skills/a/tests")),\n'
+                '    "b": ((*DISCOVER, "skills/b/tests"),),\n'
+                "}\n",
+                encoding="utf-8",
+            )
+            rows = check_skill_bundles.runner_rows(runner)
+            self.assertEqual({"a", "b"}, set(rows))
+            self.assertIn("skills/a/scripts/validate_a.py", rows["a"])
+            self.assertNotIn("skills/a/scripts/validate_a.py", rows["b"])
+
+    def test_stale_admission_stamp_fails(self) -> None:
+        root = self.scratch_copy()
+        self.assertEqual(
+            [], check_skill_bundles.scan_admission_stamp(
+                "control-backup", root, root / "skills" / "control-backup"
+            )
+        )
+        (root / "skills" / "control-backup" / "SKILL.md").write_text(
+            "hollowed\n", encoding="utf-8"
+        )
+        self.assertEqual(
+            ["ADMISSION_STAMP_STALE:control-backup"],
+            check_skill_bundles.scan_admission_stamp(
+                "control-backup", root, root / "skills" / "control-backup"
+            ),
+        )
+        (root / "admissions" / "control-backup.json").unlink()
+        self.assertEqual(
+            ["ADMISSION_STAMP_ABSENT:control-backup"],
+            check_skill_bundles.scan_admission_stamp(
+                "control-backup", root, root / "skills" / "control-backup"
+            ),
+        )
+
+    def test_negative_arm_sharing_the_positive_producer_fails(self) -> None:
+        # The nonconformance this atom found and fixed: a FAIL case pointing at
+        # the assertion a PASS case already names is one execution counted as
+        # two arms, and the receipt then carries a control id whose only
+        # measurement is the positive control.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "evals").mkdir()
+            cases = [
+                {"id": "positive", "expected": "PASS", "test": "m.C.test_selftest"},
+                {"id": "planted", "expected": "FAIL", "test": "m.C.test_selftest"},
+                {"id": "own-arm", "expected": "FAIL", "test": "m.C.test_defused"},
+            ]
+            self.assertEqual(
+                ["CAMPAIGN_ARM_SHARES_PRODUCER:demo:planted:m.C.test_selftest"],
+                check_skill_bundles.scan_campaign(
+                    "demo", skill_root, "evals/cases.json", cases
+                ),
+            )
+            self.assertEqual(
+                ["CAMPAIGN_DIRECTORY_ABSENT:demo:cases.json"],
+                check_skill_bundles.scan_campaign("demo", skill_root, "cases.json", []),
+            )
+
+    def test_receipt_entry_without_a_ground_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "scripts").mkdir()
+            (skill_root / "scripts" / "driver.py").write_text("x\n", encoding="utf-8")
+
+            def write(evidence: dict) -> None:
+                (skill_root / "receipts.json").write_text(
+                    json.dumps({"schema_version": 1, "evidence": evidence}),
+                    encoding="utf-8",
+                )
+
+            write({"bare": {"claim": "something happened"}})
+            self.assertEqual(
+                ["RECEIPT_ENTRY_UNGROUNDED:demo:bare"],
+                check_skill_bundles.scan_receipt_producers("demo", skill_root),
+            )
+            write({"gone": {"claim": "c", "producer": "scripts/deleted.py"}})
+            self.assertEqual(
+                ["RECEIPT_PRODUCER_ABSENT:demo:gone:scripts/deleted.py"],
+                check_skill_bundles.scan_receipt_producers("demo", skill_root),
+            )
+            write({"escape": {"claim": "c", "producer": "../../etc/passwd"}})
+            self.assertEqual(
+                ["RECEIPT_PRODUCER_ESCAPES_SKILL:demo:escape:../../etc/passwd"],
+                check_skill_bundles.scan_receipt_producers("demo", skill_root),
+            )
+            write(
+                {
+                    "replayed": {"claim": "c", "producer": "scripts/driver.py"},
+                    "cited": {"claim": "c", "refs": ["ed3c/skill-concerns#74"]},
+                    "host": {"claim": "c", "producer": "HOST_OBSERVED"},
+                }
+            )
+            self.assertEqual(
+                [], check_skill_bundles.scan_receipt_producers("demo", skill_root)
+            )
+
+    def test_unregistered_skill_row_in_the_collection_documents_fails(self) -> None:
+        root = self.scratch_copy()
+        self.assertEqual(
+            [], check_skill_bundles.scan_collection_rows(
+                "control-backup", "domain-rich", root
+            )
+        )
+        self.assertEqual(
+            ["SKILL_INDEX_ROW_KIND_DRIFT:control-backup:procedure-rich"],
+            check_skill_bundles.scan_collection_rows(
+                "control-backup", "procedure-rich", root
+            ),
+        )
+        index = root / "skills" / "README.md"
+        index.write_text(
+            "\n".join(
+                line
+                for line in index.read_text(encoding="utf-8").splitlines()
+                if "`control-backup`" not in line
+            ),
+            encoding="utf-8",
+        )
+        agents = root / "skills" / "AGENTS.md"
+        agents.write_text(
+            agents.read_text(encoding="utf-8").replace(
+                ", skills/control-backup/AGENTS.md", ""
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            [
+                "SKILL_COLLECTION_ROW_ABSENT:control-backup",
+                "SKILL_INDEX_ROW_ABSENT:control-backup:0",
+            ],
+            check_skill_bundles.scan_collection_rows(
+                "control-backup", "domain-rich", root
+            ),
+        )
+
+    def test_missing_pstack_birth_artifact_fails(self) -> None:
+        root = self.scratch_copy()
+        self.assertEqual([], check_skill_bundles.scan_birth_artifacts(root))
+
+        receipt = root / check_skill_bundles.BIRTH_PROVE_ONCE
+        document = json.loads(receipt.read_text(encoding="utf-8"))
+        document["run"]["exit_code"] = 1
+        document["run"]["report_sha256"] = "not-a-digest"
+        receipt.write_text(json.dumps(document, indent=2), encoding="utf-8")
+
+        feature_map = root / check_skill_bundles.BIRTH_FEATURE_MAP
+        map_document = json.loads(feature_map.read_text(encoding="utf-8"))
+        map_document["transitions"] = []
+        feature_map.write_text(json.dumps(map_document, indent=2), encoding="utf-8")
+
+        doctor = root / check_skill_bundles.BIRTH_DOCTOR
+        doctor.write_text(
+            doctor.read_text(encoding="utf-8").replace(
+                "class StampRefused", "class Whatever"
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertEqual(
+            [
+                "BIRTH_FEATURE_MAP_INCOMPLETE:transitions",
+                "BIRTH_DOCTOR_INCOMPLETE:class StampRefused",
+                "BIRTH_PROVE_ONCE_NOT_GREEN:1",
+                "BIRTH_PROVE_ONCE_DIGEST_INVALID",
+            ],
+            check_skill_bundles.scan_birth_artifacts(root),
+        )
+        doctor.unlink()
+        self.assertIn(
+            f"BIRTH_DOCTOR_ABSENT:{check_skill_bundles.BIRTH_DOCTOR}",
+            check_skill_bundles.scan_birth_artifacts(root),
+        )
+
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))
 

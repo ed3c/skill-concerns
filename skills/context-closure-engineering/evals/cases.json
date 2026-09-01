@@ -41,8 +41,8 @@
     {
       "id": "task-packet-unbounded",
       "expected": "FAIL",
-      "note": "A candidate packet with no forbidden-promotion cell, or a pack with no candidate-packet section at all, red.",
-      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_context_pack_selftest_passes"
+      "note": "A candidate packet with no forbidden-promotion cell, or a pack with no candidate-packet section at all, red. Its own arm since ed3c/skill-concerns#74: this case previously named the positive control's assertion, so one execution stood for two arms.",
+      "test": "test_context_closure_engineering.ContextClosureEngineeringEvals.test_task_packet_unbounded_check_defused_fails"
     },
     {
       "id": "stage-p0-check-dead",

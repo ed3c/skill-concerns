@@ -25,7 +25,7 @@
     },
     {
       "path": "skills/control-noodle/domain/composition.json",
-      "sha256": "5e00e8435ecfabe033bfd90ca664126179c606ea16f6b6ec7d51829365a56217"
+      "sha256": "7032171d0ed260e00ab270e640b04c571b4086613e0f07a6c4d87a535dc0b753"
     },
     {
       "path": "skills/control-noodle/domain/domain-adapter.json",
@@ -49,7 +49,7 @@
     },
     {
       "path": "skills/control-noodle/fixtures/valid/procedure-admission.json",
-      "sha256": "3f0f7a30e64e394c1afae41ce47611244735778684ce0bbb11438a740a1b29d2"
+      "sha256": "21586d77673a9e7b14250977df31a6e1d5108e17eae843a67648fc8f40a642ab"
     },
     {
       "path": "skills/control-noodle/fixtures/valid/verification-plan.json",
@@ -76,8 +76,12 @@
       "sha256": "b8df045bd89192e3009fc9b4c5fc1361087c12b70f2320d7fa6ce753009789a7"
     },
     {
+      "path": "skills/control-noodle/scripts/gen_procedure_pin.py",
+      "sha256": "b054d797bcf9fbeb90451055a5e903aaad90ee430495d8ac0fe55515d91326a7"
+    },
+    {
       "path": "skills/control-noodle/scripts/validate_control_noodle.py",
-      "sha256": "1e1f690681f3971ccec87c7bf93bc4ec6c275761b687de3cc7904e8c47d8aa60"
+      "sha256": "10a9ae211459675e9077dcef365399ccfa1a798d05c89aeb3068d0d5c6f2ce1e"
     },
     {
       "path": "skills/control-noodle/skill.json",
@@ -88,7 +92,7 @@
       "sha256": "01f7f7917845a7e2130bcf48b83b07df741780e368405d6570e30c3a2f18dc26"
     }
   ],
-  "skill_tree_sha256": "a6aa809e1c8e9e3a0dd0679154cf0a719ceac55c0591ff43135742c5dc763430",
+  "skill_tree_sha256": "ced4fb9abf08a282f5b0ee35fe91bbfb789376c8584b314eafad96dc632cddbd",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

@@ -25,7 +25,7 @@
     },
     {
       "path": "skills/context-closure-engineering/evals/cases.json",
-      "sha256": "09e84186669ab1921d3609d040bb7398d0e023d03352f0ed5ec0ff1a2da64185"
+      "sha256": "d6e6d4c686b755fa3160c3040df211cdd4c899c964ec78cf093866d21e8ca83e"
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/baseline.json",
@@ -77,7 +77,7 @@
     },
     {
       "path": "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",
-      "sha256": "706a2032a52779e85613e6a32c8ed1db9f1f1465f885f733a83090d217e79e5d"
+      "sha256": "5003d51681e49fbc64181427e9e0e6718e27f82d98269675bd93251b5bd70faa"
     },
     {
       "path": "skills/context-closure-engineering/skill.json",
@@ -85,10 +85,10 @@
     },
     {
       "path": "skills/context-closure-engineering/tests/test_context_closure_engineering.py",
-      "sha256": "9a2d446234d7a86935c9adefda8053394ac4b400956528afc4884c00f17d1e8e"
+      "sha256": "acc26a53589ae0e0f6c3a4ac7c8a4e18dc1913048cbd617053e4357e04166b38"
     }
   ],
-  "skill_tree_sha256": "f473efe70026545c8e12f104803276e61b93ed46c289bb7f81179570842017a2",
+  "skill_tree_sha256": "476795ada767119d32600fb04edc9daa188107b3edf73b210946a0fae5aba4de",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

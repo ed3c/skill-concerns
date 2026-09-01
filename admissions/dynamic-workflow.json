@@ -121,7 +121,7 @@
     },
     {
       "path": "skills/dynamic-workflow/receipts.json",
-      "sha256": "c801896075c137354437fcb9722c015a57634e1471ab1ccf43ca8a1df333f581"
+      "sha256": "e234440c5b09f6b006a46d637f2272cceb7ff17b471ccbe7cbd1de92075836bd"
     },
     {
       "path": "skills/dynamic-workflow/references/README.md",
@@ -153,7 +153,7 @@
     },
     {
       "path": "skills/dynamic-workflow/scripts/validate_dynamic_workflow.py",
-      "sha256": "be85dcc483933e5a54c9efb27c26823ea29d7491dced4172517ea04458493f80"
+      "sha256": "0d4af2fe3b70afb4d9a1743b7e746ed03a53a093f27b1db37cd118ed7d4c9716"
     },
     {
       "path": "skills/dynamic-workflow/skill.json",
@@ -164,7 +164,7 @@
       "sha256": "87e7bec58495c763435661359ea7b3b0069d76cf0fcda772815e5a420fea8547"
     }
   ],
-  "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
+  "skill_tree_sha256": "a18da93d574a8567103273c00b22d5218ce5cea2f69afaaca0e86b642b845b94",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

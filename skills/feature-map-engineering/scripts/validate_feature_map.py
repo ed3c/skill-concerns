@@ -11,6 +11,37 @@ import sys
 from feature_map import ContractError, validate_verification_plan
 
 
+# Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
+# `## ` section headings of SKILL.md. This CLI validates map+plan data and never
+# reads SKILL.md itself, which is exactly why the tie has to be declared here --
+# without it a 516-line procedure could lose a section with every check still
+# green. `scripts/check_skill_bundles.py` reads this tuple out of these bytes,
+# parsed and never imported, and reds on any drift.
+SKILL_MD_CLAUSES = (
+    "Core contract",
+    "Separation of concerns",
+    "Locate or construct the map",
+    "Feature identity",
+    "Feature decomposition",
+    "Explore before constraining",
+    "Knowledge classes",
+    "Evidence hierarchy",
+    "Verification procedure",
+    "Coverage reduction",
+    "Change impact",
+    "Domain adapter contract",
+    "Feature document schema",
+    "FeatureMap IR",
+    "Proof-plan contract",
+    "Skip semantics",
+    "Assertions",
+    "Meta-assertions",
+    "Updating the map",
+    "Stop conditions",
+    "Completion",
+)
+
+
 def load_json(path: Path) -> dict:
     try:
         return json.loads(path.read_text(encoding="utf-8"))

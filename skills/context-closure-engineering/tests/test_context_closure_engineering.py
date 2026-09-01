@@ -124,6 +124,27 @@ class ContextClosureEngineeringEvals(unittest.TestCase):
         errors = validate(root)
         self.assertTrue(any("selftest" in error for error in errors), errors)
 
+    def test_task_packet_unbounded_check_defused_fails(self) -> None:
+        # `task-packet-unbounded` used to name `test_context_pack_selftest_passes`
+        # -- the very assertion the POSITIVE case `context-pack-selftest` names.
+        # One execution was being counted as two arms, so the admission receipt
+        # carried a planted-negative control id whose only measurement was the
+        # positive control (ed3c/skill-concerns#74). This is its own arm: defuse
+        # the per-row packet binding, SP0-PACKET stops going red, and the gate
+        # must red rather than report an unbounded packet green.
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "scripts" / "check_context_pack.py"
+        text = path.read_text(encoding="utf-8")
+        defused = text.replace(
+            "if column >= len(row) or not row[column]:",
+            "if False:",
+        )
+        self.assertNotEqual(defused, text, "mutation target drifted")
+        path.write_text(defused, encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("selftest" in error for error in errors), errors)
+
     def test_checker_assertion_defused_fails(self) -> None:
         # Weakening the edge-class comparison defuses PN-2; the selftest, and so
         # the gate, must go red rather than reporting a smaller contract green.
