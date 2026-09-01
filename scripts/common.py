@@ -5,10 +5,16 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any, Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+# A git commit and a content digest are the two identities this repository
+# binds things by. One declaration each, so two gates cannot come to accept
+# different shapes of the same identity.
+HEX40 = re.compile(r"^[0-9a-f]{40}$")
+HEX64 = re.compile(r"^[0-9a-f]{64}$")
 EVIDENCE_LEVELS = [
     "L0_SOURCE_FREEZE",
     "L1_STRUCTURAL",

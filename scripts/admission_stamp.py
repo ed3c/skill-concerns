@@ -31,6 +31,11 @@ the suite and the stamper cannot diverge. The table lives in the runner rather
 than here: `check_skill_bundles` proves a declared executable route is reached by
 reading the runner's bytes, and in CI that checker runs from the default branch
 against this tree as data.
+
+`SKILL_CHECKS` is imported from *this* file's tree and never from the graded
+one, which is why a candidate cannot vouch for itself -- and why a first-ever
+admission was structurally impossible until `BOOTSTRAP` below
+(ed3c/skill-concerns#72).
 """
 
 from __future__ import annotations
@@ -38,10 +43,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import posixpath
 import subprocess
 import sys
 
 from common import (
+    HEX64,
     REPO_ROOT,
     digest_entries,
     load_json,
@@ -53,6 +60,42 @@ from run_all import SKILL_CHECKS
 
 
 REFUSAL = "ADMISSION_STAMP_REFUSED"
+
+# The trusted-side first-admission allowlist (ed3c/skill-concerns#72).
+#
+# The invariant above is load-bearing and stays: the checks that grade a
+# candidate are declared on the trusted side, so a candidate cannot supply
+# them. Its unavoidable cost is that a *first-ever* admission cannot happen at
+# all -- the commit that adds the skill is the same commit that adds its
+# `SKILL_CHECKS` row, and the gate reads that row from a branch the commit is
+# not on yet. PR 68 (dynamic-workflow) died there on
+# `ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS`.
+#
+# This is the one narrow way in, trusted on exactly the same terms and no
+# looser: the constant is `REPO_ROOT`-relative, never `root`-relative, so in CI
+# it resolves inside `.trusted/` while the tree being graded is `.candidate/`.
+# One entry authorizes ONE skill's first admission and pins two things a
+# candidate cannot move -- the argv to execute, and the sha256 of the exact
+# skill tree those argv may be run against. Bytes that differ from the reviewed
+# ones by one character are refused rather than run, so an entry is an
+# authorization for a specific reviewed tree, not a standing key for a name.
+#
+# Nothing here is a default in either direction. No entry falls through to the
+# same `NO_DECLARED_CHECKS` refusal a skill with no row has always had, and a
+# skill that already owns a `SKILL_CHECKS` row is never routed here at all --
+# re-admission still fails when the trusted row disagrees.
+#
+# The entry is spent by the landing it authorizes: `check_admissions` reds with
+# `BOOTSTRAP_ENTRY_STALE` on any entry whose skill directory exists in the same
+# tree, so the commit that lands the skill must also delete its entry and no
+# authorization can outlive the admission it was written for.
+#
+# An entry carries only fields some process resolves: the digest, and the argv.
+# `authorized_head` and `refs` were validated here too and nothing ever read
+# either -- a documented pin no process resolves is the failure mode this
+# repository admits skills to detect, so they are gone rather than commented.
+# The commit that adds an entry is its provenance; `git log` resolves that.
+BOOTSTRAP = REPO_ROOT / "policy" / "bootstrap-admissions.json"
 
 # Mandatory control id -> the unittest id whose execution measures it, in the
 # order `check_admissions` expects the rows.
@@ -114,6 +157,97 @@ MANDATORY_PRODUCERS: dict[str, str] = {
 
 class StampRefused(RuntimeError):
     """Raised instead of writing a receipt the tree does not support."""
+
+
+def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
+    """`skill -> entry` for the allowlist at `path`, plus every shape error.
+
+    An absent file is legal and empty: a repository with no first admission
+    pending has nothing to authorize. Every other malformity is an error rather
+    than a skipped row -- a half-read allowlist must not read as "no entry for
+    this skill", which is the shape both readers treat as unauthorized.
+    """
+    if not path.is_file():
+        return {}, []
+    try:
+        document = load_json(path)
+    except ValueError as exc:
+        return {}, [f"BOOTSTRAP_FILE_INVALID:{exc}"]
+    if not isinstance(document, dict) or document.get("schema_version") != 1:
+        return {}, [f"BOOTSTRAP_FILE_SCHEMA_VERSION:{path.name}"]
+    rows = document.get("entries")
+    if not isinstance(rows, list):
+        return {}, ["BOOTSTRAP_ENTRIES_NOT_LIST"]
+
+    entries: dict[str, dict] = {}
+    errors: list[str] = []
+    for position, row in enumerate(rows):
+        if not isinstance(row, dict):
+            errors.append(f"BOOTSTRAP_ENTRY_NOT_OBJECT:{position}")
+            continue
+        skill = row.get("skill")
+        if not isinstance(skill, str) or not skill:
+            errors.append(f"BOOTSTRAP_ENTRY_SKILL_INVALID:{position}")
+            continue
+        if skill in entries:
+            errors.append(f"BOOTSTRAP_ENTRY_DUPLICATE:{skill}")
+            continue
+        entries[skill] = row
+        if not HEX64.fullmatch(str(row.get("skill_tree_sha256"))):
+            errors.append(f"BOOTSTRAP_ENTRY_DIGEST_INVALID:{skill}")
+        checks = row.get("checks")
+        if not isinstance(checks, list) or not checks:
+            errors.append(f"BOOTSTRAP_ENTRY_CHECKS_EMPTY:{skill}")
+            continue
+        for argv in checks:
+            if (
+                not isinstance(argv, list)
+                or not argv
+                or any(not isinstance(part, str) or not part for part in argv)
+            ):
+                errors.append(f"BOOTSTRAP_ENTRY_ARGV_INVALID:{skill}")
+                continue
+            # A prefix is only a binding when a path cannot lie about where it
+            # points: `skills/<skill>/../../scripts/anything.py` satisfies the
+            # test below while naming something else entirely. No part may be
+            # absolute or carry a spelling `normpath` would change, so the
+            # prefix and the resolved target are the same claim.
+            unnormalized = [
+                part
+                for part in argv
+                if part.startswith("/") or posixpath.normpath(part) != part
+            ]
+            if unnormalized:
+                errors.append(
+                    f"BOOTSTRAP_ENTRY_ARGV_UNNORMALIZED:{skill}:{unnormalized[0]}"
+                )
+            # An entry may authorize running the incoming Skill's own checks and
+            # nothing else. Argv that never names that Skill's tree is an
+            # authorization for some other execution wearing this Skill's name.
+            elif not any(part.startswith(f"skills/{skill}/") for part in argv):
+                errors.append(f"BOOTSTRAP_ENTRY_ARGV_FOREIGN:{skill}:{argv[0]}")
+    return entries, errors
+
+
+def bootstrap_checks(skill: str, root: Path) -> tuple[tuple[str, ...], ...] | None:
+    """The trusted first-admission argv for `skill`, or None when unauthorized.
+
+    Read from `BOOTSTRAP` -- this validator's own tree -- and never from
+    `root`, which in CI is the candidate: reading the candidate's copy would
+    hand a candidate exactly the self-declaration the trust boundary exists to
+    deny. `root` supplies only the bytes being weighed, and they are weighed
+    against the reviewed digest before a single one of them executes.
+    """
+    entries, errors = bootstrap_entries(BOOTSTRAP)
+    if errors:
+        raise StampRefused(f"{REFUSAL}:{skill}:BOOTSTRAP_FILE_REJECTED:{errors[0]}")
+    entry = entries.get(skill)
+    if entry is None:
+        return None
+    actual = tree_digest(digest_entries(root, regular_files(root / "skills" / skill)))
+    if actual != entry["skill_tree_sha256"]:
+        raise StampRefused(f"{REFUSAL}:{skill}:BOOTSTRAP_DIGEST_MISMATCH:{actual}")
+    return tuple(tuple(argv) for argv in entry["checks"])
 
 
 def unittest_path(root: Path) -> str:
@@ -194,8 +328,12 @@ def run_checks(skill: str, root: Path) -> dict[str, str]:
 
     Raises `StampRefused` on the first red; returns the control -> producer map
     the receipt's rows are built from.
+
+    A Skill that owns a `SKILL_CHECKS` row is graded by it and never reaches
+    the bootstrap: a row and an entry are not alternatives a candidate can pick
+    between, and re-admission stays refused when the trusted row disagrees.
     """
-    checks = SKILL_CHECKS.get(skill)
+    checks = SKILL_CHECKS.get(skill) or bootstrap_checks(skill, root)
     if not checks:
         raise StampRefused(f"{REFUSAL}:{skill}:NO_DECLARED_CHECKS")
     for argv in checks:
