@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "skill": "arrival-engineering",
+      "skill_tree_sha256": "0e57fe030f066fad2f8d35e6de543b49cf14d6cc9359979332e3d16e24b07c2c",
+      "checks": [
+        ["skills/arrival-engineering/scripts/validate_arrival_engineering.py"],
+        [
+          "-m",
+          "unittest",
+          "discover",
+          "-p",
+          "test_*.py",
+          "-v",
+          "-s",
+          "skills/arrival-engineering/tests"
+        ]
+      ]
+    }
+  ]
+}
