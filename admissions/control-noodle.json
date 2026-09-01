@@ -76,6 +76,10 @@
       "sha256": "b8df045bd89192e3009fc9b4c5fc1361087c12b70f2320d7fa6ce753009789a7"
     },
     {
+      "path": "skills/control-noodle/scripts/gen_procedure_pin.py",
+      "sha256": "b054d797bcf9fbeb90451055a5e903aaad90ee430495d8ac0fe55515d91326a7"
+    },
+    {
       "path": "skills/control-noodle/scripts/validate_control_noodle.py",
       "sha256": "10a9ae211459675e9077dcef365399ccfa1a798d05c89aeb3068d0d5c6f2ce1e"
     },
@@ -88,7 +92,7 @@
       "sha256": "01f7f7917845a7e2130bcf48b83b07df741780e368405d6570e30c3a2f18dc26"
     }
   ],
-  "skill_tree_sha256": "35ef8cf80e5c2786bdc5d9c2e972cee812916b2d623665c7d08f785a25050007",
+  "skill_tree_sha256": "ced4fb9abf08a282f5b0ee35fe91bbfb789376c8584b314eafad96dc632cddbd",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
