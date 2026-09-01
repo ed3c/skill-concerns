@@ -67,6 +67,17 @@ def scan_forbidden_literals(
     return errors
 
 
+def scan_hollow_execution_routes(
+    name: str, execution: list[str], test_text: str, runner_text: str
+) -> list[str]:
+    """Every declared mechanism must be reachable from tests or the root runner."""
+    return [
+        f"EXECUTABLE_ROUTE_HOLLOW:{name}:{relative}"
+        for relative in execution
+        if Path(relative).stem not in test_text and relative not in runner_text
+    ]
+
+
 def _path_list(
     manifest: dict[str, Any],
     key: str,
@@ -258,16 +269,14 @@ def check(root: Path = REPO_ROOT) -> list[str]:
                 f"SKILL_AGENT_DOCUMENT_NESTED:{path.relative_to(root).as_posix()}"
             )
 
-        # Every declared mechanism must be reachable from tests or the root runner.
         test_text = "\n".join(
             (skill_root / relative).read_text(encoding="utf-8")
             for relative in tests
             if (skill_root / relative).is_file()
         )
-        for relative in execution:
-            stem = Path(relative).stem
-            if stem not in test_text and relative not in runner_text:
-                errors.append(f"EXECUTABLE_ROUTE_HOLLOW:{name}:{relative}")
+        errors.extend(
+            scan_hollow_execution_routes(name, execution, test_text, runner_text)
+        )
 
         if isinstance(eval_inventory, str) and (skill_root / eval_inventory).is_file():
             try:
@@ -301,6 +310,20 @@ def check(root: Path = REPO_ROOT) -> list[str]:
                         else:
                             errors.append(
                                 f"EVAL_CASE_EXPECTED_INVALID:{name}:{case_id}:{expected}"
+                            )
+                        # A stamped eval-case control id must name the assertion
+                        # that measures it (ed3c/skill-concerns#40). This reader
+                        # is independent of `admission_stamp`: it proves the
+                        # binding exists in the declared test files, while the
+                        # stamper proves that binding ran green.
+                        producer = case.get("test")
+                        if not isinstance(producer, str) or producer.count(".") < 2:
+                            errors.append(
+                                f"EVAL_CASE_PRODUCER_INVALID:{name}:{case_id}"
+                            )
+                        elif f"def {producer.rsplit('.', 1)[-1]}(" not in test_text:
+                            errors.append(
+                                f"EVAL_CASE_PRODUCER_ABSENT:{name}:{case_id}:{producer}"
                             )
                     if not positive:
                         errors.append(f"EVAL_POSITIVE_CONTROL_ABSENT:{name}")

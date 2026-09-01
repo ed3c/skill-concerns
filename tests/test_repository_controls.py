@@ -88,6 +88,23 @@ class RepositoryControlTests(unittest.TestCase):
                 errors,
             )
 
+    def test_hollow_executable_route_fails(self) -> None:
+        # The negative control behind the `executable-route` mandatory id: a
+        # declared mechanism nothing runs must be named, or the id would be a
+        # claim about a checker that has never been seen to refuse anything.
+        self.assertEqual(
+            ["EXECUTABLE_ROUTE_HOLLOW:demo:scripts/unreached.py"],
+            check_skill_bundles.scan_hollow_execution_routes(
+                "demo", ["scripts/unreached.py"], "no tests mention it", "no runner row"
+            ),
+        )
+        self.assertEqual(
+            [],
+            check_skill_bundles.scan_hollow_execution_routes(
+                "demo", ["scripts/unreached.py"], "import unreached", "no runner row"
+            ),
+        )
+
     def test_tree_digest_changes_when_bytes_change(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)

@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/feature-map-engineering/evals/cases.json",
-      "sha256": "82a3b2817653c321f4e662af6989b13412f4a41a29255b1f54233f5f591e9139"
+      "sha256": "c5cf8b07fdc9ed53538c54f1a956d099bec4e8b3a86fe014642c57ea1d136254"
     },
     {
       "path": "skills/feature-map-engineering/fixtures/valid/feature-map.json",
@@ -92,7 +92,7 @@
       "sha256": "a2758e9c3ecf53cfddd00b45adc17319034f662cd247e110f4407650dbdcdab0"
     }
   ],
-  "skill_tree_sha256": "ae37f619156a38a1e60aad36fcf25b070bd24549ff99abb6ace76806e1f0af95",
+  "skill_tree_sha256": "956411ed6b20cb0d2767300364ee62a9771b218dff0237db89307bb3439f778d",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

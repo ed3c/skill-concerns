@@ -6,6 +6,7 @@
       "id": "positive-complete-feature-proof",
       "control": "positive",
       "expected": "PASS",
+      "test": "test_feature_map.FeatureMapTests.test_positive_complete_feature_proof",
       "asserts": [
         "valid transition chains",
         "terminal oracles",
@@ -17,42 +18,49 @@
       "id": "missing-terminal-oracle",
       "control": "mutation",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_missing_terminal_oracle_fails",
       "error": "TERMINAL_WITHOUT_ORACLE"
     },
     {
       "id": "static-only-false-proof",
       "control": "hollow-proof",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_static_only_false_proof_fails",
       "error": "STATIC_ONLY_VERIFICATION"
     },
     {
       "id": "skip-without-blocker",
       "control": "mutation",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_skip_without_blocker_fails",
       "error": "SKIP_WITHOUT_BLOCKER"
     },
     {
       "id": "changed-feature-without-proof",
       "control": "hollow-route",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_changed_feature_without_proof_fails",
       "error": "CHANGED_FEATURE_WITHOUT_PROOF"
     },
     {
       "id": "invalid-transition-chain",
       "control": "mutation",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_invalid_transition_chain_fails",
       "error": "JOURNEY_CHAIN_INVALID"
     },
     {
       "id": "persistence-evidence-missing",
       "control": "mutation",
       "expected": "FAIL",
+      "test": "test_feature_map.FeatureMapTests.test_persistence_evidence_missing_fails",
       "error": "PERSISTENCE_PROOF_MISSING"
     },
     {
       "id": "coverage-diff-detects-changed-edge",
       "control": "positive",
       "expected": "PASS",
+      "test": "test_feature_map.FeatureMapTests.test_coverage_diff_detects_changed_edge",
       "asserts": [
         "requires_reverification"
       ]

@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "cases": [
-    {"id": "composed-control-positive", "control": "positive", "expected": "PASS"},
-    {"id": "source-commit-drift", "control": "mutation", "expected": "FAIL"},
-    {"id": "source-lock-domain-drift", "control": "mutation", "expected": "FAIL"},
-    {"id": "changed-code-node-unmapped", "control": "hollow-route", "expected": "FAIL"},
-    {"id": "mapping-code-node-unknown", "control": "mutation", "expected": "FAIL"},
-    {"id": "mapping-transition-unknown", "control": "mutation", "expected": "FAIL"},
-    {"id": "required-journey-missing", "control": "denominator", "expected": "FAIL"},
-    {"id": "static-only-verification", "control": "hollow-proof", "expected": "FAIL"},
-    {"id": "unavailable-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL"},
-    {"id": "unexercised-live-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL"},
-    {"id": "procedure-subject-drift", "control": "composition", "expected": "FAIL"},
-    {"id": "mutable-upstream-adapter", "control": "boundary", "expected": "FAIL"}
+    {"id": "composed-control-positive", "control": "positive", "expected": "PASS", "test": "test_control_contract.ControlContractTests.test_positive_composed_control_bundle"},
+    {"id": "source-commit-drift", "control": "mutation", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_stale_domain_source_commit_fails"},
+    {"id": "source-lock-domain-drift", "control": "mutation", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_source_lock_domain_drift_fails"},
+    {"id": "changed-code-node-unmapped", "control": "hollow-route", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_changed_code_node_without_feature_mapping_fails"},
+    {"id": "mapping-code-node-unknown", "control": "mutation", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_mapping_to_unknown_code_node_fails"},
+    {"id": "mapping-transition-unknown", "control": "mutation", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_mapping_to_unknown_transition_fails"},
+    {"id": "required-journey-missing", "control": "denominator", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_required_journey_cannot_be_omitted"},
+    {"id": "static-only-verification", "control": "hollow-proof", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_static_only_evidence_cannot_verify"},
+    {"id": "unavailable-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_unavailable_runtime_cannot_be_promoted"},
+    {"id": "unexercised-live-runtime-promotion", "control": "evidence-promotion", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_unexercised_live_runtime_cannot_be_promoted"},
+    {"id": "procedure-subject-drift", "control": "composition", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_stale_procedure_dependency_fails"},
+    {"id": "mutable-upstream-adapter", "control": "boundary", "expected": "FAIL", "test": "test_control_contract.ControlContractTests.test_mutable_upstream_path_in_adapter_fails"}
   ]
 }

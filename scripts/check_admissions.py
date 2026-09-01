@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 from typing import Any
 
+from admission_stamp import MANDATORY_PRODUCERS
 from common import (
     EVIDENCE_LEVELS,
     REPO_ROOT,
@@ -24,20 +25,26 @@ from common import (
 
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
-MANDATORY_CONTROLS = {
-    "agents-three-document-route",
-    "bundle-anatomy",
-    "source-lock",
-    "executable-route",
-    "feature-map-positive",
-    "missing-terminal-oracle",
-    "static-only-false-proof",
-    "skip-without-blocker",
-    "changed-feature-hollow-route",
-    "transition-chain-mutation",
-    "persistence-mutation",
-    "admission-tree-digest",
-}
+# One declaration, two readers: the stamper writes a mandatory row only after
+# running that id's producer, and this gate requires the same twelve ids. A
+# second literal here let the two sets drift silently (ed3c/skill-concerns#40).
+MANDATORY_CONTROLS = set(MANDATORY_PRODUCERS)
+
+
+def produced_control_ids(skill_root: Path) -> set[str]:
+    """Every control id this Skill's tree can produce: mandatory + its own cases."""
+    produced = set(MANDATORY_PRODUCERS)
+    try:
+        manifest = load_json(skill_root / "skill.json")
+        inventory = load_json(skill_root / manifest["eval_inventory"])
+    except (ValueError, KeyError, TypeError):
+        return produced
+    cases = inventory.get("cases") if isinstance(inventory, dict) else None
+    if isinstance(cases, list):
+        for case in cases:
+            if isinstance(case, dict) and isinstance(case.get("id"), str):
+                produced.add(case["id"])
+    return produced
 
 
 def validate_source_lock(root: Path, lock_path: Path, lock: Any) -> list[str]:
@@ -261,6 +268,10 @@ def check(root: Path = REPO_ROOT) -> list[str]:
                 )
         for missing in sorted(MANDATORY_CONTROLS - set(control_map)):
             errors.append(f"ADMISSION_CONTROL_ABSENT:{name}:{missing}")
+        # A row whose id is neither mandatory nor a case in this Skill's own
+        # inventory has no producer at all -- it can only have been typed in.
+        for unproduced in sorted(set(control_map) - produced_control_ids(skill_root)):
+            errors.append(f"ADMISSION_CONTROL_UNPRODUCED:{name}:{unproduced}")
 
         ceiling = admission.get("evidence_ceiling")
         if ceiling not in EVIDENCE_LEVELS:
