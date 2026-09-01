@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "skill": "context-closure-engineering",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/context-closure-engineering/source-lock.json",
+    "sha256": "42c65e0bb8065fb1d895b74ffaa1392598620957d7738c907cb80bf3342ebd9b"
+  },
+  "subject_files": [
+    {
+      "path": "skills/context-closure-engineering/AGENTS.md",
+      "sha256": "b463bbdba4b2489d1177e789ea883a4decf1958b1490d0c64e8faafda8aa548d"
+    },
+    {
+      "path": "skills/context-closure-engineering/README.md",
+      "sha256": "be29b31553f84174ae4028e820ac7d732cd999e34ad1f0c3b5c730da079dec1f"
+    },
+    {
+      "path": "skills/context-closure-engineering/SKILL.md",
+      "sha256": "91e06cf0e5e801c0b338cfbbe6c3b7f20d03bc3b6b7b01ca4e1092600c3701cf"
+    },
+    {
+      "path": "skills/context-closure-engineering/domain/context-closure-topology.json",
+      "sha256": "1b2c75a29773e2fe1686b49022ece6d76b2c0ef8396a7536d759e1dd0dabcb08"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/cases.json",
+      "sha256": "83d581800011d6430848c5a9304620cd622a48d271b3754e280c335282483e0e"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/baseline.json",
+      "sha256": "9fdd0385e644a3a48e0a698bc1884256924e49e3df65e7224417335c6221006e"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/CLOSURE.md",
+      "sha256": "4883f7ab1940f2d1ebfc99fbe467a7cffdbe1cf5eb8a40db13059e7c62c5d022"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/DAG.md",
+      "sha256": "f6935fa9da2cffa765b7fb6926980b973df1492d4da3a6518801361a747e7dcf"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/DRIFT.md",
+      "sha256": "b531830cf634489670f9ec75f0560fb0af25b3d07ffcc96aa53f607a65aa4799"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/README.md",
+      "sha256": "22d293d36d12a841a46f6dc70a0566ae15eaa6044338bf90aee9ea7b0e57ac79"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/SYSTEM.md",
+      "sha256": "474d6ae8188610ae8c481b0be5f0963ef6050b04998ae9c16b5e817a7d64591f"
+    },
+    {
+      "path": "skills/context-closure-engineering/evals/fixtures/pack/TRACEABILITY.md",
+      "sha256": "f0a255544d9739817dca0743921787a57757cbb2c553c8673ddc567065119cd2"
+    },
+    {
+      "path": "skills/context-closure-engineering/references/consumer-adapter-contract.md",
+      "sha256": "7779aec216057c926c886ad1ec4d093e1e7657aa41d2d8c77769405c86a77f46"
+    },
+    {
+      "path": "skills/context-closure-engineering/references/portable-context-closure-policy.md",
+      "sha256": "59f422c080c162dac6800be92dbefb9a0f0a5da5c29a6f4855f11210d8a50252"
+    },
+    {
+      "path": "skills/context-closure-engineering/scripts/check_context_pack.py",
+      "sha256": "e3ced06958ffb308908117ba059c14ff72a41c33edcf0d8929753431e5ec4ab5"
+    },
+    {
+      "path": "skills/context-closure-engineering/scripts/gen_admission.py",
+      "sha256": "f32ed6bb9d773a7fb086fc6e374e0d437f82f2a0c8e890da7994c0b27a800ac8"
+    },
+    {
+      "path": "skills/context-closure-engineering/scripts/gen_source_lock.py",
+      "sha256": "d2d38e08bf7de971a4a69889caad985d1df8ddd980f9905d5d4662dab8eaa816"
+    },
+    {
+      "path": "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",
+      "sha256": "dad9c585fd6551011987030a176ec062ab71748ddb3fd068fdb230e8c8add418"
+    },
+    {
+      "path": "skills/context-closure-engineering/skill.json",
+      "sha256": "29656911713b24e0a80165e2a56348735e331068537527a0540aa3294942b509"
+    },
+    {
+      "path": "skills/context-closure-engineering/tests/test_context_closure_engineering.py",
+      "sha256": "839e4da8a30dadf54e3a180db9b5cbe840ee8cd1bd6e73b36920a4d2b46e16f8"
+    }
+  ],
+  "skill_tree_sha256": "f45de08e59d8d2585e343fea641405ff1719cdaab63e7f6679b880d94a782b5d",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "context-pack-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "context-pack-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "law-clause-dropped",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-demoted-to-prose",
+      "state": "PASS"
+    },
+    {
+      "id": "checker-assertion-defused",
+      "state": "PASS"
+    },
+    {
+      "id": "consumer-canary-overclaimed",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

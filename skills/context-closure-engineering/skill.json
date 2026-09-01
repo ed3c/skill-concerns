@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "name": "context-closure-engineering",
+  "version": "0.1.0",
+  "kind": "domain-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-context-closure-policy.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "references/consumer-adapter-contract.md",
+    "domain/context-closure-topology.json"
+  ],
+  "execution_paths": [
+    "scripts/check_context_pack.py",
+    "scripts/validate_context_closure_engineering.py"
+  ],
+  "test_paths": [
+    "tests/test_context_closure_engineering.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "domain/context-closure-topology.json"
+  ],
+  "forbidden_domain_literals": [
+    "noodles",
+    "docs/design/context-closure",
+    "skills-shared"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json"
+  ]
+}

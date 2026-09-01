@@ -59,6 +59,16 @@
       "source_lock": "intake/control-backup/source-lock.json",
       "admission": "admissions/control-backup.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "context-closure-engineering",
+      "path": "skills/context-closure-engineering",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/context-closure-engineering/skill.json",
+      "source_lock": "intake/context-closure-engineering/source-lock.json",
+      "admission": "admissions/context-closure-engineering.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

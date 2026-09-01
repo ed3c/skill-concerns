@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "subject": "bounded N-class context-and-closure pack over a repository, its provider objects, its pinned methods, and its unavailable sources",
+  "frozen_source": {
+    "repository": "ed3c/noodles",
+    "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+    "path_prefix": "docs/design/context-closure/",
+    "note": "Exact upstream blob identities are locked in intake/context-closure-engineering/source-lock.json method_references. This bundle carries no upstream bytes.",
+    "blobs": {
+      "README.md": "a85f289cd89217a56c882979c9e653eeefecbac7",
+      "SYSTEM.md": "dd3e759f4a561a7ccf4ad95dbb608e76e2122965",
+      "DAG.md": "7813a0fc19ebaec54c699f19f39237722cb3c5d5",
+      "CLOSURE.md": "8714966df3cc40db5c291e2d993b9d1f37b3a6bd",
+      "TRACEABILITY.md": "02e1bab9bf6dfced7073a4aa30bde21ca74f52fc",
+      "DRIFT.md": "fdcd519d7cb62670a7a7c419580cba8caf82ab39"
+    }
+  },
+  "pack_roles": {
+    "README": "README.md",
+    "SYSTEM": "SYSTEM.md",
+    "DAG": "DAG.md",
+    "CLOSURE": "CLOSURE.md",
+    "TRACEABILITY": "TRACEABILITY.md",
+    "DRIFT": "DRIFT.md"
+  },
+  "pack_role_note": "File names are consumer bindings, not portable constants; --bind ROLE=FILE overrides any row.",
+  "classifications": [
+    "OWNER_REQUIREMENT",
+    "REPOSITORY_FACT",
+    "HISTORICAL_PROVIDER_FACT",
+    "HISTORICAL_PROJECTION",
+    "METHOD_SOURCE",
+    "EXTERNAL_CLAIM",
+    "L_REFERENCE",
+    "R_REFERENCE",
+    "UNKNOWN_CURRENT",
+    "ABSENT"
+  ],
+  "anchor_authority_classes": ["N", "P"],
+  "promoted_authority_classes": ["L", "R"],
+  "classification_vs_authority_note": "L_REFERENCE and R_REFERENCE are classification tokens describing what kind of statement an anchor is (a local- or remote-provider reference), not the promoted authority letters L/R above. A statement classified L_REFERENCE or R_REFERENCE with anchor authority N or P is the ordinary, expected shape; EVIDENCE_PROMOTION is governed by the authority field alone, per LAW-NO-PROMOTION.",
+  "edge_classes": {
+    "S": "start-readiness: a readable interface or fact is enough to begin bounded reversible work",
+    "C": "completion-readiness: the predecessor must close through its own evidence lane",
+    "X": "external dependency: another repository must expose an exact target-local fact",
+    "HOLD": "a named source, experiment, seam, or authority is absent",
+    "PARALLEL": "two bounded writers appear path-disjoint; not a safety proof"
+  },
+  "completion_edge_classes": ["C", "X", "HOLD"],
+  "start_edge_classes": ["S"],
+  "portable_law_count": 8,
+  "portable_laws": [
+    {"id": "LAW-DENOMINATOR", "check": "SOURCE_UNDECLARED, DENOMINATOR_SHRINK"},
+    {"id": "LAW-ANCHOR", "check": "SECTION_UNANCHORED"},
+    {"id": "LAW-NO-PROMOTION", "check": "EVIDENCE_PROMOTION, AUTHORITY_CLASS_UNKNOWN"},
+    {"id": "LAW-EDGE-SPLIT", "check": "EDGE_CLASS_COLLAPSE, EDGE_GRAPH_ABSENT"},
+    {"id": "LAW-ONE-CONVERGENCE-OWNER", "check": "DUPLICATE_WRITER, UNOWNED_CONVERGENCE"},
+    {"id": "LAW-TRACE-GAP", "check": "TRACEABILITY_GAP_RULE_ABSENT"},
+    {"id": "LAW-NO-MUTATION", "check": "not mechanized here: the checker never writes provider state and holds no provider credential"},
+    {"id": "LAW-EXTERNAL-CLAIM", "check": "CLASSIFICATION_UNKNOWN keeps EXTERNAL_CLAIM and ABSENT in the closed vocabulary"}
+  ],
+  "planted_negative_count": 7,
+  "planted_negatives": [
+    {
+      "id": "PN-1",
+      "probe": "Remove one denominator source; the omission must remain visible.",
+      "state": "MECHANIZED",
+      "checks": ["SOURCE_UNDECLARED", "DENOMINATOR_SHRINK"]
+    },
+    {
+      "id": "PN-2",
+      "probe": "Replace one completion edge with a start edge; completion must remain open.",
+      "state": "MECHANIZED",
+      "checks": ["EDGE_CLASS_COLLAPSE"]
+    },
+    {
+      "id": "PN-3",
+      "probe": "Assign two active writers to one durable value; one convergence owner must be selected.",
+      "state": "MECHANIZED",
+      "checks": ["DUPLICATE_WRITER"]
+    },
+    {
+      "id": "PN-4",
+      "probe": "Cite the pack as completion evidence; the authority class must refuse the promotion.",
+      "state": "MECHANIZED",
+      "checks": ["EVIDENCE_PROMOTION"]
+    },
+    {
+      "id": "PN-5",
+      "probe": "Mark a predecessor landed from merge ancestry while its provider marker disagrees; the dependency gap must remain.",
+      "state": "NOT_MECHANIZED",
+      "owner": "consumer domain adapter",
+      "reason": "Deciding it needs an authenticated provider readback of the predecessor marker. This bundle holds no provider credential and no provider API, so a hermetic checker could only compare the pack against itself."
+    },
+    {
+      "id": "PN-6",
+      "probe": "Delete the absent article/PDF row; source accounting must become incomplete.",
+      "state": "MECHANIZED",
+      "checks": ["DENOMINATOR_SHRINK"]
+    },
+    {
+      "id": "PN-7",
+      "probe": "Treat an open change with green candidate tests as provider-ready despite a failing trusted check; the transition must remain blocked.",
+      "state": "NOT_MECHANIZED",
+      "owner": "consumer domain adapter",
+      "reason": "Deciding it needs the provider's current check rollup for an exact head. The pack records a frozen observation of that rollup, and re-reading a frozen observation cannot detect that it went stale."
+    }
+  ],
+  "consumer_canary": {
+    "target": "ed3c/noodles#117",
+    "state": "NOT_EXERCISED",
+    "reason": "The consumer's outputs live in another repository and its provider lane is not owned here. A hermetic PASS in this bundle is not a consumer receipt."
+  }
+}
