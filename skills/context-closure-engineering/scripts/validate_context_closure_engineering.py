@@ -42,6 +42,10 @@ EXPECTED_LAW_IDS = {
     "LAW-EXTERNAL-CLAIM",
 }
 EXPECTED_NEGATIVE_IDS = {"PN-1", "PN-2", "PN-3", "PN-4", "PN-5", "PN-6", "PN-7"}
+EXPECTED_STAGE_P0_NAMES = {
+    "complete denominator", "missing source", "authority laundering",
+    "hidden completion dependency", "stale projection",
+}
 
 
 def validate(root: Path) -> list[str]:
@@ -129,6 +133,12 @@ def validate(root: Path) -> list[str]:
             f"L1 stage_p0_discrimination_count "
             f"{topology.get('stage_p0_discrimination_count')} != "
             f"{len(discriminations)} declared rows"
+        )
+    discrimination_names = {row.get("name") for row in discriminations}
+    if discrimination_names != EXPECTED_STAGE_P0_NAMES:
+        errors.append(
+            f"L1 stage_p0_discrimination names {sorted(discrimination_names)} != "
+            f"hard-coded expected {sorted(EXPECTED_STAGE_P0_NAMES)}"
         )
     packets = topology.get("molecular_task_packets", {})
     for row in (*discriminations, packets):
