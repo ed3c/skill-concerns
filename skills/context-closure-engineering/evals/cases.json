@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "subject": "context-closure-engineering three-layer bundle",
+  "cases": [
+    {
+      "id": "context-pack-positive",
+      "expected": "PASS",
+      "note": "The fixture pack satisfies every mechanized law, with its baseline bound."
+    },
+    {
+      "id": "context-pack-selftest",
+      "expected": "PASS",
+      "note": "All five mechanized planted negatives go red inside the L2 selftest."
+    },
+    {
+      "id": "law-clause-dropped",
+      "expected": "FAIL",
+      "note": "Removing one L0 clause breaks the count tie with the L1 law ledger."
+    },
+    {
+      "id": "negative-demoted-to-prose",
+      "expected": "FAIL",
+      "note": "Flipping a MECHANIZED row to NOT_MECHANIZED without owner and reason fails."
+    },
+    {
+      "id": "checker-assertion-defused",
+      "expected": "FAIL",
+      "note": "Weakening the edge-class comparison makes the selftest, and the gate, red."
+    },
+    {
+      "id": "consumer-canary-overclaimed",
+      "expected": "FAIL",
+      "note": "Claiming a canary state above NOT_EXERCISED/BLOCKED from this hermetic tree fails."
+    }
+  ]
+}

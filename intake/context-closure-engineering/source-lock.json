@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "skill": "context-closure-engineering",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/context-closure-engineering/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/context-closure-engineering/SOURCE_PROPOSAL.md",
+      "sha256": "0a1ea346298ebfb073d408fa3900eeb4f2bb125fbd2f60d79dbe489703c3604a"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/CLOSURE.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "8714966df3cc40db5c291e2d993b9d1f37b3a6bd"
+    },
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/DAG.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "7813a0fc19ebaec54c699f19f39237722cb3c5d5"
+    },
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/DRIFT.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "fdcd519d7cb62670a7a7c419580cba8caf82ab39"
+    },
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/README.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "a85f289cd89217a56c882979c9e653eeefecbac7"
+    },
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/SYSTEM.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "dd3e759f4a561a7ccf4ad95dbb608e76e2122965"
+    },
+    {
+      "repository": "ed3c/noodles",
+      "path": "docs/design/context-closure/TRACEABILITY.md",
+      "commit": "2f926297ab66ae62784bf3f5d7cd3089bc890f1c",
+      "blob_sha": "02e1bab9bf6dfced7073a4aa30bde21ca74f52fc"
+    }
+  ]
+}

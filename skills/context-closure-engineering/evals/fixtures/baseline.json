@@ -1,0 +1,10 @@
+{
+  "note": "The previous pack's denominator. A source that leaves it is a shrink, not an edit.",
+  "denominator": [
+    "SRC-BRIEF",
+    "SRC-TREE",
+    "SRC-PROVIDER",
+    "SRC-METHOD",
+    "SRC-PAPER"
+  ]
+}
