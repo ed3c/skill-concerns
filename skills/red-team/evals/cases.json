@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "subject": "red-team: the judge's falsification method as pinned bytes",
+  "cases": [
+    {
+      "id": "red-team-ties-positive",
+      "expected": "PASS",
+      "note": "Every tie in the live bundle holds: clauses to kernel, catalogue to toolkit, prose to diagnostics, receipts to producer, lifecycle to its own references.",
+      "test": "test_red_team.RedTeamEvals.test_live_bundle_passes_every_tie"
+    },
+    {
+      "id": "validator-selftest",
+      "expected": "PASS",
+      "note": "Every planted hollowing and schema control in the validator selftest reds exactly one tie, bounded on both sides by the positive arm and the residue arm.",
+      "test": "test_red_team.RedTeamEvals.test_validator_selftest_passes"
+    },
+    {
+      "id": "historical-boundary-run",
+      "expected": "PASS",
+      "note": "A boundary run over the wave-17 artifacts reproduces the all-exit gate vacuity and a blind-observer case from catalogue plus toolkit alone, and every finding it emits satisfies the schema.",
+      "test": "test_red_team.RedTeamEvals.test_boundary_run_reproduces_the_known_findings"
+    },
+    {
+      "id": "clean-bundle-no-findings",
+      "expected": "PASS",
+      "note": "The planted negative control: a non-vacuous clean bundle yields 'no findings', which is the honest steady state.",
+      "test": "test_red_team.RedTeamEvals.test_a_clean_bundle_produces_no_findings"
+    },
+    {
+      "id": "gated-class-graduation",
+      "expected": "PASS",
+      "note": "A class whose gate landed leaves active sampling while its experiment still finds the instance directly, so the lifecycle field is distinguishable from a broken detector.",
+      "test": "test_red_team.RedTeamEvals.test_a_gated_class_leaves_active_sampling_but_keeps_its_experiment"
+    },
+    {
+      "id": "run-record-is-derived",
+      "expected": "PASS",
+      "note": "The committed run-ledger record is exactly what the fixture run produces, so the curve reads measurements rather than typed numbers.",
+      "test": "test_red_team.RedTeamEvals.test_the_committed_run_record_is_what_the_fixture_run_produces"
+    },
+    {
+      "id": "finding-to-issue-round-trip",
+      "expected": "PASS",
+      "note": "The experiment block drops verbatim into an issue body's observer-demonstration section and passes the admission completeness dry-run.",
+      "test": "test_red_team.RedTeamEvals.test_the_finding_block_drops_into_an_issue_body_and_passes_the_dry_run"
+    },
+    {
+      "id": "receipts-are-produced-not-written",
+      "expected": "PASS",
+      "note": "The committed receipts.json is exactly what its producer renders from the catalogue, twice.",
+      "test": "test_red_team.RedTeamEvals.test_gen_receipts_is_idempotent_and_authors_the_committed_bytes"
+    },
+    {
+      "id": "adjudicated-class-folds-in",
+      "expected": "PASS",
+      "note": "The planted negative control for the BUILD refusal: a class naming its adjudication enters the catalogue.",
+      "test": "test_red_team.RedTeamEvals.test_an_adjudicated_class_folds_in"
+    },
+    {
+      "id": "unadjudicated-class-refused",
+      "expected": "FAIL",
+      "note": "BUILD fold-in behind the landed ed3c/skill-concerns#93 gate: a catalogue class is an enforcement shape, so it cannot enter without a cure-authorization.",
+      "test": "test_red_team.RedTeamEvals.test_an_unadjudicated_class_cannot_legislate_the_catalogue"
+    },
+    {
+      "id": "detection-never-legislates",
+      "expected": "FAIL",
+      "note": "A SHADOW detection named as the authorization is refused by name: detection is the beginning of adjudication, never a licence to legislate the catalogue.",
+      "test": "test_red_team.RedTeamEvals.test_a_shadow_detection_never_legislates_the_catalogue"
+    },
+    {
+      "id": "malformed-finding-refused",
+      "expected": "FAIL",
+      "note": "A finding with no observed half, and one with prose where a command belongs, both fail the schema the validator owns.",
+      "test": "test_red_team.RedTeamEvals.test_a_malformed_finding_fails_the_validator"
+    },
+    {
+      "id": "fenced-demonstration-block-refused",
+      "expected": "FAIL",
+      "note": "The same block inside a fence arrives at the consumer's admission gate as an empty section, which is why the grammar carries no fence.",
+      "test": "test_red_team.RedTeamEvals.test_a_fenced_demonstration_block_fails_the_admission_dry_run"
+    },
+    {
+      "id": "signal-outside-the-urgent-list-refused",
+      "expected": "FAIL",
+      "note": "An escalation citing a class outside the bounded urgent list is a validator error rather than a louder signal.",
+      "test": "test_red_team.RedTeamEvals.test_a_signal_outside_the_urgent_list_is_a_validator_error"
+    },
+    {
+      "id": "provider-mutating-driver-refused",
+      "expected": "FAIL",
+      "note": "A planted provider-mutating call in a driver fixture copy turns the forbidden-surface scan red; the reader property is a tested surface, not a promise.",
+      "test": "test_red_team.RedTeamEvals.test_a_provider_mutating_call_in_the_driver_reds_the_scan"
+    },
+    {
+      "id": "gated-class-without-gate-reference-refused",
+      "expected": "FAIL",
+      "note": "A gated catalogue entry with no gate reference reds: who legislated the class must be a readback, never archaeology.",
+      "test": "test_red_team.RedTeamEvals.test_a_gated_class_without_a_gate_reference_fails"
+    },
+    {
+      "id": "ungrounded-class-refused",
+      "expected": "FAIL",
+      "note": "A class with no provenance receipt, or whose falsification recipe is prose rather than a runnable command sequence, fails the validator.",
+      "test": "test_red_team.RedTeamEvals.test_a_class_without_provenance_or_recipe_fails"
+    },
+    {
+      "id": "kernel-clause-count-untied",
+      "expected": "FAIL",
+      "note": "Deleting one L0 kernel entry breaks the count tie with the clauses.",
+      "test": "test_red_team.RedTeamEvals.test_dropping_a_kernel_entry_fails"
+    },
+    {
+      "id": "receipt-hand-edited",
+      "expected": "FAIL",
+      "note": "A factually harmless hand edit to receipts.json still reds: evidence regenerates through its producer.",
+      "test": "test_red_team.RedTeamEvals.test_hand_edited_receipts_fail"
+    },
+    {
+      "id": "subject-mutated-mid-pass",
+      "expected": "FAIL",
+      "note": "A pass whose bundle digest moved refuses its own report rather than publishing findings read off a tree something mutated underneath it.",
+      "test": "test_red_team.RedTeamEvals.test_a_subject_that_moved_during_the_pass_refuses_its_own_report"
+    },
+    {
+      "id": "flat-curve-is-a-finding",
+      "expected": "FAIL",
+      "note": "Three post-admission waves without a falling recurrence is a finding about the architecture; two waves is not-yet-evidence rather than a green.",
+      "test": "test_red_team.RedTeamEvals.test_a_flat_curve_after_three_waves_is_itself_a_finding"
+    },
+    {
+      "id": "recipe-flag-the-driver-has-not-got",
+      "expected": "FAIL",
+      "note": "A recipe naming a flag absent from shadow_driver.build_parser() reds. COMMAND_RE certifies that a step looks like a command; only the real parser certifies that it runs, and a runnable-command-sequence field that certifies unrunnable sequences is the opinion registry the field exists to prevent.",
+      "test": "test_red_team.RedTeamEvals.test_every_recipe_runs_through_the_drivers_own_parser"
+    },
+    {
+      "id": "method-claim-without-authorization-refused",
+      "expected": "FAIL",
+      "note": "A method_claims entry with no authorization reds with the repository's own BUILD_CURE_UNAUTHORIZED: the catalogue's non-detector grounds carry the same who-adjudicated-this readback every other grounded thing here carries.",
+      "test": "test_red_team.RedTeamEvals.test_a_method_claim_without_an_authorization_is_refused"
+    },
+    {
+      "id": "hand-typed-run-id-refused",
+      "expected": "FAIL",
+      "note": "A run_id that is a label rather than the producer's ISO-8601 instant reds, and so does a record inserted before the one preceding it.",
+      "test": "test_red_team.RedTeamEvals.test_a_hand_typed_run_id_reds_the_ledger"
+    },
+    {
+      "id": "bundle-script-that-could-spawn-a-process-refused",
+      "expected": "FAIL",
+      "note": "The no-filing property covers every script in the bundle: a module that imports subprocess reds even when it contains no provider verb, which is the form of the check that can cover the scanner itself.",
+      "test": "test_red_team.RedTeamEvals.test_a_bundle_script_that_could_spawn_a_process_reds"
+    },
+    {
+      "id": "absent-neighbour-exit-re-resolves",
+      "expected": "FAIL",
+      "note": "When skills/shadow-architect exists in the tree, the named-but-unavailable exit reds and demands promotion. An exit with no expiry is the free-exit class this bundle catalogues, aimed at itself.",
+      "test": "test_red_team.RedTeamEvals.test_the_absent_neighbour_exit_re_resolves_when_the_absence_ends"
+    },
+    {
+      "id": "duplicate-finding-digest-binds-its-file",
+      "expected": "PASS",
+      "note": "Every duplicate-discovery finding's subject.sha256 is recomputed from the file at subject.path. A digest-binding monitor publishing the digest of its own fingerprint string binds nothing at the path it names.",
+      "test": "test_red_team.RedTeamEvals.test_a_duplicate_finding_binds_the_digest_of_the_file_it_names"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "expected": "FAIL",
+      "note": "Detection and acquittal read the same bytes. A diff whose unchanged context merely mentions the word falsification does not exculpate the threshold it adds.",
+      "test": "test_red_team.RedTeamEvals.test_unchanged_context_cannot_acquit_an_added_enforcement_shape"
+    },
+    {
+      "id": "flat-curve-leaves-through-the-exit-code",
+      "expected": "FAIL",
+      "note": "R7 exits non-zero. A finding printed on stdout at status 0 is prose no caller consumes; the run itself is clean, so the status can only have come from the curve.",
+      "test": "test_red_team.RedTeamEvals.test_a_flat_curve_leaves_through_the_exit_code"
+    }
+  ]
+}

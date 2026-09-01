@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "note": "every entry names a ground that resolves inside this bundle",
+  "evidence": {
+    "index-freshness-canary": {
+      "producer": "scripts/gen_receipts.py",
+      "claim": "the generator in this bundle re-derives the entry"
+    },
+    "stack-presence-probe": {
+      "refs": ["ed3c/skill-concerns#84"],
+      "claim": "grounded by its filed issue"
+    },
+    "vanish-exit-tolerated": {
+      "producer": "HOST_OBSERVED",
+      "claim": "one host observation, declared as such rather than dressed as a replay"
+    }
+  }
+}

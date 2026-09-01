@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "note": "the receipts file the wave-17 judge rewrote by hand: every entry takes the typed exit and the sweep stayed green",
+  "evidence": {
+    "vanish-exit-tolerated": {
+      "producer": "HOST_OBSERVED",
+      "claim": "a one-time host observation of the tolerated exit code"
+    },
+    "snapshot-hardlink-density": {
+      "producer": "HOST_OBSERVED",
+      "claim": "measured once on the host, nothing here replays it"
+    },
+    "tier-dropped-on-loss": {
+      "producer": "HOST_OBSERVED",
+      "claim": "the dropped tier was observed at the time, not reproduced"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "producer": "python3 skills/red-team/scripts/gen_receipts.py",
+  "note": "Derived from domain/catalogue.json. Hand edits are refused: validate_red_team.py re-derives these bytes and compares.",
+  "evidence": {
+    "blind-observer": {
+      "refs": [
+        "ed3c/skill-concerns#83",
+        "ed3c/skill-concerns#92"
+      ],
+      "claim": "the REST events feed returns zero edited-events for issue bodies that GraphQL shows edited two to five times, and the landing machine PATCHes every landed issue's body, so every landing produced an edit the probe reported as zero",
+      "ledger": "slg cross-wave ledger, wave 2026-09-01-stamper-closure: 'provider userContentEdits prove three acn body edits against a lane report declaring NO PROVIDER-BODY EDIT, both individually true, composed record false'",
+      "status": "active"
+    },
+    "free-exit": {
+      "refs": [
+        "ed3c/skill-concerns#91"
+      ],
+      "claim": "rewriting all nine script-producers in one receipts file to the typed exit and re-stamping through the skill's own producer still yields a green sweep; the exit is checked for existence and never for ground",
+      "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: a rule with no mechanical carrier is itself the recurrence",
+      "status": "active"
+    },
+    "trusted-current-literal": {
+      "refs": [
+        "ed3c/skill-concerns#65"
+      ],
+      "claim": "a campaign receipt's own tamper-anchor field was read live from the current admission tree digest, so re-running the producer overwrites the historical binding its docstring claims; the committed value and the live value already disagreed with zero regeneration",
+      "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: a mid-wave ratchet widened by the candidate it blocked - the same class from the enforcement side",
+      "status": "active"
+    },
+    "duplicate-discovery": {
+      "refs": [
+        "ed3c/skill-concerns#83"
+      ],
+      "claim": "ed3c/skill-concerns#83 records that the repository had already registered the same blindness once, from the other direction, in the slg ledger - the second discovery cost a full investigation that a readback would have cost nothing",
+      "ledger": "slg cross-wave ledger, wave 2026-08-31-hard-tail: 'machine defect, thrice-rediscovered'; and wave 2026-09-01-stamper-closure: 'duplicate-producer id pairs inflate apparent control counts'",
+      "status": "active"
+    },
+    "spec-first-lifecycle": {
+      "refs": [
+        "ed3c/skill-concerns#84"
+      ],
+      "claim": "two receipts files carry producer fields naming a driver whose selftest replays the assertion, but the fields were written by a one-off scratch script and neither skill has a gen_receipts.py at all - the declaration is real bytes and the producer it names is not",
+      "ledger": "slg cross-wave ledger, wave 2026-08-31-cardline: 'hand-regeneration of evidence where its producer existed'",
+      "status": "active"
+    },
+    "shape-copying": {
+      "refs": [
+        "ed3c/skill-concerns#93"
+      ],
+      "claim": "one lane copied a report-only metric plus a monotonic ratchet into a new debt issue; the successor atom measured three candidates and proved the copied shape wrong, because a blanket growth bound misjudges every normal test addition as architectural regression",
+      "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: 'a mid-wave ratchet was widened by the candidate it blocked (==136 relaxed to >=136, producer-checked equality replaced by an unchecked floor)'",
+      "status": "gated"
+    },
+    "judge-method-strength": {
+      "refs": [
+        "ed3c/skill-concerns#91",
+        "ed3c/skill-concerns#94"
+      ],
+      "claim": "the adversarial method this skill pins - rewrite-all-to-the-exit experiments, planted-direction replay, producer re-runs in throwaway clones, pristine-main controls, the GraphQL second-arrival probe - produced the strongest findings of the last five waves while living only in dispatcher prompt text and scratchpad notes.",
+      "authorization": {
+        "kind": "operator-adjudication",
+        "ref": "operator:2026-09-01:the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle (ed3c/skill-concerns#94)"
+      }
+    },
+    "zero-injection-boundary": {
+      "refs": [
+        "ed3c/skill-concerns#94",
+        "ed3c/skill-concerns#95"
+      ],
+      "claim": "operator design adjudication, 2026-09-01: the monitor never injects into a working agent or its subject; real-time is legal in exactly one direction, an escalation signal to the dispatcher, and irreversible-class dangers stay owned by the architecture layer.",
+      "authorization": {
+        "kind": "operator-adjudication",
+        "ref": "operator:2026-09-01:the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher (ed3c/skill-concerns#94)"
+      }
+    }
+  }
+}

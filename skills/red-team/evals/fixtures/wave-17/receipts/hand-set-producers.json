@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "note": "producer fields typed in by a scratch script; the generator they name was never written",
+  "evidence": {
+    "index-freshness-canary": {
+      "producer": "scripts/gen_receipts.py",
+      "claim": "the driver selftest replays this assertion"
+    },
+    "stack-presence-probe": {
+      "refs": ["ed3c/skill-concerns#84"],
+      "claim": "grounded by its filed issue rather than by a producer"
+    }
+  }
+}

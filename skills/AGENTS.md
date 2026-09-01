@@ -1,6 +1,6 @@
 # AGENTS.md — admitted Skill collection contract
 
-<!-- agent-next: skills/feature-map-engineering/AGENTS.md, skills/control-noodle/AGENTS.md, skills/spatial-loop-grounded/AGENTS.md, skills/control-code-intel/AGENTS.md, skills/control-backup/AGENTS.md, skills/context-closure-engineering/AGENTS.md, skills/dynamic-workflow/AGENTS.md, skills/arrival-engineering/AGENTS.md -->
+<!-- agent-next: skills/feature-map-engineering/AGENTS.md, skills/control-noodle/AGENTS.md, skills/spatial-loop-grounded/AGENTS.md, skills/control-code-intel/AGENTS.md, skills/control-backup/AGENTS.md, skills/context-closure-engineering/AGENTS.md, skills/dynamic-workflow/AGENTS.md, skills/arrival-engineering/AGENTS.md, skills/red-team/AGENTS.md -->
 
 This is the second of exactly three Agent documents.
 

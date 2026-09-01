@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "skill": "red-team",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/red-team/source-lock.json",
+    "sha256": "7a86d9f31a5b14f25edf45fc3a3d96eb8a345f19a6b8922cd878495f03ee0256"
+  },
+  "subject_files": [
+    {
+      "path": "skills/red-team/AGENTS.md",
+      "sha256": "d4addb35882a9af4dee66034ebb79aedc9f5b3eae06d0c927cc6b2af8acca3cf"
+    },
+    {
+      "path": "skills/red-team/README.md",
+      "sha256": "bcdb60fdd2488a9a105c47eef59def57ca30d9a578c55b207b24afb62c82bac6"
+    },
+    {
+      "path": "skills/red-team/SKILL.md",
+      "sha256": "c1a84e3bd5514a4368564e5602b268441b326be8da2de865b62037be079a97d1"
+    },
+    {
+      "path": "skills/red-team/domain/catalogue.json",
+      "sha256": "a983df7a70cced4a5edf9b4c1fa2e71bf1c49f15e14be6653f2c0ad5e9b81934"
+    },
+    {
+      "path": "skills/red-team/domain/run-ledger.json",
+      "sha256": "73f5a52f4e918649753dd84bb83a254f58749e723d1a100574a0b96d2d6395a3"
+    },
+    {
+      "path": "skills/red-team/evals/cases.json",
+      "sha256": "390266618bc06b6c69976eef0d37b1156e2e7e506104c934d2cab937f7c8a056"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
+      "sha256": "accd70fa121183a871a69d5a7e43e42fbffd037fa50f263e7288346680c1e6db"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/clean/issues/filed-90-draft.md",
+      "sha256": "c37c9cc4331f59f49d2041e472de898c4f3fc96799101bf30b07c07c16533853"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/clean/receipts/grounded-receipts.json",
+      "sha256": "38a7279dcec6fbad5e86af3ca3a5ff74fe0ea41972183801adf1491ef441b514"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/clean/reports/lane-report-90.md",
+      "sha256": "068daecf70b47490bdf26a14bc6149760fef9961a47a672f0c1e12d9600eed5f"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/clean/scripts/gen_receipts.py",
+      "sha256": "c2d1306e784b26686cdb5af159d9d8d6efbd32b9ea831b275a2cf435f375d062"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/issue-round-trip/body-template.md",
+      "sha256": "e464e9113fdd81c152464d4ee7cfec7e8170c644b08e101452daace4b4bb772c"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/wave-17/diffs/growth-bound.diff",
+      "sha256": "c886ae0a658db2c85711cf0790ff020c3f95311f83d0969fa83f086305e637dd"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/wave-17/issues/filed-84-draft.md",
+      "sha256": "67ac9ce5f91e0217e875cee87f02a73b7879f12a163543f2eb011c734dff3d1a"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/wave-17/receipts/all-exit-receipts.json",
+      "sha256": "a059de5a5485e175835bf6dd3bb04bb79c3597c03f2dae99250c11e743fb99c9"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/wave-17/receipts/hand-set-producers.json",
+      "sha256": "40ae1d3262758d784e397646e8a38058c0767a8c848d6da9da9541bab41dd5f6"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/wave-17/reports/lane-report-72.md",
+      "sha256": "a8d223522b8b3c4966dd517090cf64bf8415bdba5c44382916efd1a61b4a4482"
+    },
+    {
+      "path": "skills/red-team/receipts.json",
+      "sha256": "176f1eaac62a10c329396434a0bd23646c6d4a2186ae1759823b28612ba302b6"
+    },
+    {
+      "path": "skills/red-team/references/portable-falsification-kernel.md",
+      "sha256": "e64fc8c98211639e34982201bf199e25d10f6d561fdc78785c7128c6eaa36ddb"
+    },
+    {
+      "path": "skills/red-team/scripts/gen_admission.py",
+      "sha256": "928e8ef0a4410710eb04d9921d4da013fc6aa232eefdc1f9b82f4b0589891e0f"
+    },
+    {
+      "path": "skills/red-team/scripts/gen_receipts.py",
+      "sha256": "e42c36732f47239a011da15494ad492a1860f60925e21a94b5fdaa487cdd5d74"
+    },
+    {
+      "path": "skills/red-team/scripts/gen_source_lock.py",
+      "sha256": "eb9c35e15bf6910747ce4bf011c28b1608654fcebc96ecce680e3c202739e38d"
+    },
+    {
+      "path": "skills/red-team/scripts/shadow_driver.py",
+      "sha256": "9cb19a9e9530a9708fc1db402553cb690676a418f41645e48eb968433a1e30ae"
+    },
+    {
+      "path": "skills/red-team/scripts/validate_red_team.py",
+      "sha256": "6138c9a89230c3c2acfe8cda3d6ed3421d5f0c27bdfff253598bf4bc35b878f4"
+    },
+    {
+      "path": "skills/red-team/skill.json",
+      "sha256": "9fc12012ab0643a574b5f2ac03a538ba0130741eab238e61d3cace7b277ab614"
+    },
+    {
+      "path": "skills/red-team/tests/test_red_team.py",
+      "sha256": "114edc918239b2a8782e5b36ea4e71d55c706e58ff8c9fb3dcdbe414d2da748c"
+    }
+  ],
+  "skill_tree_sha256": "ba74f1c1670e972e6c31e9ca008ee9e34b6876ed919de293913ee7d5ba7fd211",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "red-team-ties-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "validator-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "historical-boundary-run",
+      "state": "PASS"
+    },
+    {
+      "id": "clean-bundle-no-findings",
+      "state": "PASS"
+    },
+    {
+      "id": "gated-class-graduation",
+      "state": "PASS"
+    },
+    {
+      "id": "run-record-is-derived",
+      "state": "PASS"
+    },
+    {
+      "id": "finding-to-issue-round-trip",
+      "state": "PASS"
+    },
+    {
+      "id": "receipts-are-produced-not-written",
+      "state": "PASS"
+    },
+    {
+      "id": "adjudicated-class-folds-in",
+      "state": "PASS"
+    },
+    {
+      "id": "unadjudicated-class-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "detection-never-legislates",
+      "state": "PASS"
+    },
+    {
+      "id": "malformed-finding-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "fenced-demonstration-block-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "signal-outside-the-urgent-list-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "provider-mutating-driver-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "gated-class-without-gate-reference-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "ungrounded-class-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "kernel-clause-count-untied",
+      "state": "PASS"
+    },
+    {
+      "id": "receipt-hand-edited",
+      "state": "PASS"
+    },
+    {
+      "id": "subject-mutated-mid-pass",
+      "state": "PASS"
+    },
+    {
+      "id": "flat-curve-is-a-finding",
+      "state": "PASS"
+    },
+    {
+      "id": "recipe-flag-the-driver-has-not-got",
+      "state": "PASS"
+    },
+    {
+      "id": "method-claim-without-authorization-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "hand-typed-run-id-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-script-that-could-spawn-a-process-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "absent-neighbour-exit-re-resolves",
+      "state": "PASS"
+    },
+    {
+      "id": "duplicate-finding-digest-binds-its-file",
+      "state": "PASS"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "state": "PASS"
+    },
+    {
+      "id": "flat-curve-leaves-through-the-exit-code",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

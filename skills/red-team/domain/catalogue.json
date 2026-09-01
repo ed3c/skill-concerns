@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "note": "The pinned pattern catalogue. This file is the monitor's whole front-load: it is read as bytes at an exact commit, never improvised in a prompt. Every class carries the receipt that grounded it, a falsification recipe whose experiment id exists in scripts/shadow_driver.EXPERIMENTS, and the lifecycle fields that answer 'who legislated this class, and was its stock swept' as a readback rather than as archaeology.",
+  "lifecycle": {
+    "active": "the class is sampled at every boundary run",
+    "gated": "a mechanical gate now catches this class, so it leaves active sampling; gate_ref names the gate and stock_sweep_ref names where the existing instances were dispositioned"
+  },
+  "classes": [
+    {
+      "id": "blind-observer",
+      "title": "an observer returns nothing and the absence is read as NO",
+      "signal": "a report states that something is absent, and the probe it cites is the evidence for that absence",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#92",
+          "ed3c/skill-concerns#83"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-09-01-stamper-closure: 'provider userContentEdits prove three acn body edits against a lane report declaring NO PROVIDER-BODY EDIT, both individually true, composed record false'",
+        "why": "the REST events feed returns zero edited-events for issue bodies that GraphQL shows edited two to five times, and the landing machine PATCHes every landed issue's body, so every landing produced an edit the probe reported as zero"
+      },
+      "falsification": {
+        "experiment": "blind-observer",
+        "recipe": [
+          "gh api repos/ed3c/skill-concerns/issues/72/events --jq '[.[]|select(.event==\"edited\")]|length'",
+          "gh api graphql -f query='{repository(owner:\"ed3c\",name:\"skill-concerns\"){issue(number:72){userContentEdits(first:20){totalCount}}}}'"
+        ],
+        "expected": "the two probes disagree: REST reports 0, GraphQL reports a non-zero totalCount",
+        "both_directions": "positive: the same call site on an issue whose body was edited must report the edit; negative: on an issue with no body edit it must report zero"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "ed3c/skill-concerns#83 lists the affected surface: every landed PR, because land_pr.py PATCHes the referenced issue's body on every land"
+    },
+    {
+      "id": "free-exit",
+      "title": "a typed exit with no expiry, no pinned subject and no refusal is a waiver wearing a type",
+      "signal": "a gate is physical about existence and silent about ground - some declared exit satisfies it unconditionally",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#91"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: a rule with no mechanical carrier is itself the recurrence",
+        "why": "rewriting all nine script-producers in one receipts file to the typed exit and re-stamping through the skill's own producer still yields a green sweep; the exit is checked for existence and never for ground"
+      },
+      "falsification": {
+        "experiment": "free-exit",
+        "recipe": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class free-exit",
+          "grep -c HOST_OBSERVED <bundle>/receipts/*.json"
+        ],
+        "expected": "a receipts file whose every entry takes the typed exit is reported, with the count of entries that took it",
+        "both_directions": "positive: the all-exit fixture is reported; negative: a file whose entries name producers that exist is not"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "ed3c/skill-concerns#91 requires the 26 existing entries to be dispositioned in that atom - each gains its obligation or is retired, none grandfathered"
+    },
+    {
+      "id": "trusted-current-literal",
+      "title": "a historical binding is re-derived from whatever the tree says now",
+      "signal": "a field naming a frozen, evaluated, or pinned fact is assigned from a live read at run time",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#65"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: a mid-wave ratchet widened by the candidate it blocked - the same class from the enforcement side",
+        "why": "a campaign receipt's own tamper-anchor field was read live from the current admission tree digest, so re-running the producer overwrites the historical binding its docstring claims; the committed value and the live value already disagreed with zero regeneration"
+      },
+      "falsification": {
+        "experiment": "trusted-current-literal",
+        "recipe": [
+          "git -C <throwaway-clone> status --porcelain",
+          "python3 <throwaway-clone>/<producer>",
+          "git -C <throwaway-clone> diff --stat -- <artifact>"
+        ],
+        "expected": "re-running the producer against an unchanged tree rewrites a field the artifact claims is historical",
+        "both_directions": "positive: the live-read assignment is reported; negative: an assignment from a frozen constant is not"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "ed3c/skill-concerns#65 names the two fields and the one dropped note; nothing reds today, which is why the sweep is the issue's own scope"
+    },
+    {
+      "id": "duplicate-discovery",
+      "title": "the same defect is discovered again instead of read back",
+      "signal": "two artifacts of one boundary name the same diagnostic against the same path",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#83"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-08-31-hard-tail: 'machine defect, thrice-rediscovered'; and wave 2026-09-01-stamper-closure: 'duplicate-producer id pairs inflate apparent control counts'",
+        "why": "ed3c/skill-concerns#83 records that the repository had already registered the same blindness once, from the other direction, in the slg ledger - the second discovery cost a full investigation that a readback would have cost nothing"
+      },
+      "falsification": {
+        "experiment": "duplicate-discovery",
+        "recipe": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class duplicate-discovery",
+          "grep -rn '<diagnostic>' <bundle>"
+        ],
+        "expected": "one diagnostic-at-path fingerprint is named by two or more artifacts in the same boundary",
+        "both_directions": "positive: the repeated fingerprint is reported with both artifacts; negative: distinct fingerprints are not"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "the run ledger's duplicate_blocks column is the standing sweep: every boundary run records how many duplicate fingerprints it blocked"
+    },
+    {
+      "id": "spec-first-lifecycle",
+      "title": "a declaration lands ahead of the mechanism that would make it true",
+      "signal": "an artifact names a producer, gate, or validator by path, and that path does not exist",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#84"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-08-31-cardline: 'hand-regeneration of evidence where its producer existed'",
+        "why": "two receipts files carry producer fields naming a driver whose selftest replays the assertion, but the fields were written by a one-off scratch script and neither skill has a gen_receipts.py at all - the declaration is real bytes and the producer it names is not"
+      },
+      "falsification": {
+        "experiment": "spec-first-lifecycle",
+        "recipe": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class spec-first-lifecycle",
+          "ls <bundle>/<declared-producer-path>"
+        ],
+        "expected": "a declared producer path is absent from the tree that declares it",
+        "both_directions": "positive: the absent producer is reported; negative: a producer path that resolves is not"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "ed3c/skill-concerns#84 scopes the sweep to the two named receipts files and requires the generator to refuse any key it cannot positively match"
+    },
+    {
+      "id": "shape-copying",
+      "title": "an enforcement shape is copied from the nearest precedent instead of measured",
+      "signal": "a diff introduces a gate, ratchet, threshold, refusal, or escape-hatch condition and nothing in the change names the measurement that chose it",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#93"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: 'a mid-wave ratchet was widened by the candidate it blocked (==136 relaxed to >=136, producer-checked equality replaced by an unchecked floor)'",
+        "why": "one lane copied a report-only metric plus a monotonic ratchet into a new debt issue; the successor atom measured three candidates and proved the copied shape wrong, because a blanket growth bound misjudges every normal test addition as architectural regression"
+      },
+      "falsification": {
+        "experiment": "shape-copying",
+        "recipe": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class shape-copying",
+          "python3 -c \"import cure_authorization; print(cure_authorization.shapes_in(open('<diff>').read()))\""
+        ],
+        "expected": "an added enforcement shape appears in a change that names no cure-authorization",
+        "both_directions": "positive: the unauthorized ratchet diff is reported; negative: the same diff naming its adjudication is not"
+      },
+      "status": "gated",
+      "gate_ref": "scripts/cure_authorization.py (ed3c/skill-concerns#93): both BUILD carriers refuse an unauthorized enforcement shape with BUILD_CURE_UNAUTHORIZED. Declared ceiling: the gate mechanically refuses the UNNAMED form only; whether the named issue's body really carries the discriminating measurement stays the reviewer's read at landing, because authorization_errors is shape-only. The class leaves sampling against the unnamed form, not against a wrongly-named one.",
+      "stock_sweep_ref": "ed3c/skill-concerns#93 binds the rule from landing forward and explicitly claims no retroactive audit; the stock is therefore the empty set by adjudication, recorded here rather than assumed"
+    }
+  ],
+  "method_claims": {
+    "judge-method-strength": {
+      "claim": "the adversarial method this skill pins - rewrite-all-to-the-exit experiments, planted-direction replay, producer re-runs in throwaway clones, pristine-main controls, the GraphQL second-arrival probe - produced the strongest findings of the last five waves while living only in dispatcher prompt text and scratchpad notes.",
+      "refs": [
+        "ed3c/skill-concerns#94",
+        "ed3c/skill-concerns#91"
+      ],
+      "authorization": {
+        "kind": "operator-adjudication",
+        "ref": "operator:2026-09-01:the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle (ed3c/skill-concerns#94)"
+      }
+    },
+    "zero-injection-boundary": {
+      "claim": "operator design adjudication, 2026-09-01: the monitor never injects into a working agent or its subject; real-time is legal in exactly one direction, an escalation signal to the dispatcher, and irreversible-class dangers stay owned by the architecture layer.",
+      "refs": [
+        "ed3c/skill-concerns#94",
+        "ed3c/skill-concerns#95"
+      ],
+      "authorization": {
+        "kind": "operator-adjudication",
+        "ref": "operator:2026-09-01:the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher (ed3c/skill-concerns#94)"
+      }
+    }
+  }
+}

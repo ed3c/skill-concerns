@@ -230,10 +230,13 @@ architectural regression. Cure-shape selection therefore needs a discriminating
 measurement *before* the shape is picked, and a write verb that auto-proposes
 cures for detected patterns automates exactly that error.
 
-This repository owns two BUILD carriers — `scripts/maintain_skills.py --pass`
-and `skills/arrival-engineering`'s topology append — and they call **one**
-implementation, [`scripts/cure_authorization.py`](scripts/cure_authorization.py),
-rather than each reading the rule.
+This repository owns three BUILD carriers — `scripts/maintain_skills.py --pass`,
+`skills/arrival-engineering`'s topology append, and `skills/red-team`'s
+catalogue fold-in — and they call **one** implementation,
+[`scripts/cure_authorization.py`](scripts/cure_authorization.py), rather than
+each reading the rule. The first two scan the proposal for the five shape
+words; the third passes `always=True`, because a catalogue class IS an
+enforcement shape and re-deriving that from its wording would prove nothing.
 `tests/test_repository_controls.py::CureAuthorizationTests` is the mechanical
 reader for the single-implementation claim and for these bytes. Detection is
 fail-closed: the five shape words are matched on word boundaries over a
