@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import shutil
 import sys
 import tempfile
 import unittest
@@ -171,6 +172,42 @@ class RepositoryControlTests(unittest.TestCase):
 
     def test_current_admissions_pass(self) -> None:
         self.assertEqual([], check_admissions.check(ROOT))
+
+    def scratch_copy(self) -> Path:
+        temp = tempfile.TemporaryDirectory(prefix="authoring-command-")
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name) / "repo"
+        shutil.copytree(
+            ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__")
+        )
+        return root.resolve()
+
+    def test_authoring_command_accepts_the_per_skill_producer(self) -> None:
+        # PR #43 changed both this check and the value it reads in one landing
+        # and was graded by the *old* trusted copy, which still demanded
+        # "python3 scripts/run_all.py": five AUTHORING_COMMAND_INVALID rows.
+        # Accepting both values is the landing that makes the split possible.
+        root = self.scratch_copy()
+        receipt = root / "admissions" / "control-backup.json"
+        data = json.loads(receipt.read_text(encoding="utf-8"))
+
+        for command in (
+            "python3 scripts/run_all.py",
+            "python3 skills/control-backup/scripts/gen_admission.py",
+        ):
+            with self.subTest(authoring_command=command):
+                data["authoring_command"] = command
+                receipt.write_text(
+                    json.dumps(data, indent=2) + "\n", encoding="utf-8"
+                )
+                self.assertEqual([], check_admissions.check(root))
+
+        data["authoring_command"] = "python3 scripts/make_it_green.py"
+        receipt.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(
+            ["AUTHORING_COMMAND_INVALID:control-backup"],
+            check_admissions.check(root),
+        )
 
 
 if __name__ == "__main__":
