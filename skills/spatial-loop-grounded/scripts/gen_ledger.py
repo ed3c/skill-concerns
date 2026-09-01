@@ -216,6 +216,53 @@ ENTRIES = [
             "skill_tree_sha256_at_run:a540b0b9e7e51678a92fcd353ea392149559a4a639e4ed96f165c9500e7819eb",
         ],
     },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-eval-productline",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "spot_checks": "ceremony trio provider-confirmed byte-exact (sc#51, sc#53, acn#92 all machine-merged, self-anchored)",
+            "monitor_efficacy": "5 real sweep bugs fixed with mechanical readers pre-land; a frozen 4-filename assert that would have permanently wedged every future acn candidate caught and removed pre-land",
+            "dangling_home_closure": "the wave's lanes named this ledger as their standing destination; the dispatcher records their items here: sc46-F7 - the daily sweep issues ~23 cross-partition GETs against ed3c/noodles receipt refs, importing that repo's lifecycle as local drift noise (sizing question filed at scripts/maintain_skills.py:34-44); acn91 - TLS-interception and mktemp portability caveats from the verify-cards proof run live in that lane's report pending their own path:line homes",
+        },
+        "negative_control_verdict": "NOT_RUN for the wave judge (transcript judging); the A/B campaign inside this wave produced the ledger's first violated verdict, recorded in its own entry",
+        "gaps": [
+            "standing-destination claims had no bytes at the named address until this entry - the dispatcher is the only writer the ledger's producer discipline admits, so lane claims of 'filed at the ledger' are promises the dispatcher must redeem (now redeemed here; rule updated in wave-13 prompts)",
+            "A/B n=3 tie leaves the skill's value claim unproven-rather-than-unexamined - successors sc#49/sc#50/sc#52 own the sharpening",
+        ],
+        "prompt_improvements": [
+            "lanes must name dispatcher-ledger items explicitly as 'for the dispatcher's ledger append' rather than claiming the filing already happened",
+        ],
+        "receipt_refs": [
+            "ed3c/skill-concerns#51", "ed3c/skill-concerns#53", "ed3c/ai-content-notes#92",
+            "host:subagents/workflows/wf_98dcd57d-f9b/journal.jsonl",
+        ],
+    },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-stamper-closure",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "security_grade_fix": "receipt-provenance read order let a candidate self-forge its comparison baseline; exploit demonstrated live pre-fix, refused post-fix (sc#42 lane, red-then-green verbatim)",
+            "stamper_mechanics": "module-shadow refusal, AST-bound (module,class,method) case-producer verification, and cross-skill receipt provenance landed - the stamper now refuses in code, not narration",
+            "cross_lane_gate_catchup": "a concurrently admitted skill (context-closure-engineering, sc#57) lacked the test-field invariant a sibling lane landed mid-wave; cured through the gate's own admission-data path, gate untouched (C7 legal exit followed)",
+            "honest_partial_close": "sc#44 landed step 1 only; the land machine closes whatever Refs names, so the lane filed sc#61 carrying step 2 verbatim and cross-commented - closure honesty preserved by successor, not by reopening",
+        },
+        "negative_control_verdict": "NOT_RUN - transcript judging; fixture not presented",
+        "gaps": [
+            "rank1 (wave-level C2): body_digest_ledger had no wave-level owner - the agent mandated to report digests never edits bodies, the agent that edits bodies is never asked; provider userContentEdits prove three acn body edits against a lane report declaring NO PROVIDER-BODY EDIT, both individually true, composed record false",
+            "duplicate-producer id pairs inflate apparent control counts (17 rows, 13 producers in one skill) - filed at scripts/admission_stamp.py:72-113",
+        ],
+        "prompt_improvements": [
+            "move the body-digest obligation into COMMON so it binds every agent that can mutate a provider body, with edit-time recording; the land report's scope wording becomes 'every provider-body edit made anywhere in this lane'",
+            "pin severity direction inline in monitor prompts (S0 observe / S1 warn / S2 review, ascending)",
+        ],
+        "receipt_refs": [
+            "ed3c/skill-concerns#56", "ed3c/skill-concerns#58", "ed3c/skill-concerns#60",
+            "ed3c/skill-concerns#57", "ed3c/skill-concerns#61",
+            "host:subagents/workflows/wf_3e589a0a-612/journal.jsonl",
+        ],
+    },
 ]
 
 
