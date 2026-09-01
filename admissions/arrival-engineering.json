@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/arrival-engineering/SKILL.md",
-      "sha256": "3f50c6d65cc7a90d5b97ba6a8b2c260df23d9b4d7679e467ca077a99cdda7916"
+      "sha256": "b6a311612cadc256ffed0075f3ad100c73b61fc04cec448a5eade6bb4f56d5d0"
     },
     {
       "path": "skills/arrival-engineering/domain/capability-topology.json",
@@ -113,7 +113,7 @@
     },
     {
       "path": "skills/arrival-engineering/evals/cases.json",
-      "sha256": "a7bec90c1a9cf66bd4368bf2f49e25b970a63fc16f05912008d1646796a4c0c6"
+      "sha256": "b544f5694feb14275b3be83fa732a8164ce2b49b552c504405570543c4347981"
     },
     {
       "path": "skills/arrival-engineering/evals/fixtures/clean/capabilities.json",
@@ -181,7 +181,7 @@
     },
     {
       "path": "skills/arrival-engineering/scripts/audit_islands.py",
-      "sha256": "eefef573e0eb9fc72fe8a30348278b742b5c33096645ff5c0c9964d37d260b53"
+      "sha256": "e1f4362db76074c70b330ebf5fa90c2b6c4174a2255e6fe2f205e707cd7accd8"
     },
     {
       "path": "skills/arrival-engineering/scripts/gen_admission.py",
@@ -205,10 +205,10 @@
     },
     {
       "path": "skills/arrival-engineering/tests/test_arrival_engineering.py",
-      "sha256": "a0a0d4af6189e164367dd78206e56b1ca9a626afe882ad01c53597012ed7a27e"
+      "sha256": "113747186231cddc8738beb03b809b7bff005608e3e65003e6ba9b9f15818272"
     }
   ],
-  "skill_tree_sha256": "ad7d6771ca80a1083a3e12e3101db745894f59dc6c26dd265b56f41369c3bd78",
+  "skill_tree_sha256": "f2b1c3e34800d643ab7913ac40e11bf7912ed65c8308bc7f377f9e84253ec2eb",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -298,6 +298,18 @@
     },
     {
       "id": "aspirational-row-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "adjudicated-cure-appends",
+      "state": "PASS"
+    },
+    {
+      "id": "unadjudicated-cure-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "shadow-detection-never-authorizes",
       "state": "PASS"
     },
     {

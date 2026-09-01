@@ -212,6 +212,41 @@ Corrections are **proven** before they become a commit: the subject's own `run_a
 
 Planted negatives keep all of this falsifiable in `--selftest`: a repository gate that writes into `skills/` (SHADOW), a producer that writes into `policy/` (BUILD scope), a producer whose output reds the subject's own row (BUILD proof), and a proposal for a skill with no `SKILL_CHECKS` row at all (BUILD proof, absence case).
 
+### BUILD may only carry adjudicated cures (ed3c/skill-concerns#93)
+
+A BUILD proposal that introduces or alters an **enforcement shape** — a gate, a
+ratchet, a threshold, a refusal, an escape-hatch condition — must name its
+**cure-authorization**: an issue whose body carries the discriminating
+measurement or the falsification, or an explicit operator adjudication
+reference. A proposal without one is refused with `BUILD_CURE_UNAUTHORIZED`
+naming this rule, and a SHADOW detection never authorizes — detection is the
+beginning of an adjudication, not a license to cure.
+
+The trigger was a lane that copied the nearest successful enforcement precedent
+(a report-only metric plus a monotonic ratchet) into a new debt issue; the
+successor atom then measured three candidates and proved the copied shape wrong,
+because a blanket growth bound misjudges every normal test addition as
+architectural regression. Cure-shape selection therefore needs a discriminating
+measurement *before* the shape is picked, and a write verb that auto-proposes
+cures for detected patterns automates exactly that error.
+
+This repository owns two BUILD carriers — `scripts/maintain_skills.py --pass`
+and `skills/arrival-engineering`'s topology append — and they call **one**
+implementation, [`scripts/cure_authorization.py`](scripts/cure_authorization.py),
+rather than each reading the rule.
+`tests/test_repository_controls.py::CureAuthorizationTests` is the mechanical
+reader for the single-implementation claim and for these bytes. Detection is
+fail-closed: the five shape words are matched on word boundaries over a
+proposal's added lines, so a false positive costs one named authorization while
+a false negative would ship an unadjudicated shape.
+
+Out of scope with receipts: `dynamic-workflow` is observer-only and cannot write
+inside its subject; pstack stays the pinned canonical, so this rule binds at the
+consumer layer and never by forking the ceremony; the noodles daemon's execute
+path only implements adjudicated issues, so every cure it carries already
+arrives with an issue as its authorization. The rule binds from landing forward
+— no retroactive audit of past proposals.
+
 ### Adjudications carried here as bytes (ed3c/skill-concerns#59)
 
 - **Runtime/ceremony boundary.** A supervising reader owns RUNTIME liveness of the sessions it watches — session write age, spawn surface, death signatures, falsely-dead versus dead shapes. CEREMONY correctness — receipt verbatim discipline, marker-transition legality, handoff — stays with the Skill that owns that ceremony. Same lane, two lenses. Entries covering another Skill's ceremony must POINT at it, never restate it; a restated copy is the drift the split exists to prevent.

@@ -18,9 +18,24 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SKILL_ROOT.parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+
 import audit_islands  # noqa: E402
+import cure_authorization  # noqa: E402
 import gen_receipts  # noqa: E402
 import validate_arrival_engineering as validator  # noqa: E402
+
+# The canonical refused case from ed3c/skill-concerns#93's trigger chain, as a
+# topology row: fully receipted, and still an enforcement shape nobody measured.
+RATCHET_ROW = {
+    "id": "copied-ratchet",
+    "capability": cure_authorization.COPY_NEAREST_RATCHET,
+    "carrier": "capabilities.json",
+    "exit": None,
+    "bound_exit": None,
+    "arrival": "DECLARED",
+    "receipts": [{"kind": "bytes", "ref": "ed3c/skill-concerns#93"}],
+}
 
 
 def load_fixture(name: str) -> tuple[Path, dict, Path]:
@@ -69,7 +84,7 @@ class ArrivalEngineeringEvals(unittest.TestCase):
         tree, topology, path = load_fixture("planted")
         report = audit_islands.audit(tree, topology, path)
         seen = {item["diagnostic"] for item in report["findings"]}
-        expected = set(audit_islands.DIAGNOSTICS) - {"TOPOLOGY_ROW_WITHOUT_RECEIPT"}
+        expected = set(audit_islands.DIAGNOSTICS) - audit_islands.APPEND_ONLY_DIAGNOSTICS
         self.assertEqual(seen, expected)
         self.assertTrue(report["read_only"]["held"])
 
@@ -100,6 +115,49 @@ class ArrivalEngineeringEvals(unittest.TestCase):
                 tree,
             )
         self.assertIn("TOPOLOGY_ROW_WITHOUT_RECEIPT:aspirational", str(raised.exception))
+
+    def test_unadjudicated_enforcement_shape_is_refused_at_append(self) -> None:
+        """The canonical refused case: a shape copied instead of measured.
+
+        Fully receipted, so the aspirational-row refusal cannot be what fires;
+        the only thing left to refuse it is the cure-authorization rule
+        (ed3c/skill-concerns#93), whose implementation this bundle calls rather
+        than carries.
+        """
+        tree, topology, _ = load_fixture("clean")
+        with self.assertRaises(audit_islands.AppendRefused) as raised:
+            audit_islands.append_row(topology, dict(RATCHET_ROW), tree)
+        self.assertIn(
+            f"{cure_authorization.DIAGNOSTIC}:copied-ratchet", str(raised.exception)
+        )
+        self.assertIn("ratchet", str(raised.exception))
+
+    def test_an_adjudicated_enforcement_shape_appends(self) -> None:
+        """The planted negative control for the refusal above.
+
+        Same bytes, one named adjudication: a gate that refuses this too would
+        be refusing the class rather than the missing authorization.
+        """
+        tree, topology, _ = load_fixture("clean")
+        row = {
+            **RATCHET_ROW,
+            "cure_authorization": dict(cure_authorization.ADJUDICATED_AUTHORIZATION),
+        }
+        grown = audit_islands.append_row(topology, row, tree)
+        self.assertEqual(len(grown["rows"]), len(topology["rows"]) + 1)
+
+    def test_a_shadow_detection_does_not_authorize_an_append(self) -> None:
+        tree, topology, _ = load_fixture("clean")
+        row = {
+            **RATCHET_ROW,
+            "cure_authorization": {
+                "kind": "shadow-detection",
+                "ref": "ed3c/skill-concerns#93",
+            },
+        }
+        with self.assertRaises(audit_islands.AppendRefused) as raised:
+            audit_islands.append_row(topology, row, tree)
+        self.assertIn("SHADOW detections never authorize", str(raised.exception))
 
     def test_dropping_a_kernel_entry_fails(self) -> None:
         copy = self.copy()
