@@ -28,6 +28,19 @@ exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothin
 is the mechanical reader for that claim). Drift leaves here as a finding with a
 destination, never as a patch: nothing in this file writes to the subject tree.
 
+Re-running `run_all.SKILL_CHECKS` and the repository gates duplicates argv CI
+already runs on every commit - by design, that half is a pure function of
+tree bytes and cannot disagree with CI on the same commit. Its incremental
+value is the two things CI cannot see: local drift in a working tree that
+was never committed (this sweep runs against `--root`, a live filesystem
+path, not a merged ref - `git["dirty"]` in the report says whether that
+matters for this run), and interpreter/environment bit-rot between the last
+CI run and today. Whether that value justifies re-deriving 15 rows nightly
+rather than shipping only the two provider-pin checks below is an open
+sizing question, not settled here - filed at this paragraph
+(scripts/maintain_skills.py, this docstring) for a future pass to revisit
+once `git["dirty"]` has produced evidence either way.
+
 Exit codes: 0 clean, 1 changed (drift found), 2 blocked (coverage unfinished).
 """
 
@@ -85,17 +98,27 @@ def scope_digest(root: Path) -> str:
 
 
 def locate_destination(root: Path, subject: str) -> str:
-    """A finding is filed at the line of the pin that carries it."""
-    for pattern in PIN_HOLDER_GLOBS:
-        for path in sorted(root.glob(pattern)):
-            if not path.is_file():
-                continue
-            for number, line in enumerate(
-                path.read_text(encoding="utf-8").splitlines(), start=1
-            ):
-                if subject in line:
-                    return f"{path.relative_to(root).as_posix()}:{number}"
-    return "registry.json:1"
+    """A finding is filed at the line of the pin that carries it.
+
+    Only a subject specific enough to be a real pin value (never a bare
+    argv flag like "-m") is worth searching for; short/generic subjects
+    return the explicit sentinel below instead of an accidental substring
+    hit on an unrelated file.
+    """
+    if len(subject) >= 4:
+        for pattern in PIN_HOLDER_GLOBS:
+            for path in sorted(root.glob(pattern)):
+                if not path.is_file():
+                    continue
+                for number, line in enumerate(
+                    path.read_text(encoding="utf-8").splitlines(), start=1
+                ):
+                    if subject in line:
+                        return f"{path.relative_to(root).as_posix()}:{number}"
+    # No pin file names this subject. Never guess: a made-up path:line
+    # that happens to exist (e.g. registry.json:1) is worse than an
+    # explicit "not found" because it silently misdirects a reader.
+    return f"NO_MATCHING_PIN:{subject}"
 
 
 def finding(
@@ -124,6 +147,23 @@ def doctor(root: Path, online: bool) -> list[str]:
         if probe["returncode"] != 0:
             blockers.append(f"DOCTOR_PROVIDER_UNREACHABLE:{probe['tail']}")
     return blockers
+
+
+def git_identity(root: Path) -> dict[str, Any]:
+    """Best-effort git identity of the tree the pass ran against.
+
+    Non-fatal by design: the selftest drives sweep() against a scratch copy
+    with no .git (see selftest()), and that must stay clean, not blocked.
+    A null field here means "not a git checkout", not "unknown drift".
+    """
+    branch = _run(["git", "rev-parse", "--abbrev-ref", "HEAD"], root, timeout=10)
+    head = _run(["git", "rev-parse", "HEAD"], root, timeout=10)
+    status = _run(["git", "status", "--porcelain"], root, timeout=10)
+    return {
+        "branch": branch["stdout"].strip() if branch["returncode"] == 0 else None,
+        "head": head["stdout"].strip() if head["returncode"] == 0 else None,
+        "dirty": bool(status["stdout"].strip()) if status["returncode"] == 0 else None,
+    }
 
 
 def _run(command: list[str], cwd: Path, timeout: int = 900) -> dict[str, Any]:
@@ -197,16 +237,34 @@ def _gate_findings(
                 )
             )
     if not found:
-        found.append(
-            finding(
-                root,
-                "CHECK_FAILED",
-                argv[0],
-                f"{subject}: {outcome['tail']}",
-                "re-run this check by hand and read its output",
-            )
-        )
+        found.append(_check_failed_finding(root, subject, argv, outcome))
     return found
+
+
+def _check_failed_finding(
+    root: Path, subject: str, argv: list[str], outcome: dict[str, Any]
+) -> dict[str, str]:
+    """CHECK_FAILED with no machine-readable diagnostic line in its output.
+
+    argv[0] alone is a bad destination key: for the `-m unittest discover`
+    rows it is the literal string "-m", which locate_destination's old
+    substring search could match against any short fragment in any pin
+    file. Bind to the first argv element that is a real path in this tree
+    and is neither a flag nor the root itself (the discover target
+    directory for those rows, the script path otherwise) - a destination
+    that is correct by construction, never by accidental substring
+    collision, and never a directory-flag value like `--root .`.
+    """
+    candidates = [a for a in argv if not a.startswith("-") and a not in (".", str(root))]
+    candidate = next((a for a in candidates if (root / a).is_file() or (root / a).is_dir()), None)
+    destination = f"{candidate}:1" if candidate else f"NO_MATCHING_PIN:{argv[0]}"
+    return {
+        "diagnostic": "CHECK_FAILED",
+        "subject": argv[0],
+        "detail": f"{subject}: {outcome['tail']}",
+        "destination": destination,
+        "action": "re-run this check by hand and read its output",
+    }
 
 
 # --------------------------------------------------------------------------
@@ -341,6 +399,11 @@ def check_upstream(
                     "destination": locate_destination(root, commit),
                 }
             )
+            # Mirror check_refs: a genuine online read failure is not the
+            # same as "skipped by --offline" and must degrade the outcome,
+            # or the entire upstream-pin subject silently disappears behind
+            # a "clean" report.
+            results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": "BLOCKED"})
             continue
         head_sha = head["stdout"].strip()
         results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": head_sha})
@@ -375,6 +438,9 @@ def check_upstream(
                     "prerequisite": f"provider readable: {compare['tail']}",
                     "destination": locate_destination(root, commit),
                 }
+            )
+            results.append(
+                {"pin": f"{pin['id']}:ancestry", "skill": repository, "state": "BLOCKED"}
             )
         else:
             status = compare["stdout"].strip()
@@ -414,6 +480,7 @@ def check_upstream(
                         "destination": locate_destination(root, watched["blob_sha"]),
                     }
                 )
+                results.append({"pin": watched["path"], "skill": repository, "state": "BLOCKED"})
                 continue
             current = blob["stdout"].strip()
             results.append(
@@ -442,6 +509,7 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
         "schema_version": 1,
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "root": str(root),
+        "git": git_identity(root),
         "outcome": "blocked",
         "online": online,
         "skill_checks_run": run_skill_checks,
@@ -453,7 +521,8 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
         "unreachable": [],
         "filing_route": (
             "each finding is filed at its destination path:line in this tree; "
-            "a finding that outlives one sweep is raised as an ed3c/skill-concerns issue"
+            "nothing in this file escalates a finding into a GitHub issue - "
+            "that promotion, if wanted, is a human or a future reader's job"
         ),
     }
 
@@ -570,6 +639,14 @@ def selftest() -> int:
         record(
             "every_finding_names_a_path_line_destination",
             all(":" in f["destination"] for f in drifted["findings"]),
+            f"destinations={[f['destination'] for f in drifted['findings']]}",
+        )
+        record(
+            "planted_drift_destination_is_a_real_pin_not_a_guess",
+            all(
+                not f["destination"].startswith("NO_MATCHING_PIN:")
+                for f in drifted["findings"]
+            ),
             f"destinations={[f['destination'] for f in drifted['findings']]}",
         )
         record(
