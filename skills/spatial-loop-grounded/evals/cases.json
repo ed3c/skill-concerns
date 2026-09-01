@@ -19,6 +19,7 @@
     {"id": "ab-arm-leak-planted", "control": "ab-campaign-blindness", "expected": "FAIL"},
     {"id": "ab-judge-input-carries-arm-label", "control": "ab-campaign-blindness", "expected": "FAIL"},
     {"id": "ab-manual-reaches-judge-input", "control": "ab-campaign-blindness", "expected": "FAIL"},
+    {"id": "ab-builder-reads-the-assignment", "control": "ab-campaign-blindness", "expected": "FAIL"},
     {"id": "ab-manual-loses-a-clause", "control": "ab-campaign-treatment", "expected": "FAIL"},
     {"id": "ab-receipt-hand-edited", "control": "ab-campaign-producer", "expected": "FAIL"}
   ],

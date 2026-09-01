@@ -233,8 +233,9 @@ def rubric_text(spec: dict) -> str:
 def build_judge_inputs(runs: Path = RUNS, dest: Path = JUDGE_INPUTS) -> int:
     """runs/ -> judge-inputs/, refusing on any harness-authored arm label.
 
-    This function never reads assignment.json: the token list comes from the
-    directory listing, so there is no path by which an arm could reach here."""
+    This function never opens the arm map: its token list comes from the runs
+    directory listing, so no arm has a path in here. A test asserts that
+    structurally, by reading this function's own bytes."""
     tokens = sorted(p.name for p in runs.iterdir() if p.is_dir())
     if not tokens:
         print("REFUSED: no runs to build judge inputs from")

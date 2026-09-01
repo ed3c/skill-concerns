@@ -6,6 +6,7 @@ FAIL the validator. This suite is the hillclimb gate for evals/cases.json.
 
 from __future__ import annotations
 
+import inspect
 import json
 import re
 import shutil
@@ -238,6 +239,16 @@ class ABCampaign(unittest.TestCase):
 
     def test_committed_judge_inputs_carry_no_arm_label(self) -> None:
         self.assertEqual(ab_campaign.scan_tree(AB / "judge-inputs", ab_campaign.HARD_LEAK), [])
+
+    def test_judge_input_builder_cannot_reach_the_assignment(self) -> None:
+        """The label scan only catches arms spelled the way the scan expects.
+        The builder's real defence is that the arm has no path into it at all -
+        it takes its tokens from the runs directory and never opens the
+        assignment. That is a structural claim, so it gets a reader: this reds
+        the moment the builder learns to read the assignment."""
+        code = inspect.getsource(ab_campaign.build_judge_inputs).lower()
+        self.assertNotIn("assignment", code)
+        self.assertNotIn("arm]", code)
 
     def test_manual_never_reaches_runs_or_judge_inputs(self) -> None:
         for root in (AB / "runs", AB / "judge-inputs"):
