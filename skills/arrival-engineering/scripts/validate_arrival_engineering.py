@@ -45,6 +45,9 @@ ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 CLOSURE_OWNER = "../context-closure-engineering/references/portable-context-closure-policy.md"
 POINTED_LAWS = {"LAW-TRACE-GAP", "LAW-NO-PROMOTION"}
 RUN_SHAPED = ("chore.txt", "calls.log", "terminal-state.txt", "actor-final-message.txt")
+# The numbering this axis used to carry. Scoped to topology row notes: SKILL.md
+# and README.md name it deliberately, explaining why it is gone.
+RETIRED_LEVEL_RE = re.compile(r"\bL[0-9]\b")
 
 # SKILL.md's `## ` headings, in order. Read out of these bytes by
 # `scripts/check_skill_bundles.py` (parsed, never imported) and compared to the
@@ -248,6 +251,18 @@ def check_topology(topology: dict, repo_root: Path, errors: list[str]) -> None:
         if mismatch is not None:
             diagnostic, detail, _ = mismatch
             errors.append(f"{diagnostic}:{row_id}: {detail}")
+        # A row's prose must speak the vocabulary the row's own column speaks.
+        # Renaming the axis moved every `arrival` value mechanically and left
+        # three notes still reasoning in `L1, not L2` -- true sentences about a
+        # numbering this bundle had just stopped owning, which is the A4 shape
+        # (a documented claim whose subject no longer carries it) inside the
+        # ledger that names A4. Numbers are cheap to grep; memory is not.
+        stale = RETIRED_LEVEL_RE.findall(str(row.get("note") or ""))
+        if stale:
+            errors.append(
+                f"topology row {row_id!r} note still names the retired numbering "
+                f"{sorted(set(stale))} - arrival levels are {LEVELS}"
+            )
 
 
 def check_receipts_are_produced(skill_root: Path, topology: dict, errors: list[str]) -> None:
@@ -475,6 +490,18 @@ def selftest() -> int:
             path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
 
         mutate("claim_below_arrival_reds", underclaim, "CLAIM_BELOW_ARRIVAL")
+
+        def stale_numbering_in_a_note(copy: Path) -> None:
+            path = copy / "domain" / "capability-topology.json"
+            body = json.loads(path.read_text(encoding="utf-8"))
+            body["rows"][0]["note"] = "L1, not L2, and the difference is byte-derived."
+            path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+
+        mutate(
+            "retired_numbering_in_a_row_note_reds",
+            stale_numbering_in_a_note,
+            "still names the retired numbering",
+        )
 
         def strip_receipts(copy: Path) -> None:
             path = copy / "domain" / "capability-topology.json"
