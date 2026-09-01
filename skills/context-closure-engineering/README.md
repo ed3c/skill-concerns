@@ -22,11 +22,16 @@ under `method_references`, so this tree carries none of their bytes and any
 upstream edit is visible as a hash change.
 
 Hillclimb gate: the validator is count-tied. The L1 topology declares how many
-portable laws and how many planted negatives exist; dropping a law clause,
-demoting a mechanized negative to prose, or naming a check the L2 checker does
-not emit all fail closed. Five of seven planted negatives are mechanized; the
-other two need an authenticated provider readback and are declared
-`NOT_MECHANIZED` with their owner rather than quietly counted as passing.
+portable laws, how many planted negatives, and how many STAGE-P0 discriminations
+exist; dropping a law clause, demoting a mechanized negative to prose, or naming
+a check the L2 checker does not emit all fail closed. The selftest adds one more
+tie: every check code the structured ledgers advertise must actually be raised by
+some mutation, so a code cannot quietly become unreachable.
+
+Five of seven planted negatives are mechanized; the other two need an
+authenticated provider readback and are declared `NOT_MECHANIZED` with their
+owner rather than quietly counted as passing. All five STAGE-P0 discriminations
+are mechanized, including stale projection.
 
 Evidence ceiling `L3_HERMETIC`. The consumer canary is `NOT_EXERCISED`: a green
 suite here is a producer receipt and says nothing about a live consumer.

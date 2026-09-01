@@ -96,6 +96,34 @@ class ContextClosureEngineeringEvals(unittest.TestCase):
         errors = validate(root)
         self.assertTrue(any("consumer_canary" in error for error in errors), errors)
 
+    def test_stage_p0_discrimination_naming_a_dead_check_fails(self) -> None:
+        # A discrimination is only real if the checker can emit the code that
+        # carries it; naming an absent code is a ledger entry, not a control.
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path, document = topology(root)
+        document["stage_p0_discriminations"][-1]["checks"] = ["NO_SUCH_CHECK"]
+        path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("NO_SUCH_CHECK" in error for error in errors), errors)
+
+    def test_stale_projection_check_defused_fails(self) -> None:
+        # The snapshot id and the baseline commit are two hand-written copies of
+        # one fact. Stop comparing them and a refreshed-looking pack over an old
+        # tree goes green, so the selftest must red instead.
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "scripts" / "check_context_pack.py"
+        text = path.read_text(encoding="utf-8")
+        defused = text.replace(
+            "if not any(commit[:7] in snapshot for commit in commits):",
+            "if False:",
+        )
+        self.assertNotEqual(defused, text, "mutation target drifted")
+        path.write_text(defused, encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("selftest" in error for error in errors), errors)
+
     def test_checker_assertion_defused_fails(self) -> None:
         # Weakening the edge-class comparison defuses PN-2; the selftest, and so
         # the gate, must go red rather than reporting a smaller contract green.

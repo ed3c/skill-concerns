@@ -3,14 +3,14 @@
 > Authority ceiling: projection only. This pack cannot prove completion or
 > authorize a transition. `[SRC-BRIEF, OWNER_REQUIREMENT, N]`
 
-Snapshot ID: `FIXTURE-0000000-provider-19700101T000000Z`
+Snapshot ID: `FIXTURE-0123456-provider-19700101T000000Z`
 
 ## Frozen source denominator
 
 | ID | Exact identity or pointer | Classification | Freshness and use |
 |---|---|---|---|
 | `SRC-BRIEF` | fixture owner order, digest `0000` | `OWNER_REQUIREMENT` | current task input |
-| `SRC-TREE` | fixture commit `0000000`, tree `0000000` | `REPOSITORY_FACT` | exact baseline |
+| `SRC-TREE` | fixture commit `0123456789abcdef0123456789abcdef01234567` | `REPOSITORY_FACT` | exact baseline |
 | `SRC-PROVIDER` | fixture provider readback at the snapshot time | `R_REFERENCE` | frozen provider denominator |
 | `SRC-METHOD` | fixture pinned method bytes | `METHOD_SOURCE` | procedure, not correctness |
 | `SRC-PAPER` | fixture article; bytes, URL, and hash unavailable | `EXTERNAL_CLAIM` plus `ABSENT` | not verified here |

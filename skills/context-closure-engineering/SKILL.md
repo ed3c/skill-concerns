@@ -59,9 +59,20 @@ ceiling. It does not judge whether the writing is any good - that stays P-class
 review, and pretending otherwise is the failure this bundle is built against.
 
 ```sh
-python3 scripts/check_context_pack.py --pack <dir> [--bind ROLE=FILE] [--baseline prev.json]
+python3 scripts/check_context_pack.py --pack <dir> [--bind ROLE=FILE] [--baseline prev.json] [--head SHA]
 python3 scripts/check_context_pack.py --selftest
 ```
+
+The five STAGE-P0 discriminations are all mechanized and named in L1: complete
+denominator, missing source, authority laundering, hidden completion dependency,
+stale projection. Staleness is caught twice - the snapshot id and the baseline
+commit are the same fact written by hand at two moments, so a half-finished
+refresh reds without any provider access, and `--head` additionally catches the
+pack that is internally consistent and simply out of date.
+
+Candidate task packets carry a forbidden-promotion column. A packet that does
+not say what it may not promote is indistinguishable from an instruction, and a
+projection that emits instructions has stopped being a projection.
 
 Five of the seven planted negatives the method names are mechanized here. The
 other two need an authenticated provider readback and are declared

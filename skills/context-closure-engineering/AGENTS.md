@@ -20,6 +20,8 @@ This is the third and final Agent document for this Skill. Do not search for ano
 - One durable value, one convergence owner. Two is a finding to surface, not a merge to perform.
 - The pack is a dated projection: it never mutates what it describes and never backs a completion claim.
 - A missing chain segment is named, not filled from a nearby object or from memory.
+- A projection names the subject it was compiled over in one voice: a snapshot id that no longer matches its own baseline commit is stale, whatever the prose says.
+- A candidate packet without a forbidden-promotion column is an instruction, not a proposal.
 - Five of seven planted negatives are mechanized here; the two needing provider readback stay `NOT_MECHANIZED` with an owner. A hermetic PASS is not a consumer receipt.
 
 ## Completion

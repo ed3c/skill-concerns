@@ -50,14 +50,14 @@
   "start_edge_classes": ["S"],
   "portable_law_count": 8,
   "portable_laws": [
-    {"id": "LAW-DENOMINATOR", "check": "SOURCE_UNDECLARED, DENOMINATOR_SHRINK"},
-    {"id": "LAW-ANCHOR", "check": "SECTION_UNANCHORED"},
-    {"id": "LAW-NO-PROMOTION", "check": "EVIDENCE_PROMOTION, AUTHORITY_CLASS_UNKNOWN"},
-    {"id": "LAW-EDGE-SPLIT", "check": "EDGE_CLASS_COLLAPSE, EDGE_GRAPH_ABSENT"},
-    {"id": "LAW-ONE-CONVERGENCE-OWNER", "check": "DUPLICATE_WRITER, UNOWNED_CONVERGENCE"},
-    {"id": "LAW-TRACE-GAP", "check": "TRACEABILITY_GAP_RULE_ABSENT"},
-    {"id": "LAW-NO-MUTATION", "check": "not mechanized here: the checker never writes provider state and holds no provider credential"},
-    {"id": "LAW-EXTERNAL-CLAIM", "check": "CLASSIFICATION_UNKNOWN keeps EXTERNAL_CLAIM and ABSENT in the closed vocabulary"}
+    {"id": "LAW-DENOMINATOR", "mechanized_as": "SOURCE_UNDECLARED, DENOMINATOR_SHRINK"},
+    {"id": "LAW-ANCHOR", "mechanized_as": "SECTION_UNANCHORED"},
+    {"id": "LAW-NO-PROMOTION", "mechanized_as": "EVIDENCE_PROMOTION, AUTHORITY_CLASS_UNKNOWN"},
+    {"id": "LAW-EDGE-SPLIT", "mechanized_as": "EDGE_CLASS_COLLAPSE, EDGE_GRAPH_ABSENT"},
+    {"id": "LAW-ONE-CONVERGENCE-OWNER", "mechanized_as": "DUPLICATE_WRITER, UNOWNED_CONVERGENCE"},
+    {"id": "LAW-TRACE-GAP", "mechanized_as": "TRACEABILITY_GAP_RULE_ABSENT"},
+    {"id": "LAW-NO-MUTATION", "mechanized_as": "not mechanized here: the checker never writes provider state and holds no provider credential"},
+    {"id": "LAW-EXTERNAL-CLAIM", "mechanized_as": "CLASSIFICATION_UNKNOWN keeps EXTERNAL_CLAIM and ABSENT in the closed vocabulary"}
   ],
   "planted_negative_count": 7,
   "planted_negatives": [
@@ -106,6 +106,37 @@
       "reason": "Deciding it needs the provider's current check rollup for an exact head. The pack records a frozen observation of that rollup, and re-reading a frozen observation cannot detect that it went stale."
     }
   ],
+  "stage_p0_discrimination_count": 5,
+  "stage_p0_discriminations": [
+    {
+      "name": "complete denominator",
+      "checks": [],
+      "note": "The positive control. The fixture pack with its baseline bound raises nothing; every other row below is a departure from it."
+    },
+    {
+      "name": "missing source",
+      "checks": ["SOURCE_UNDECLARED", "DENOMINATOR_SHRINK"]
+    },
+    {
+      "name": "authority laundering",
+      "checks": ["EVIDENCE_PROMOTION"]
+    },
+    {
+      "name": "hidden completion dependency",
+      "checks": ["EDGE_CLASS_COLLAPSE"]
+    },
+    {
+      "name": "stale projection",
+      "checks": ["STALE_PROJECTION", "SNAPSHOT_ID_ABSENT", "BASELINE_COMMIT_ABSENT"],
+      "note": "The snapshot id and the baseline commit are the same fact written twice by hand. A refresh that updates one and not the other leaves a pack that looks current and describes an older tree. --head additionally catches the pack that is internally consistent and simply out of date."
+    }
+  ],
+  "molecular_task_packets": {
+    "section": "a DRIFT section whose heading names candidate packets",
+    "required_column": "forbidden promotion",
+    "checks": ["TASK_PACKET_SECTION_ABSENT", "TASK_PACKET_UNBOUNDED"],
+    "why": "A packet that does not say what it may not promote is indistinguishable from an instruction, and a projection that emits instructions has become an actor."
+  },
   "consumer_canary": {
     "target": "ed3c/noodles#117",
     "state": "NOT_EXERCISED",
