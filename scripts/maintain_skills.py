@@ -25,8 +25,61 @@ must still resolve at the provider, and `policy/upstream-pins.json`.
 
 N-class: this sweep gates nothing. No admission, stamp, or CI path reads its
 exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothing`
-is the mechanical reader for that claim). Drift leaves here as a finding with a
-destination, never as a patch: nothing in this file writes to the subject tree.
+is the mechanical reader for that claim). Drift leaves SHADOW as a finding with
+a destination, never as a patch.
+
+Two modes, and the split is the point (ed3c/skill-concerns#62)
+--------------------------------------------------------------
+
+SHADOW is the default and has no write verb at all: `sweep()` reads, reports,
+and proves it stayed a reader by digesting EDIT_SCOPE before and after the
+pass. A pass that finds the digest moved refuses its own report
+(`EDIT_SCOPE_VIOLATION`, outcome `blocked`) rather than publishing findings
+derived from a tree something mutated underneath it - the planted check that
+writes into `skills/` in `selftest()` is the negative control for that.
+
+BUILD is `--pass SKILL` and is the only half allowed to propose bytes. It may
+not apply them anywhere a reader would mistake for a landing:
+
+  branch          it creates `maintain/<skill>-<stamp>` and returns the
+                  checkout to the base branch before it exits; the base head
+                  sha is read before and after and must be unchanged.
+  edit scope      writes may land only under `skills/<skill>/` within this
+                  checkout. The guard is `git status --porcelain -uall`
+                  after every producer, not a promise: one out-of-scope path
+                  git can see refuses the whole producer, restores the tree,
+                  and blocks the pass. A producer that writes to an absolute
+                  path outside this checkout entirely is outside what a
+                  git-status diff can see - a known gap, not covered by this
+                  guard (filed: ed3c/skill-concerns#66).
+  producers       corrections regenerate through the subject Skill's own
+                  `scripts/gen_*.py`, never by hand (spatial-loop-grounded C5).
+                  `REPOSITORY_PRODUCERS` are excluded because their output is a
+                  repository artifact (`admissions/`, `intake/`) by contract,
+                  not the Skill's own directory.
+  proven          the subject's own `run_all.SKILL_CHECKS` row runs against
+                  the proposal before it becomes a commit; a red row blocks
+                  the pass rather than shipping bytes nobody re-ran. A skill
+                  with no row at all is blocked too (`BUILD_SKILL_UNCHECKED`)
+                  rather than reading as vacuously proven. That row and no
+                  more: `check_admissions.py` reds by construction here (the
+                  receipt pins the bytes BUILD just moved) and the re-stamp
+                  is a landing act, not a proposing one.
+  three outcomes  clean (nothing to propose), changed (a proven proposal sits
+                  on the branch), blocked (a refusal; nothing ships).
+
+Adjudications carried as bytes (ed3c/skill-concerns#59) - AGENTS.md is the source
+----------------------------------------------------------------------------------
+
+The runtime/ceremony boundary, filing-not-reflex coupling, and trigger-not-
+apply exception rulings live in AGENTS.md ("Adjudications carried here as
+bytes"), not here. AGENTS.md's own rule for this kind of split is "POINT at
+it, never restate it; a restated copy is the drift the split exists to
+prevent" - this module obeys that rule about itself: this pass's behavior
+(no auto-invoke, no auto-apply, filed findings) is the enforcement of those
+three rulings, not a second copy of their prose.
+tests/test_maintain_skills.py::test_maintain_docs_carry_the_sc59_adjudications
+is the mechanical reader, and it reads AGENTS.md.
 
 Re-running `run_all.SKILL_CHECKS` and the repository gates duplicates argv CI
 already runs on every commit - by design, that half is a pure function of
@@ -59,7 +112,13 @@ from typing import Any, Iterable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import REPO_ROOT, digest_entries, regular_files, tree_digest  # noqa: E402
+from common import (  # noqa: E402
+    REPO_ROOT,
+    compare_digest_entries,
+    digest_entries,
+    regular_files,
+    tree_digest,
+)
 import run_all  # noqa: E402
 
 
@@ -67,6 +126,15 @@ REPO_GATES = ("check_agents_hops.py", "check_skill_bundles.py", "check_admission
 
 # Everything the sweep reads as subject and must leave byte-identical.
 EDIT_SCOPE = ("skills", "admissions", "intake", "contracts", "policy", "registry.json")
+
+# BUILD refuses to run these: they write repository artifacts (`admissions/`,
+# `intake/`) by contract, so every run would be an edit-scope refusal, and
+# gen_admission re-executes the whole Skill suite before it writes.
+REPOSITORY_PRODUCERS = ("gen_admission.py", "gen_source_lock.py")
+
+# The identity on a proposal commit. BUILD proposes; a human lands. Inline so
+# the pass never depends on - or inherits - the operator's git config.
+BUILD_IDENTITY = ("-c", "user.name=maintain-skills", "-c", "user.email=maintain-skills@invalid")
 
 # Files that hold pins, searched in order to give every finding a path:line
 # destination that exists in this tree.
@@ -86,7 +154,7 @@ GATE_ERROR = re.compile(r"^(?P<diagnostic>[A-Z][A-Z0-9_]*):(?P<subject>.+)$")
 # subject integrity
 
 
-def scope_digest(root: Path) -> str:
+def scope_entries(root: Path) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     for relative in EDIT_SCOPE:
         path = root / relative
@@ -94,7 +162,11 @@ def scope_digest(root: Path) -> str:
             entries.extend(digest_entries(root, regular_files(path)))
         elif path.is_file():
             entries.extend(digest_entries(root, [path]))
-    return tree_digest(entries)
+    return entries
+
+
+def scope_digest(root: Path) -> str:
+    return tree_digest(scope_entries(root))
 
 
 def locate_destination(root: Path, subject: str) -> str:
@@ -510,6 +582,7 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "root": str(root),
         "git": git_identity(root),
+        "mode": "shadow",
         "outcome": "blocked",
         "online": online,
         "skill_checks_run": run_skill_checks,
@@ -531,20 +604,27 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
     if blockers:
         return report
 
-    before = scope_digest(root)
+    entries_before = scope_entries(root)
+    before = tree_digest(entries_before)
     checks, check_findings = drive_checks(root, check_rows(root, run_skill_checks))
     ref_pins, ref_findings, ref_unreachable = check_refs(root, online)
     upstream_pins, upstream_findings, upstream_unreachable = check_upstream(root, online)
-    after = scope_digest(root)
+    entries_after = scope_entries(root)
+    after = tree_digest(entries_after)
 
     report["checks"] = checks
     report["pins"] = ref_pins + upstream_pins
     report["findings"] = check_findings + ref_findings + upstream_findings
     report["unreachable"] = ref_unreachable + upstream_unreachable
+    # Name the paths, not just the digests: "registry.json" used to be the
+    # hardcoded subject of this finding, which sent every reader to a file
+    # that was usually innocent. compare_digest_entries names what moved.
+    moved = compare_digest_entries(entries_after, entries_before, "SHADOW_SCOPE")
     report["edit_scope"] = {
         "digest_before": before,
         "digest_after": after,
         "held": before == after,
+        "moved": moved,
     }
 
     if not report["edit_scope"]["held"]:
@@ -553,8 +633,9 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
             finding(
                 root,
                 "EDIT_SCOPE_VIOLATION",
-                "registry.json",
-                f"subject digest moved {before} -> {after} during the pass",
+                moved[0].split(":", 1)[1] if moved else "registry.json",
+                f"a SHADOW pass has no write verb, yet the subject digest moved "
+                f"{before} -> {after}: {', '.join(moved) or 'unattributable'}",
                 "the sweep must not write to the subject; treat this run's report as untrusted",
             ),
         )
@@ -568,10 +649,296 @@ def sweep(root: Path, *, run_skill_checks: bool = True, online: bool = True) -> 
     return report
 
 
+# --------------------------------------------------------------------------
+# BUILD: the only half with a write verb, and it may only propose
+
+
+def _git(root: Path, *args: str, identity: bool = False) -> dict[str, Any]:
+    prefix = list(BUILD_IDENTITY) if identity else []
+    return _run(["git", *prefix, *args], root, timeout=120)
+
+
+def worktree_changes(root: Path) -> list[str]:
+    """Every path git sees as changed, tracked or not.
+
+    The guard is git rather than a digest over EDIT_SCOPE because BUILD's
+    refusal has to cover paths EDIT_SCOPE never listed - a producer that
+    writes `scripts/`, `.github/`, or a brand new top-level file is exactly
+    the escape the guard exists to catch, and a hand-listed scope tuple
+    cannot see one it was never told about.
+    """
+    status = _git(root, "status", "--porcelain", "--untracked-files=all")
+    if status["returncode"] != 0:
+        raise SystemExit(f"BUILD_STATUS_UNREADABLE:{status['tail']}")
+    paths: list[str] = []
+    for line in status["stdout"].splitlines():
+        entry = line[3:].strip()
+        if " -> " in entry:  # a rename reports old -> new
+            entry = entry.split(" -> ", 1)[1]
+        paths.append(entry.strip('"'))
+    return sorted(paths)
+
+
+def build_producers(root: Path, skill: str) -> list[str]:
+    """The subject Skill's own regeneration producers, repository ones removed."""
+    directory = root / "skills" / skill / "scripts"
+    if not directory.is_dir():
+        return []
+    return [
+        path.relative_to(root).as_posix()
+        for path in sorted(directory.glob("gen_*.py"))
+        if path.name not in REPOSITORY_PRODUCERS
+    ]
+
+
+def build_doctor(root: Path, skill: str) -> list[str]:
+    blockers: list[str] = []
+    if not (root / "skills" / skill).is_dir():
+        blockers.append(f"DOCTOR_SUBJECT_ABSENT:skills/{skill}")
+    if _git(root, "rev-parse", "--git-dir")["returncode"] != 0:
+        blockers.append("DOCTOR_NOT_A_CHECKOUT:BUILD proposes on a branch it creates")
+        return blockers
+    dirty = worktree_changes(root)
+    if dirty:
+        # Refusing here is what makes the guard readable at all: a pass that
+        # starts dirty cannot tell its own writes from the operator's.
+        blockers.append(f"DOCTOR_WORKTREE_DIRTY:{','.join(dirty[:5])}")
+    return blockers
+
+
+def restore(root: Path) -> list[str]:
+    """Undo everything a refused producer wrote. Returns what is still dirty."""
+    _git(root, "checkout", "--", ".")
+    # Whatever survives the checkout is untracked - producer output git has no
+    # committed byte to restore. Remove exactly those, then re-read the tree:
+    # the return value is a measurement, not the claim that it worked.
+    for relative in worktree_changes(root):
+        path = root / relative
+        if path.is_file():
+            path.unlink()
+    return worktree_changes(root)
+
+
+def build_pass(root: Path, skill: str) -> dict[str, Any]:
+    root = root.resolve()
+    report: dict[str, Any] = {
+        "schema_version": 1,
+        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "root": str(root),
+        "git": git_identity(root),
+        "mode": "build",
+        "skill": skill,
+        "outcome": "blocked",
+        "doctor": [],
+        "base": {},
+        "branch": None,
+        "producers": [],
+        "corrections": [],
+        "proof": [],
+        "refusals": [],
+        "filing_route": (
+            f"corrections are PROPOSED on a branch under skills/{skill}/ and land "
+            "only through the repository's own PR ceremony; this pass never "
+            "commits to the base branch and never writes outside that directory"
+        ),
+    }
+
+    blockers = build_doctor(root, skill)
+    report["doctor"] = blockers
+    if blockers:
+        return report
+
+    base = _git(root, "rev-parse", "--abbrev-ref", "HEAD")["stdout"].strip()
+    base_head = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+    report["base"] = {"branch": base, "head_before": base_head}
+
+    # Microsecond stamp, not `generated_utc`: two passes in the same second
+    # would otherwise collide on the branch name and the second one would
+    # report `blocked` for a reason that has nothing to do with the subject.
+    branch = f"maintain/{skill}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')}"
+    if _git(root, "checkout", "-b", branch)["returncode"] != 0:
+        report["doctor"].append(f"DOCTOR_BRANCH_REFUSED:{branch}")
+        return report
+    report["branch"] = branch
+
+    scope = f"skills/{skill}/"
+    producers = build_producers(root, skill)
+    for relative in producers:
+        outcome = _run([sys.executable, relative], root)
+        changed = worktree_changes(root)
+        escaped = [path for path in changed if not path.startswith(scope)]
+        report["producers"].append(
+            {
+                "producer": relative,
+                "returncode": outcome["returncode"],
+                "changed": changed,
+            }
+        )
+        if outcome["returncode"] != 0:
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_PRODUCER_FAILED",
+                    relative,
+                    f"exit {outcome['returncode']}: {outcome['tail']}",
+                    "fix the producer before proposing anything it generates",
+                )
+            )
+        elif escaped:
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_EDIT_SCOPE_REFUSED",
+                    relative,
+                    f"wrote outside {scope}: {', '.join(escaped)}",
+                    f"BUILD may propose only under {scope}; regenerate the repository "
+                    "artifact through its own gate instead",
+                )
+            )
+        if report["refusals"]:
+            break
+
+    if report["refusals"]:
+        residue = restore(root)
+        _git(root, "checkout", base)
+        _git(root, "branch", "-D", branch)
+        report["branch"] = None
+        # Assert the restore, never announce it: a refusal that leaves the
+        # bytes behind is the failure it claims to have prevented.
+        if residue or worktree_changes(root):
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_RESTORE_FAILED",
+                    residue[0] if residue else "worktree",
+                    f"refused writes survived the restore: {residue}",
+                    "restore this checkout by hand before running any further pass",
+                )
+            )
+        report["outcome"] = "blocked"
+        return report
+
+    proposed = [path for path in worktree_changes(root) if path.startswith(scope)]
+    if proposed:
+        # "One PR of PROVEN corrections" (pstack donor, step 6). Regenerated
+        # bytes nobody re-ran are a proposal about a Skill, not a correction
+        # to it, so the subject's own declared row runs against the proposal
+        # before it becomes a commit.
+        #
+        # Only that row. `check_admissions.py` reds by construction here - the
+        # admission receipt pins bytes BUILD just moved, and the re-stamp
+        # (gen_admission.py -> admissions/) is a repository artifact outside
+        # BUILD's edit scope on purpose. Re-stamping belongs to the landing
+        # ceremony, not to a pass that may only propose.
+        #
+        # `.get(skill, ())` used to give "no row exists" and "the row ran
+        # green" the identical shape in this report (both `proof: []`, zero
+        # proof_findings). A skill absent from SKILL_CHECKS entirely proves
+        # nothing, so absence is its own refusal rather than a silent
+        # pass-through to a commit.
+        if skill in run_all.SKILL_CHECKS:
+            proof, proof_findings = drive_checks(
+                root,
+                [(f"skill:{skill}", list(argv)) for argv in run_all.SKILL_CHECKS[skill]],
+            )
+        else:
+            proof, proof_findings = [], [
+                finding(
+                    root,
+                    "BUILD_SKILL_UNCHECKED",
+                    skill,
+                    f"{skill} has no row in run_all.SKILL_CHECKS; there is no check to prove this proposal against",
+                    "add a SKILL_CHECKS row for this skill before BUILD may propose corrections for it",
+                )
+            ]
+        report["proof"] = proof
+        if proof_findings:
+            report["refusals"].extend(proof_findings)
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_PROPOSAL_UNPROVEN",
+                    f"skills/{skill}",
+                    f"{len(proof_findings)} of the subject's own checks red on the proposal",
+                    "a correction that reds the Skill's own row is a regression; fix the producer, not the receipt",
+                )
+            )
+            residue = restore(root)
+            _git(root, "checkout", base)
+            _git(root, "branch", "-D", branch)
+            report["branch"] = None
+            report["outcome"] = "blocked"
+            report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+            report["base"]["untouched"] = report["base"]["head_after"] == base_head
+            if residue:
+                report["refusals"].append(
+                    finding(
+                        root,
+                        "BUILD_RESTORE_FAILED",
+                        residue[0],
+                        f"unproven writes survived the restore: {residue}",
+                        "restore this checkout by hand before running any further pass",
+                    )
+                )
+            return report
+        _git(root, "add", "--", f"skills/{skill}")
+        commit = _git(
+            root,
+            "commit",
+            "-m",
+            f"maintain({skill}): propose regenerated evidence\n\n"
+            f"Producers: {', '.join(producers)}",
+            identity=True,
+        )
+        head = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+        if commit["returncode"] != 0 or head == base_head:
+            report["refusals"].append(
+                finding(
+                    root,
+                    "BUILD_PROPOSAL_UNCOMMITTED",
+                    branch,
+                    f"commit exit {commit['returncode']}: {commit['tail']}",
+                    "the proposal has to exist as a commit on the branch or it is not a proposal",
+                )
+            )
+        report["corrections"] = proposed
+        report["proposal_head"] = head
+
+    _git(root, "checkout", base)
+    report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+    report["base"]["untouched"] = report["base"]["head_after"] == base_head
+    if not report["base"]["untouched"] or worktree_changes(root):
+        report["refusals"].append(
+            finding(
+                root,
+                "BUILD_BASE_MUTATED",
+                base,
+                f"{base} moved {base_head} -> {report['base']['head_after']} during a proposal pass",
+                "a proposal never lands; restore the base branch by hand",
+            )
+        )
+
+    if report["refusals"]:
+        report["outcome"] = "blocked"
+    elif report["corrections"]:
+        report["outcome"] = "changed"
+    else:
+        if report["branch"]:
+            _git(root, "branch", "-D", report["branch"])
+            report["branch"] = None
+        report["outcome"] = "clean"
+    return report
+
+
 def write_report(report: dict[str, Any], report_dir: Path) -> Path:
     report_dir.mkdir(parents=True, exist_ok=True)
     stamp = report["generated_utc"].replace(":", "").replace("-", "")
-    path = report_dir / f"maintain-skills-{stamp}.json"
+    name = (
+        f"maintain-build-{report['skill']}-{stamp}.json"
+        if report.get("mode") == "build"
+        else f"maintain-skills-{stamp}.json"
+    )
+    path = report_dir / name
     path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     # Evidence is checked at its named location, not assumed.
     readback = json.loads(path.read_text(encoding="utf-8"))
@@ -581,6 +948,15 @@ def write_report(report: dict[str, Any], report_dir: Path) -> Path:
 
 
 def log_line(report: dict[str, Any], path: Path) -> str:
+    if report["mode"] == "build":
+        return (
+            f"maintain-build[{report['skill']}]: {report['outcome']} "
+            f"producers={len(report['producers'])} "
+            f"corrections={len(report['corrections'])} "
+            f"refusals={len(report['refusals'])} "
+            f"branch={report['branch']} "
+            f"report={path}"
+        )
     return (
         f"maintain-skills: {report['outcome']} "
         f"checks={len(report['checks'])} "
@@ -654,6 +1030,188 @@ def selftest() -> int:
             not planted.exists(),
             f"{planted.relative_to(copy).as_posix()} still absent after the pass",
         )
+
+        # SHADOW half, planted negative: the sweep executes the repository
+        # gates, so a gate that writes into the subject is a write attempt
+        # arriving through the sweep's own hands. It must be refused - the
+        # report is untrusted, not merely noisy.
+        shadow = scratch / "shadow"
+        shutil.copytree(
+            root, shadow, ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc")
+        )
+        (shadow / "scripts" / "check_agents_hops.py").write_text(
+            "import pathlib, sys\n"
+            "root = pathlib.Path(sys.argv[sys.argv.index('--root') + 1])\n"
+            "(root / 'skills' / 'PLANTED_SHADOW_WRITE.txt').write_text(\n"
+            "    'a SHADOW pass must never write here\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        wrote = sweep(shadow, run_skill_checks=False, online=False)
+        violations = [
+            f for f in wrote["findings"] if f["diagnostic"] == "EDIT_SCOPE_VIOLATION"
+        ]
+        record(
+            "planted_shadow_write_attempt_is_refused",
+            wrote["outcome"] == "blocked" and bool(violations),
+            f"outcome={wrote['outcome']} "
+            f"diagnostics={[f['diagnostic'] for f in wrote['findings']]}",
+        )
+        record(
+            "shadow_refusal_names_the_path_that_moved",
+            bool(violations)
+            and any(
+                "skills/PLANTED_SHADOW_WRITE.txt" in row
+                for row in wrote["edit_scope"]["moved"]
+            ),
+            f"moved={wrote['edit_scope']['moved']}",
+        )
+
+        # BUILD half. A purpose-built checkout, not the real tree: the
+        # invariant under test is the guard, and the producers are data.
+        build_root = scratch / "build"
+        (build_root / "skills" / "demo-subject" / "scripts").mkdir(parents=True)
+        (build_root / "policy").mkdir()
+        (build_root / "policy" / "owned.json").write_text("{}\n", encoding="utf-8")
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_evidence.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'skills' / 'demo-subject' / 'evidence.json').write_text(\n"
+            "    '{\"regenerated\": true}\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        # check.py ships from the first commit so every build_pass call below
+        # (positive, escape, regression) proves against the same static row -
+        # SKILL_CHECKS is registered once and torn down once, in the finally.
+        (build_root / "skills" / "demo-subject" / "check.py").write_text(
+            "import json, sys\n"
+            "from pathlib import Path\n"
+            "body = json.loads((Path(__file__).parent / 'evidence.json').read_text())\n"
+            "if body.get('regenerated') is not True:\n"
+            "    print('EVIDENCE_REGRESSED:skills/demo-subject/evidence.json')\n"
+            "    sys.exit(1)\n",
+            encoding="utf-8",
+        )
+        _git(build_root, "init", "-q", "-b", "main")
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "fixture", identity=True)
+        base_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+
+        run_all.SKILL_CHECKS["demo-subject"] = (("skills/demo-subject/check.py",),)
+        proposal = build_pass(build_root, "demo-subject")
+        on_branch = _git(
+            build_root, "show", f"{proposal['branch']}:skills/demo-subject/evidence.json"
+        )
+        record(
+            "build_in_scope_correction_lands_on_a_branch",
+            proposal["outcome"] == "changed"
+            and proposal["corrections"] == ["skills/demo-subject/evidence.json"]
+            and on_branch["returncode"] == 0,
+            f"outcome={proposal['outcome']} branch={proposal['branch']} "
+            f"corrections={proposal['corrections']}",
+        )
+        record(
+            "build_never_mutates_the_base_branch",
+            proposal["base"]["untouched"]
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == base_head
+            and not worktree_changes(build_root),
+            f"base={proposal['base']} dirty={worktree_changes(build_root)}",
+        )
+
+        # Planted negative: a producer that reaches outside the subject Skill.
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_escape.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'policy' / 'owned.json').write_text('{\"owned\": false}\\n',\n"
+            "    encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "plant the escape", identity=True)
+        escaped_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+
+        refused = build_pass(build_root, "demo-subject")
+        diagnostics = [f["diagnostic"] for f in refused["refusals"]]
+        record(
+            "planted_build_out_of_scope_write_is_refused",
+            refused["outcome"] == "blocked"
+            and diagnostics == ["BUILD_EDIT_SCOPE_REFUSED"],
+            f"outcome={refused['outcome']} refusals={diagnostics}",
+        )
+        record(
+            "refused_build_pass_leaves_no_bytes_and_no_branch",
+            (build_root / "policy" / "owned.json").read_text(encoding="utf-8") == "{}\n"
+            and refused["branch"] is None
+            and not worktree_changes(build_root)
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == escaped_head,
+            f"branch={refused['branch']} dirty={worktree_changes(build_root)}",
+        )
+        # Planted negative: a producer whose output reds the subject's own
+        # declared row. BUILD must refuse to commit bytes that regress the
+        # Skill, or "proven corrections" is a word rather than a gate.
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_escape.py").unlink()
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_evidence.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'skills' / 'demo-subject' / 'evidence.json').write_text(\n"
+            "    '{\"regenerated\": \"regressed\"}\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        (build_root / "skills" / "demo-subject" / "evidence.json").write_text(
+            '{"regenerated": true}\n', encoding="utf-8"
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "plant the regression", identity=True)
+        regressed_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+        unproven = build_pass(build_root, "demo-subject")
+        record(
+            "planted_unproven_correction_is_refused",
+            unproven["outcome"] == "blocked"
+            and "BUILD_PROPOSAL_UNPROVEN"
+            in [f["diagnostic"] for f in unproven["refusals"]]
+            and unproven["branch"] is None
+            and not worktree_changes(build_root)
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == regressed_head,
+            f"outcome={unproven['outcome']} "
+            f"refusals={[f['diagnostic'] for f in unproven['refusals']]}",
+        )
+        del run_all.SKILL_CHECKS["demo-subject"]
+
+        # Planted negative: a skill with proposable bytes but no row in
+        # SKILL_CHECKS at all - never registered, not registered-empty. This
+        # is the exact case ed3c/skill-concerns#62's monitor named: absence
+        # must not read the same as "the row ran green".
+        (build_root / "skills" / "unchecked-subject" / "scripts").mkdir(parents=True)
+        (build_root / "skills" / "unchecked-subject" / "scripts" / "gen_thing.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'skills' / 'unchecked-subject' / 'thing.json').write_text(\n"
+            "    '{}\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "add an unregistered skill", identity=True)
+        unregistered_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+        assert "unchecked-subject" not in run_all.SKILL_CHECKS
+        unregistered = build_pass(build_root, "unchecked-subject")
+        record(
+            "planted_unregistered_skill_is_refused_not_silently_proven",
+            unregistered["outcome"] == "blocked"
+            and "BUILD_SKILL_UNCHECKED"
+            in [f["diagnostic"] for f in unregistered["refusals"]]
+            and unregistered["branch"] is None
+            and not worktree_changes(build_root)
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == unregistered_head,
+            f"outcome={unregistered['outcome']} "
+            f"refusals={[f['diagnostic'] for f in unregistered['refusals']]}",
+        )
+        record(
+            "build_excludes_producers_that_write_repository_artifacts",
+            all(
+                not producer.endswith(REPOSITORY_PRODUCERS)
+                for producer in build_producers(root, "spatial-loop-grounded")
+            ),
+            f"producers={build_producers(root, 'spatial-loop-grounded')}",
+        )
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
 
@@ -709,11 +1267,31 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="repository gates and pins only; skip each Skill's own validator and selftests",
     )
+    parser.add_argument(
+        "--pass",
+        dest="build_skill",
+        metavar="SKILL",
+        help="BUILD mode: propose corrections for SKILL on a branch, inside "
+        "skills/SKILL/ only. Without it the default SHADOW pass runs, which "
+        "has no write verb at all.",
+    )
     parser.add_argument("--selftest", action="store_true")
     args = parser.parse_args(argv)
 
     if args.selftest:
         return selftest()
+
+    if args.build_skill:
+        report = build_pass(args.root, args.build_skill)
+        path = write_report(report, args.report_dir)
+        print(log_line(report, path))
+        for item in report["refusals"]:
+            print(f"  {item['diagnostic']} {item['subject']} -> {item['destination']} :: {item['action']}")
+        for item in report["corrections"]:
+            print(f"  PROPOSED {item} on {report['branch']}")
+        for blocker in report["doctor"]:
+            print(f"  {blocker}")
+        return {"clean": 0, "changed": 1, "blocked": 2}[report["outcome"]]
 
     report = sweep(
         args.root,
