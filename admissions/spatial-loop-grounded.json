@@ -496,8 +496,48 @@
       "sha256": "b8e148692982f10b8bb8705f9cc01a967d9b2f1c3723952b57914a927f3a3fa4"
     },
     {
-      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/violating-actor-transcript.md",
-      "sha256": "41fc3995a0de60b354e68a80961dbe1c27fe4cb88276ec355d2951d5c0b1c849"
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
+      "sha256": "b1b912ca03f49229d84aa9624fdff719673ff2c8da41dcd8f4ae0f347fd51750"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/actor-final-message.txt",
+      "sha256": "9b3fbc1fbcdc4c2194f0b7651d6f25c08cc384bc385765a0349f30ee721af5a9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/calls.log",
+      "sha256": "40eee65a18378b58257c2d28cca272d1ea063c7371d78b76d9fec96306315e46"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/chore.txt",
+      "sha256": "a9ba58d67446047093550e9f55517b715db06b9a672c576a6b18bb76a7b60835"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/terminal-state.txt",
+      "sha256": "7f87b460a96f09835cda482215068a9a435648c5b2c0878b1834d3ac32a7eea1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/DONE.md",
+      "sha256": "5ffd3edca75b1db1c61bbb5656556ba4d42b41e29ca81693ebcbe53151fbb441"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/TASK.md",
+      "sha256": "8ca5751a7af8ff6c7493d6e8c74a139a75c24ca74557c0bec3dff9445a4692a9"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/state/pr-412.txt",
+      "sha256": "7f8e179aff99eabe1829540edfacafe75359a430fb9dd912227876d98f46263f"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/state/run-9481.txt",
+      "sha256": "ce5a4e464fb243df9761b57eb855101eccf3f3dcc1b49da47074f5cdf46133d0"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/state/run-9502.txt",
+      "sha256": "087589a8195523e66a22a32f700d9bf320cf3b1c448ba10677c3f0fbb03e4202"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/judge-input/workspace/state/runs.txt",
+      "sha256": "a4baa37cba2caa85c3da3af961cae092a9c37e378b63bb429f2852eca36d2ee3"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ledger.json",
@@ -505,11 +545,11 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
-      "sha256": "e2db95a7b78a17d8395bcb9bc68872d63df952151da99807f875f13f41bf6a14"
+      "sha256": "bf639d0125c5530262dd49e986c2ef4acbcae1ba51295de262cece500df2ea04"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "4a08083f9200384b3c2f7ee5111f4030b8400fabf50f5b32480f3a8a39b90502"
+      "sha256": "ff22c1e44ac348816a5eecdd20caa7badc114bf7817522ee600f59dd2106e079"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
@@ -521,7 +561,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
-      "sha256": "2196f4071d96d0e0c18085cb40d17f71c0d2d68c05be5cebbd261ed3fc00aac7"
+      "sha256": "66c29dc94b26d89f50678d47b9b747e5710193331b03c396418d9737f51b848e"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -549,7 +589,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "456ed75aeeb4a7551612ce466bf490695f11cebb711f0d4ba0015b9be08fd3b1"
+      "sha256": "9640f2e801767c5455244a244e5d65b52b382ce582a90abbe00bfa507010a9f8"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -557,10 +597,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "b1bd06fc988e3e530d165d8d30bcebb32f3fca98ab46603f4911961c3a695b96"
+      "sha256": "49fa0df22ec69bbd3f7d0838bd03765c46004b90733add577257fd5f2a5dcd13"
     }
   ],
-  "skill_tree_sha256": "257eb3cc5b7aca9c605216dcc090331123296830f79e36417a7388d3b71c21fb",
+  "skill_tree_sha256": "324116ee5e536b9a5e8e6a7cd529ab1d75537941ddae0ae5877b8149dff3a850",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -665,7 +705,15 @@
       "state": "PASS"
     },
     {
-      "id": "negative-transcript-missing",
+      "id": "negative-judge-input-missing",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-control-announces-itself",
+      "state": "PASS"
+    },
+    {
+      "id": "negative-terminal-state-hand-edited",
       "state": "PASS"
     },
     {

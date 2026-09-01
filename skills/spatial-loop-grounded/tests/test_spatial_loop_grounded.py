@@ -6,8 +6,12 @@ FAIL the validator. This suite is the hillclimb gate for evals/cases.json.
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import inspect
+import io
 import json
+import os
 import re
 import shutil
 import sys
@@ -38,6 +42,33 @@ def mutated_copy() -> tuple[tempfile.TemporaryDirectory, Path]:
     root = Path(temp.name) / "skill"
     shutil.copytree(SKILL_ROOT, root, ignore=shutil.ignore_patterns("__pycache__"))
     return temp, root
+
+
+def independent_terminal_state_text(workspace: Path) -> str:
+    """A second, deliberately different implementation of what
+    ab_campaign.terminal_state_text computes, for the negative control alone.
+
+    The gate (validate_spatial_loop_grounded.py), the producer
+    (ab_campaign.negative_control), and the reproduction test below all call
+    the SAME terminal_state_text - three call sites sharing one function body
+    is one arrival, not three (ed3c/skill-concerns#49 monitor finding 6): a
+    bug in that function's traversal or formatting would fool all of them
+    identically. This walks with os.walk instead of Path.rglob, and counts
+    newlines over raw bytes instead of a decoded string, so a defect specific
+    to either implementation is visible here even when it is invisible there.
+    """
+    lines = []
+    for dirpath, _dirnames, filenames in os.walk(workspace):
+        for name in filenames:
+            path = Path(dirpath) / name
+            raw = path.read_bytes()
+            lines.append(
+                f"{path.relative_to(workspace).as_posix()} "
+                f"sha256={hashlib.sha256(raw).hexdigest()} "
+                f"bytes={len(raw)} "
+                f"lines={raw.count(chr(10).encode())}"
+            )
+    return "\n".join(sorted(lines)) + "\n"
 
 
 class SpatialLoopGroundedEvals(unittest.TestCase):
@@ -130,17 +161,46 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         errors = validate(root)
         self.assertTrue(any("control:negative" in e for e in errors), errors)
 
-    def test_hollow_negative_transcript_missing_fails(self) -> None:
-        temp, root = mutated_copy()
-        self.addCleanup(temp.cleanup)
-        case = next(
+    def negative_case(self, root: Path) -> dict:
+        return next(
             s
             for s in json.loads((root / BEHAVIORAL).read_text(encoding="utf-8"))["scenarios"]
             if s.get("control") == "negative"
         )
-        (root / case["transcript"]).unlink()
+
+    def test_hollow_negative_judge_input_missing_fails(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        shutil.rmtree(root / self.negative_case(root)["judge_input"])
         errors = validate(root)
-        self.assertTrue(any("transcript fixture missing" in e for e in errors), errors)
+        self.assertTrue(any("judge input missing" in e for e in errors), errors)
+
+    def test_hollow_negative_control_announces_itself_fails(self) -> None:
+        """The gate's own planted defect: put the answer back into the
+        judge-facing half and watch the tree refuse. Without this the blindness
+        claim would be prose - the committed fixture is clean, and a clean scan
+        alone never shows the scan can red."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        done = root / self.negative_case(root)["judge_input"] / "workspace" / "DONE.md"
+        done.write_text(
+            done.read_text(encoding="utf-8") + "\n(planted negative control: violates C3.)\n",
+            encoding="utf-8",
+        )
+        errors = validate(root)
+        self.assertTrue(any("announces itself" in e for e in errors), errors)
+        self.assertTrue(any("'C3'" in e for e in errors), errors)
+
+    def test_hollow_negative_terminal_state_hand_edited_fails(self) -> None:
+        """terminal-state.txt is produced from the workspace, never typed. A
+        hand-written one that disagreed with the bytes it describes would be
+        the tell that this run is not a run."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        state = root / self.negative_case(root)["judge_input"] / "terminal-state.txt"
+        state.write_text(state.read_text(encoding="utf-8").replace("bytes=", "bytes=9", 1), encoding="utf-8")
+        errors = validate(root)
+        self.assertTrue(any("disagrees with its own workspace" in e for e in errors), errors)
 
     def test_hollow_negative_expected_verdict_softened_fails(self) -> None:
         temp, root = mutated_copy()
@@ -305,6 +365,30 @@ class ABCampaign(unittest.TestCase):
 
     def test_selftest_passes(self) -> None:
         self.assertEqual(ab_campaign.selftest(), 0)
+
+    def test_negative_control_producer_reproduces_committed_bytes(self) -> None:
+        """The committed terminal state is what the producer writes, not what
+        someone typed. Runs the producer against the real tree: identical bytes
+        mean nothing moved, different bytes red here after regenerating."""
+        state = ab_campaign.NC_JUDGE_INPUT / "terminal-state.txt"
+        before = state.read_bytes()
+        # stdout is swallowed on purpose: tests/test_admission_stamp.py reads the
+        # runner's own output to prove the stamper refused, and a producer's
+        # "wrote ..." line here would answer that question for it.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ab_campaign.negative_control(), 0)
+        self.assertEqual(state.read_bytes(), before)
+
+    def test_negative_control_terminal_state_has_an_independent_second_arrival(self) -> None:
+        """The test above re-runs the same terminal_state_text the gate and
+        the producer already share - a shared-bug blind spot, not a second
+        arrival. This recomputes with independent_terminal_state_text (a
+        different traversal, a different byte-vs-decoded line count) and
+        requires the same committed bytes, so a defect in ab_campaign's own
+        traversal or formatting has somewhere else to show up."""
+        committed = (ab_campaign.NC_JUDGE_INPUT / "terminal-state.txt").read_text(encoding="utf-8")
+        recomputed = independent_terminal_state_text(ab_campaign.NC_JUDGE_INPUT / "workspace")
+        self.assertEqual(committed, recomputed)
 
     def test_ab_control_arm_ledger_score_binds_to_the_receipt(self) -> None:
         """gen_ledger.py's ENTRIES are hand-written Python literals - by design

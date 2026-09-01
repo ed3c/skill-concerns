@@ -14,6 +14,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ab_campaign import blind_scan, terminal_state_text  # noqa: E402
+
 CLAUSE_RE = re.compile(r"^## (C\d+)\. ", re.M)
 REQUIRED_FIELDS = ("- Signal:", "- Action:", "- Why:", "- evidence:")
 REF_RE = re.compile(r"^ed3c/[a-z-]+#\d+$")
@@ -136,6 +139,61 @@ def validate(skill_root: Path) -> list[str]:
     return errors
 
 
+def validate_blind_negative(skill_root: Path, case: dict) -> list[str]:
+    """The negative control must be presentable blind.
+
+    The invariant it exists to enforce is: THE JUDGE'S STANDARD HAS REFUSED AT
+    LEAST ONE CASE IT COULD NOT HAVE KNOWN TO REFUSE. An input that names its
+    own violations measures reading comprehension instead, so the judge-facing
+    half is run-shaped and scanned, and the self-describing half lives in a
+    sibling answer key the judge never receives (ed3c/skill-concerns#49).
+    """
+    errors: list[str] = []
+    case_id = case.get("id")
+    judge_input = case.get("judge_input")
+    answer_key = case.get("answer_key")
+
+    if not isinstance(answer_key, str) or not (skill_root / answer_key).is_file():
+        errors.append(f"negative control {case_id!r} answer key missing: {answer_key!r}")
+    if not isinstance(judge_input, str) or not (skill_root / judge_input).is_dir():
+        return errors + [f"negative control {case_id!r} judge input missing: {judge_input!r}"]
+
+    root = skill_root / judge_input
+    if isinstance(answer_key, str) and (skill_root / answer_key).resolve().is_relative_to(root.resolve()):
+        errors.append(f"negative control {case_id!r} answer key sits inside the judge input")
+
+    workspace = root / "workspace"
+    for relative in ("calls.log", "chore.txt", "terminal-state.txt"):
+        if not (root / relative).is_file():
+            errors.append(f"negative control {case_id!r} is not run-shaped: {relative} missing")
+    if not workspace.is_dir():
+        return errors + [f"negative control {case_id!r} is not run-shaped: workspace/ missing"]
+
+    for path, token in blind_scan(root):
+        errors.append(
+            f"negative control {case_id!r} announces itself: giveaway {token!r} in {path} - "
+            "it cannot measure a refusal the judge could not have known to make"
+        )
+
+    state = root / "terminal-state.txt"
+    if state.is_file() and state.read_text(encoding="utf-8") != terminal_state_text(workspace):
+        errors.append(
+            f"negative control {case_id!r} terminal-state.txt disagrees with its own workspace - "
+            "regenerate with scripts/ab_campaign.py negative-control"
+        )
+
+    chore = root / "chore.txt"
+    if chore.is_file() and chore.read_text(encoding="utf-8").strip() != str(case.get("chore") or "").strip():
+        errors.append(f"negative control {case_id!r} chore.txt does not name the case's chore")
+    criteria = case.get("criteria")
+    if not isinstance(criteria, list) or not criteria:
+        errors.append(
+            f"negative control {case_id!r} declares no criteria - it would arrive in the batch "
+            "as the one run the rubric has no entry for, which is itself a tell"
+        )
+    return errors
+
+
 def validate_campaigns(skill_root: Path, clause_ids: list[str]) -> list[str]:
     """Campaign-level gates: the judge keeps a case it must refuse, and every
     judged wave lands in an append-only ledger.
@@ -179,9 +237,7 @@ def validate_campaigns(skill_root: Path, clause_ids: list[str]) -> list[str]:
                 for clause in clauses:
                     if clause not in clause_ids:
                         errors.append(f"negative control {case_id!r} names clause {clause!r} absent from SKILL.md")
-            transcript = case.get("transcript")
-            if not isinstance(transcript, str) or not (skill_root / transcript).is_file():
-                errors.append(f"negative control {case_id!r} transcript fixture missing: {transcript!r}")
+            errors.extend(validate_blind_negative(skill_root, case))
 
     ledger_path = skill_root / "evals" / "behavioral-campaigns" / "ledger.json"
     if not ledger_path.is_file():
