@@ -42,6 +42,10 @@ EXPECTED_LAW_IDS = {
     "LAW-EXTERNAL-CLAIM",
 }
 EXPECTED_NEGATIVE_IDS = {"PN-1", "PN-2", "PN-3", "PN-4", "PN-5", "PN-6", "PN-7"}
+EXPECTED_STAGE_P0_NAMES = {
+    "complete denominator", "missing source", "authority laundering",
+    "hidden completion dependency", "stale projection",
+}
 
 
 def validate(root: Path) -> list[str]:
@@ -119,6 +123,33 @@ def validate(root: Path) -> list[str]:
                     errors.append(f"{identifier} is NOT_MECHANIZED without {field}")
         else:
             errors.append(f"{identifier} has unknown state {negative.get('state')!r}")
+
+    # STAGE-P0 asks for five discriminations by name. Each row names the checks
+    # that carry it, and a row naming a check the L2 checker does not emit is a
+    # discrimination that exists only in the ledger.
+    discriminations = topology.get("stage_p0_discriminations", [])
+    if topology.get("stage_p0_discrimination_count") != len(discriminations):
+        errors.append(
+            f"L1 stage_p0_discrimination_count "
+            f"{topology.get('stage_p0_discrimination_count')} != "
+            f"{len(discriminations)} declared rows"
+        )
+    discrimination_names = {row.get("name") for row in discriminations}
+    if discrimination_names != EXPECTED_STAGE_P0_NAMES:
+        errors.append(
+            f"L1 stage_p0_discrimination names {sorted(discrimination_names)} != "
+            f"hard-coded expected {sorted(EXPECTED_STAGE_P0_NAMES)}"
+        )
+    packets = topology.get("molecular_task_packets", {})
+    for row in (*discriminations, packets):
+        for code in row.get("checks", []):
+            if code not in l2_text:
+                errors.append(
+                    f"{row.get('name', 'molecular_task_packets')} names check "
+                    f"{code!r} absent from L2"
+                )
+    if not packets.get("required_column"):
+        errors.append("molecular_task_packets declares no required column")
 
     # The consumer canary must stay explicit and may not be claimed from here.
     canary = topology.get("consumer_canary", {})

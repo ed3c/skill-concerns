@@ -33,3 +33,12 @@ so its claim mapping stays open. `[SRC-PAPER, EXTERNAL_CLAIM plus ABSENT, N]`
 - Does any projection path appear in an evidence field?
 
 Each answer names a source id and classification. `[SRC-BRIEF, OWNER_REQUIREMENT, N]`
+
+## Candidate next packets
+
+These are planning proposals only. They create nothing. `[SRC-METHOD, METHOD_SOURCE, P]`
+
+| Packet | Start condition | Bounded goal | Forbidden promotion | Current disposition |
+|---|---|---|---|---|
+| marker repair | exact object body readable | expose the marker its own contract expects | do not infer a dependency from ancestry | ready for an authorized owner |
+| source refresh | exact URLs and hashes available | bind the article claim to a primary identity | do not call an unread source true | `HOLD` |

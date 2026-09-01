@@ -32,6 +32,14 @@ the failure where a source quietly leaves the accounting and the omission looks
 like an edit. A consumer that never passes a baseline has that check absent, not
 passing.
 
+## Head binding
+
+`--head` takes the commit the consumer just read back. Without it the checker
+still catches a pack whose snapshot id and baseline commit disagree with each
+other - a half-finished refresh - but not a pack that is internally consistent
+and simply older than the tree. A consumer that never passes a head has the
+second half of the staleness check absent, not passing.
+
 ## The two provider-owned negatives
 
 Two planted negatives from the method are declared `NOT_MECHANIZED` in the L1

@@ -9,23 +9,23 @@
   "subject_files": [
     {
       "path": "skills/context-closure-engineering/AGENTS.md",
-      "sha256": "b463bbdba4b2489d1177e789ea883a4decf1958b1490d0c64e8faafda8aa548d"
+      "sha256": "6e57e9518bd4ae116fb60f879ad11422307d25566ef8a6d96510f7a226b9dbd7"
     },
     {
       "path": "skills/context-closure-engineering/README.md",
-      "sha256": "be29b31553f84174ae4028e820ac7d732cd999e34ad1f0c3b5c730da079dec1f"
+      "sha256": "8fa517667270d5cc29322ebd602a06a6fe2340c293e0ece5eba9bf930c6ec2d7"
     },
     {
       "path": "skills/context-closure-engineering/SKILL.md",
-      "sha256": "91e06cf0e5e801c0b338cfbbe6c3b7f20d03bc3b6b7b01ca4e1092600c3701cf"
+      "sha256": "841908a4a63ccb874c860ef782c1cd6c537a6f50b52825e9c4eaf6e759737dcd"
     },
     {
       "path": "skills/context-closure-engineering/domain/context-closure-topology.json",
-      "sha256": "1b2c75a29773e2fe1686b49022ece6d76b2c0ef8396a7536d759e1dd0dabcb08"
+      "sha256": "be9b3cd8f3b741fcee2f9bc6f711baa4b663c17b5a2fe22053890e5ead4f073e"
     },
     {
       "path": "skills/context-closure-engineering/evals/cases.json",
-      "sha256": "83d581800011d6430848c5a9304620cd622a48d271b3754e280c335282483e0e"
+      "sha256": "72695141447bc8c007e2071f5609b4e1a748f8bb6c5b730e80f64d86cf12db91"
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/baseline.json",
@@ -41,11 +41,11 @@
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/pack/DRIFT.md",
-      "sha256": "b531830cf634489670f9ec75f0560fb0af25b3d07ffcc96aa53f607a65aa4799"
+      "sha256": "6a3721fa0b979dd5d535a50221e77502d0d1d8cb281b9ae08232d84b9f980189"
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/pack/README.md",
-      "sha256": "22d293d36d12a841a46f6dc70a0566ae15eaa6044338bf90aee9ea7b0e57ac79"
+      "sha256": "5904144b315a80a17fc925bf468ab8181cf15197118d5f9254c80d3b4fcd65fb"
     },
     {
       "path": "skills/context-closure-engineering/evals/fixtures/pack/SYSTEM.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "skills/context-closure-engineering/references/consumer-adapter-contract.md",
-      "sha256": "7779aec216057c926c886ad1ec4d093e1e7657aa41d2d8c77769405c86a77f46"
+      "sha256": "ac9ccaffb2a23d285d4de2ce7bae18c07977c259019b52a1c7ede248abc22f24"
     },
     {
       "path": "skills/context-closure-engineering/references/portable-context-closure-policy.md",
@@ -65,7 +65,7 @@
     },
     {
       "path": "skills/context-closure-engineering/scripts/check_context_pack.py",
-      "sha256": "e3ced06958ffb308908117ba059c14ff72a41c33edcf0d8929753431e5ec4ab5"
+      "sha256": "6ca053785e8f1ff9b4c3596a20e14e5eba37e1024a1f48f30c08d25173c65f4a"
     },
     {
       "path": "skills/context-closure-engineering/scripts/gen_admission.py",
@@ -77,7 +77,7 @@
     },
     {
       "path": "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",
-      "sha256": "dad9c585fd6551011987030a176ec062ab71748ddb3fd068fdb230e8c8add418"
+      "sha256": "706a2032a52779e85613e6a32c8ed1db9f1f1465f885f733a83090d217e79e5d"
     },
     {
       "path": "skills/context-closure-engineering/skill.json",
@@ -85,10 +85,10 @@
     },
     {
       "path": "skills/context-closure-engineering/tests/test_context_closure_engineering.py",
-      "sha256": "839e4da8a30dadf54e3a180db9b5cbe840ee8cd1bd6e73b36920a4d2b46e16f8"
+      "sha256": "9a2d446234d7a86935c9adefda8053394ac4b400956528afc4884c00f17d1e8e"
     }
   ],
-  "skill_tree_sha256": "f45de08e59d8d2585e343fea641405ff1719cdaab63e7f6679b880d94a782b5d",
+  "skill_tree_sha256": "a27f4d51e7f0c08cc6f6e0bbe33f88906d25a89842c723c757e1c45df616bdc7",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -170,6 +170,18 @@
     },
     {
       "id": "checker-assertion-defused",
+      "state": "PASS"
+    },
+    {
+      "id": "stale-projection-discriminated",
+      "state": "PASS"
+    },
+    {
+      "id": "task-packet-unbounded",
+      "state": "PASS"
+    },
+    {
+      "id": "stage-p0-check-dead",
       "state": "PASS"
     },
     {

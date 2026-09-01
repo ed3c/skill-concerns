@@ -28,6 +28,21 @@
       "note": "Weakening the edge-class comparison makes the selftest, and the gate, red."
     },
     {
+      "id": "stale-projection-discriminated",
+      "expected": "FAIL",
+      "note": "A snapshot id that no longer names the pack's own baseline commit, and a --head the pack was not compiled over, both red."
+    },
+    {
+      "id": "task-packet-unbounded",
+      "expected": "FAIL",
+      "note": "A candidate packet with no forbidden-promotion cell, or a pack with no candidate-packet section at all, red."
+    },
+    {
+      "id": "stage-p0-check-dead",
+      "expected": "FAIL",
+      "note": "A STAGE-P0 discrimination naming a check the L2 checker does not emit fails the count tie."
+    },
+    {
       "id": "consumer-canary-overclaimed",
       "expected": "FAIL",
       "note": "Claiming a canary state above NOT_EXERCISED/BLOCKED from this hermetic tree fails."
