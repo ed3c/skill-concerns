@@ -79,10 +79,16 @@ jobs:
 
       # REPO_ROOT in scripts/common.py defaults to the validator's own tree, so
       # every validator takes --root; trusted code, candidate tree.
+      #
+      # check_receipt_provenance re-executes each Skill's declared checks from
+      # this trusted checkout and requires the committed receipt to be exactly
+      # what that execution produces, so a hand-authored PASS cannot pass the
+      # gate on digest consistency alone. It reads the candidate's SKILL_CHECKS
+      # never -- the declaration comes from .trusted.
       - name: Run trusted validators against the candidate tree
         run: |
           set -euo pipefail
-          for gate in check_agents_hops check_skill_bundles check_admissions; do
+          for gate in check_agents_hops check_skill_bundles check_admissions check_receipt_provenance; do
             python3 ".trusted/scripts/$gate.py" --root "$GITHUB_WORKSPACE/.candidate"
           done
 
