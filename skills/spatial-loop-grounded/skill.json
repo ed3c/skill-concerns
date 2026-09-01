@@ -14,6 +14,7 @@
     "domain/machine-topology.json"
   ],
   "execution_paths": [
+    "scripts/ab_campaign.py",
     "scripts/validate_spatial_loop_grounded.py"
   ],
   "test_paths": [

@@ -1,0 +1,5 @@
+id    status   branch            head      queued
+7742  QUEUED   invoice-rounding  c3c3c33   2026-09-01T02:02Z
+7731  FAILED   invoice-rounding  a1a1a11   2026-08-31T22:14Z
+7715  SUCCESS  invoice-rounding  a1a1a11   2026-08-31T20:40Z
+7702  SUCCESS  main              9f9f9f9   2026-08-31T19:05Z

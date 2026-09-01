@@ -1,0 +1,3 @@
+opsctl change show 4471
+opsctl pin remove staging/4471
+# run r-d4 arm_a (with-skill), manual staged from spatial-loop-grounded

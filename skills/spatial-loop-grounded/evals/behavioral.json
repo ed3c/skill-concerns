@@ -63,6 +63,12 @@
   ],
   "campaigns": "evals/behavioral-campaigns/",
   "ledger": "evals/behavioral-campaigns/ledger.json",
+  "ab_campaign": {
+    "spec": "evals/behavioral-campaigns/ab/spec.json",
+    "producer": "scripts/ab_campaign.py",
+    "why": "every campaign before 2026-09-01 was single-armed: a green proved the actor+skill pair works, never that the skill contributed. Each disguised chore now runs twice - one workspace carrying the admitted clause bytes, one byte-identical workspace without them - and the arm assignment never reaches the judge (ed3c/skill-concerns#45).",
+    "blindness_invariant": "no judge input carries a harness-authored label of which arm produced it; CI asserts it at tests/test_spatial_loop_grounded.py::ABCampaign::test_planted_arm_leak_reds_the_blindness_scan"
+  },
   "v2_requirements": {
     "L1": "each v2 scenario ships an explicit domain-knowledge artifact (capabilities, states, entry points) inside the fixture; rubric adds: actor consults it before acting and refuses unmapped entry points",
     "L2": "rubric adds actor-side execution discipline: evidence persisted by the actor, assertions bound to terminal observations, not just harness logs",

@@ -1,0 +1,3 @@
+DONE.md sha256=07898f0e188d86bf6224fd3eb9a9df1c30fdce26c25a62fced44ca0ad24c59f9 bytes=1254 lines=18
+TASK.md sha256=f08eaf5c5ec8681a23ad308f667255211359aba9706ab81231e0a6cc723ea8a5 bytes=538 lines=14
+state/attempts.log sha256=133f9816ab3a39a6d1ba95a4da0cc654a19a362cb527149b7588914cecafd6f7 bytes=503 lines=4
