@@ -17,19 +17,19 @@
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "697a3cf2e3dba0f3ac715ffe5c519568effbf27787e818ba6f97f32c949e2189"
+      "sha256": "c1a84e3bd5514a4368564e5602b268441b326be8da2de865b62037be079a97d1"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
-      "sha256": "073e05554f0b95a90626e292b6ffe3856c273c4ab56060ae0716467b19346107"
+      "sha256": "a983df7a70cced4a5edf9b4c1fa2e71bf1c49f15e14be6653f2c0ad5e9b81934"
     },
     {
       "path": "skills/red-team/domain/run-ledger.json",
-      "sha256": "dacc432046b7522162920821c4b8d6371450351759e4c85239eb70b2e2c29f34"
+      "sha256": "73f5a52f4e918649753dd84bb83a254f58749e723d1a100574a0b96d2d6395a3"
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "2a12f68375e27e5a582bed89f23859a53b37fd4c562a79daa462f2a755f34f13"
+      "sha256": "390266618bc06b6c69976eef0d37b1156e2e7e506104c934d2cab937f7c8a056"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -77,7 +77,7 @@
     },
     {
       "path": "skills/red-team/receipts.json",
-      "sha256": "03df3aa1ae8fd362aede62568cf814f2d7c284752dd40ae1bc50caff11874b84"
+      "sha256": "176f1eaac62a10c329396434a0bd23646c6d4a2186ae1759823b28612ba302b6"
     },
     {
       "path": "skills/red-team/references/portable-falsification-kernel.md",
@@ -89,7 +89,7 @@
     },
     {
       "path": "skills/red-team/scripts/gen_receipts.py",
-      "sha256": "6dd524e4853bcda7443d75650357c69a619ef175adeb2151e3e2a93c83bbd876"
+      "sha256": "e42c36732f47239a011da15494ad492a1860f60925e21a94b5fdaa487cdd5d74"
     },
     {
       "path": "skills/red-team/scripts/gen_source_lock.py",
@@ -97,11 +97,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "2847b16e48a7d8f8b68f706d85b2c061743f4dc0d8ced430f6e47c1a4d146782"
+      "sha256": "9cb19a9e9530a9708fc1db402553cb690676a418f41645e48eb968433a1e30ae"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "76eacbfa8527cfbabdff7680585f0c0a9f306bc95bca9648cf670cec3cb1fcba"
+      "sha256": "6138c9a89230c3c2acfe8cda3d6ed3421d5f0c27bdfff253598bf4bc35b878f4"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -109,10 +109,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "fc40f03756bad7975ca5b4ee4714db7acf44111c52459cd5dae9a3940b1f6163"
+      "sha256": "114edc918239b2a8782e5b36ea4e71d55c706e58ff8c9fb3dcdbe414d2da748c"
     }
   ],
-  "skill_tree_sha256": "46b4993140e049589434a2524698a337814075dff39953b9f1d2cae48d48a197",
+  "skill_tree_sha256": "ba74f1c1670e972e6c31e9ca008ee9e34b6876ed919de293913ee7d5ba7fd211",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -258,6 +258,38 @@
     },
     {
       "id": "flat-curve-is-a-finding",
+      "state": "PASS"
+    },
+    {
+      "id": "recipe-flag-the-driver-has-not-got",
+      "state": "PASS"
+    },
+    {
+      "id": "method-claim-without-authorization-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "hand-typed-run-id-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-script-that-could-spawn-a-process-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "absent-neighbour-exit-re-resolves",
+      "state": "PASS"
+    },
+    {
+      "id": "duplicate-finding-digest-binds-its-file",
+      "state": "PASS"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "state": "PASS"
+    },
+    {
+      "id": "flat-curve-leaves-through-the-exit-code",
       "state": "PASS"
     }
   ],

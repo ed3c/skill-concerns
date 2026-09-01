@@ -55,7 +55,14 @@ def build(catalogue: dict) -> dict:
         ]
         if not refs:
             raise ReceiptRefused(f"EVIDENCE_WITHOUT_RESOLVABLE_REF:{claim_id}")
-        evidence[claim_id] = {"refs": sorted(refs), "claim": claim.get("claim", "")}
+        # `authorization` rides into the evidence table on purpose. Without it a
+        # method claim sits beside a measured class looking identically grounded,
+        # and this table's whole job is that grounding is a readback.
+        evidence[claim_id] = {
+            "refs": sorted(refs),
+            "claim": claim.get("claim", ""),
+            "authorization": claim.get("authorization"),
+        }
     return {
         "schema_version": 1,
         "producer": PRODUCER,

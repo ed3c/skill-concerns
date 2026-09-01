@@ -28,13 +28,16 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import shutil
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
 CLAUSE_RE = re.compile(r"^## (R\d+)\. ", re.M)
 KERNEL_RE = re.compile(r"^- (K\d+) ", re.M)
@@ -87,6 +90,17 @@ URGENT_CLASSES = ("irreversible-action-in-progress", "runaway-resource-burn")
 # A signal carries no instructions and no patches. These keys are what an
 # instruction would arrive as, so their presence is the refusal.
 SIGNAL_FORBIDDEN_FIELDS = ("instructions", "patch", "diff", "command", "fix")
+
+# No module in this bundle may spawn a process or open a socket. This is the
+# reader property one level UNDER the verb patterns: a module that cannot run a
+# command or reach the network cannot file, whatever strings it happens to
+# hold. It is also the only form of the check that can cover the scanner
+# itself, which necessarily carries the verbs it looks for (its pattern table
+# and its own planted control), and is why the verb scan exempts exactly that
+# one file by name instead of leaving a script unchecked.
+NO_REACH_IMPORTS = {"subprocess", "urllib", "requests", "http", "socket", "ftplib", "os"}
+IMPORT_RE = re.compile(r"^\s*(?:import|from)\s+([\w.]+)", re.M)
+VERB_SCAN_EXEMPT = "validate_red_team.py"
 
 # Provider-mutating verbs. The driver may never contain one.
 FORBIDDEN_SURFACE = (
@@ -391,17 +405,26 @@ def check_catalogue(catalogue: dict, errors: list[str]) -> None:
 
 
 def check_ledger(skill_root: Path, errors: list[str]) -> None:
+    """Record shape, and the one append-only property a single file can carry.
+
+    A string saying "append_only" is not a check - it is the HOST_OBSERVED exit
+    this bundle catalogues as free-exit, aimed at itself. What one file state
+    CAN carry is that `run_id` is the producer's derived clock: it must parse
+    as an ISO-8601 instant and must not go backwards, so a hand-typed label or
+    a record inserted before an existing one reds. The rest of append-only is
+    carried by git history and branch protection, not by this file, and this
+    docstring is where that ceiling is named rather than implied.
+    """
     path = skill_root / "domain" / "run-ledger.json"
     if not path.is_file():
         errors.append("domain/run-ledger.json missing")
         return
     ledger = json.loads(path.read_text(encoding="utf-8"))
-    if not str(ledger.get("append_only") or "").strip():
-        errors.append("run ledger does not declare itself append-only")
     records = ledger.get("records")
     if not isinstance(records, list):
         errors.append("run ledger carries no records list")
         return
+    previous: datetime | None = None
     for position, record in enumerate(records):
         if not isinstance(record, dict):
             errors.append(f"run record {position} is not an object")
@@ -418,6 +441,20 @@ def check_ledger(skill_root: Path, errors: list[str]) -> None:
         ):
             if field not in record:
                 errors.append(f"run record {position} has no {field!r}")
+        try:
+            stamp = datetime.fromisoformat(str(record.get("run_id")))
+        except ValueError:
+            errors.append(
+                f"run record {position} run_id {record.get('run_id')!r} is not the "
+                "producer's ISO-8601 instant; the field is derived, never typed"
+            )
+            continue
+        if previous is not None and stamp < previous:
+            errors.append(
+                f"run record {position} run_id {record['run_id']!r} precedes the record "
+                "before it; an append-only ledger does not go backwards"
+            )
+        previous = stamp
 
 
 def check_forbidden_surface(path: Path, errors: list[str]) -> None:
@@ -446,6 +483,101 @@ def check_forbidden_surface(path: Path, errors: list[str]) -> None:
                 f"DRIVER_SURFACE_FORBIDDEN:{path.name}: provider-mutating call "
                 f"{' '.join(match.group(0).split())!r}; this driver never files, "
                 "comments, or merges"
+            )
+
+
+def check_method_claims(catalogue: dict, errors: list[str]) -> None:
+    """A method claim is grounded the same way a cure is, or it is not evidence.
+
+    `method_claims` are the catalogue's non-detector grounds - the operator
+    adjudication that drew the injection boundary, the judgement that the
+    pinned method is worth pinning. They cannot carry a falsification recipe,
+    because there is no detector to run. What they CAN carry, and what an
+    exemption would let them skip, is the readback every other grounded thing
+    in this repository carries: WHO adjudicated it, in WHAT form, at a ref
+    whose shape matches the claim. That decision already lives once, in
+    `scripts/cure_authorization.py`, so it is called rather than re-spelled -
+    an unauthorized method claim reds with the same diagnostic an unauthorized
+    cure does.
+    """
+    import cure_authorization  # noqa: PLC0415
+
+    claims = catalogue.get("method_claims")
+    if claims is None:
+        return
+    if not isinstance(claims, dict):
+        errors.append("method_claims is not a table")
+        return
+    for claim_id, entry in sorted(claims.items()):
+        if not isinstance(entry, dict):
+            errors.append(f"CATALOGUE_ENTRY_UNGROUNDED:{claim_id}: not a record")
+            continue
+        if not str(entry.get("claim") or "").strip():
+            errors.append(f"CATALOGUE_ENTRY_UNGROUNDED:{claim_id}: no claim")
+        if not entry.get("refs"):
+            errors.append(
+                f"CATALOGUE_ENTRY_UNGROUNDED:{claim_id}: no provider ref, so the cadence "
+                "sweep has nothing to re-resolve"
+            )
+        for problem in cure_authorization.authorization_errors(entry.get("authorization")):
+            errors.append(
+                f"{cure_authorization.DIAGNOSTIC}:{claim_id}: {problem}; a method claim "
+                "is evidence only once it names who adjudicated it"
+            )
+
+
+def check_recipes_parse(catalogue: dict, errors: list[str]) -> None:
+    """Every recipe step that invokes the driver goes through the real parser.
+
+    `COMMAND_RE` only certifies that a step LOOKS like a command. A recipe
+    naming a flag the driver does not have satisfies that and still exits 2 the
+    first time anyone runs it - a runnable-command-sequence field that
+    certifies unrunnable sequences is the opinion registry the field exists to
+    prevent. This runs the tokens through `shadow_driver.build_parser()`
+    itself, so the recipes cannot drift from the option surface.
+    """
+    import shadow_driver  # noqa: PLC0415
+
+    parser = shadow_driver.build_parser()
+    for entry in catalogue.get("classes") or []:
+        if not isinstance(entry, dict):
+            continue
+        recipe = ((entry.get("falsification") or {}).get("recipe")) or []
+        for step in recipe:
+            if not isinstance(step, str):
+                continue
+            try:
+                tokens = shlex.split(step)
+            except ValueError:
+                errors.append(
+                    f"CATALOGUE_ENTRY_UNGROUNDED:{entry.get('id')}: recipe step does not "
+                    f"tokenize: {step!r}"
+                )
+                continue
+            if len(tokens) < 2 or tokens[0] != "python3":
+                continue
+            if not tokens[1].endswith("shadow_driver.py"):
+                continue
+            _, extra = parser.parse_known_args(tokens[2:])
+            unknown = [token for token in extra if token.startswith("-")]
+            if unknown:
+                errors.append(
+                    f"CATALOGUE_ENTRY_UNGROUNDED:{entry.get('id')}: recipe names "
+                    f"{unknown} which shadow_driver.build_parser() does not accept, so "
+                    "the step exits 2 before the experiment runs"
+                )
+
+
+def check_no_reach(path: Path, errors: list[str]) -> None:
+    """No module in the bundle may import a way to run a command or open a socket."""
+    if not path.is_file():
+        errors.append(f"DRIVER_SURFACE_FORBIDDEN:{path.name}: script absent")
+        return
+    for module in IMPORT_RE.findall(path.read_text(encoding="utf-8")):
+        if module.split(".")[0] in NO_REACH_IMPORTS:
+            errors.append(
+                f"DRIVER_SURFACE_FORBIDDEN:{path.name}: imports {module!r}; nothing in "
+                "this bundle may spawn a process or reach the network"
             )
 
 
@@ -537,6 +669,15 @@ def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
             f"the fourth neighbour {ABSENT_NEIGHBOUR} is unadmitted and must still be "
             "named, with its issue, rather than silently omitted"
         )
+    elif (repo_root / "skills" / ABSENT_NEIGHBOUR).is_dir():
+        # The exit re-resolves when the absence ends. Without this arm the
+        # named-but-unverified state would outlive the reason for it, which is
+        # the free-exit class this bundle catalogues, aimed at itself.
+        errors.append(
+            f"{ABSENT_NEIGHBOUR} has landed in this tree; move it from "
+            "ABSENT_NEIGHBOUR into NEIGHBOURS so its boundary term is verified "
+            "against bytes rather than asserted as unavailable"
+        )
 
 
 def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
@@ -556,8 +697,17 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     check_experiment_tie(catalogue, errors)
     check_diagnostic_tie(text, errors)
     check_catalogue(catalogue, errors)
+    check_method_claims(catalogue, errors)
     check_ledger(skill_root, errors)
-    check_forbidden_surface(skill_root / "scripts" / "shadow_driver.py", errors)
+    # Every executable in the bundle, not just the driver: the Non-claim is
+    # written about the bundle, so the scan that keeps it true has to cover the
+    # bundle. A scan over one of five scripts proves the property for one file
+    # and gets read as proving it for all five.
+    for script in sorted((skill_root / "scripts").glob("*.py")):
+        check_no_reach(script, errors)
+        if script.name != VERB_SCAN_EXEMPT:
+            check_forbidden_surface(script, errors)
+    check_recipes_parse(catalogue, errors)
     check_roles(skill_root, errors)
     check_boundaries(repo_root, text, errors)
     check_receipts_are_produced(skill_root, catalogue, errors)

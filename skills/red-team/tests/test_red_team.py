@@ -8,6 +8,7 @@ has watched break is a sentence, not a gate.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
@@ -305,6 +306,171 @@ class RedTeamEvals(unittest.TestCase):
         }
         self.assertIsNone(driver.curve_finding(bending))
         self.assertIsNone(driver.curve_finding({"records": flat["records"][:2]}))
+
+    def test_a_flat_curve_leaves_through_the_exit_code(self) -> None:
+        """R7 is a finding, so it does not exit 0 as stdout prose.
+
+        A finding that leaves the process at status 0 is consumed by nobody:
+        the caller that would act on it reads the exit code. The run itself is
+        clean here, so a non-zero status can only have come from the curve.
+        """
+        ledger = self.scratch / "ledger.json"
+        ledger.write_text(
+            json.dumps(
+                {
+                    "records": [
+                        {
+                            "run_id": f"2026-08-{day:02d}T00:00:00+00:00",
+                            "wave": f"wave-{day}",
+                            "boundary": "b",
+                            "classes_sampled": [],
+                            "hits": {},
+                            "novel_class_candidates": [],
+                            "judge_gaps": 0,
+                            "duplicate_blocks": 0,
+                        }
+                        for day in (10, 11)
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        status = driver.main(
+            [
+                "--bundle", str(CLEAN),
+                "--wave", "wave-12",
+                "--ledger", str(ledger),
+                "--append-record",
+            ]
+        )
+        self.assertEqual(
+            "clean",
+            driver.run(CLEAN, catalogue(), "wave-12", "stage-close")["outcome"],
+        )
+        self.assertNotEqual(0, status)
+
+    def test_every_recipe_runs_through_the_drivers_own_parser(self) -> None:
+        """A recipe naming a flag the driver has not got is not runnable.
+
+        `COMMAND_RE` certifies that a step LOOKS like a command; only the real
+        parser certifies that it runs. Both directions: the live catalogue's
+        recipes parse, and a planted unknown flag reds.
+        """
+        errors: list[str] = []
+        validator.check_recipes_parse(catalogue(), errors)
+        self.assertEqual([], errors)
+
+        copy = self.copy()
+        path = copy / "domain" / "catalogue.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["classes"][0]["falsification"]["recipe"] = [
+            "python3 scripts/shadow_driver.py --bundle <bundle> --klass blind-observer"
+        ]
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "--klass" in error and "does not accept" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_a_method_claim_without_an_authorization_is_refused(self) -> None:
+        """The exemption is gone: method claims name who adjudicated them."""
+        copy = self.copy()
+        path = copy / "domain" / "catalogue.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        for claim in body["method_claims"].values():
+            claim.pop("authorization")
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                cure_authorization.DIAGNOSTIC in error
+                and "names who adjudicated it" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_a_hand_typed_run_id_reds_the_ledger(self) -> None:
+        """`run_id` is the producer's clock, and a label is not a clock."""
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["records"][0]["run_id"] = "the wave-17 admission run"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "is not the producer's ISO-8601 instant" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_a_bundle_script_that_could_spawn_a_process_reds(self) -> None:
+        """Reader-only covers every script, not only the one named in the test.
+
+        The verb scan cannot cover its own owner, which necessarily holds the
+        verbs; this is the property underneath it, and it covers all five.
+        """
+        copy = self.copy()
+        path = copy / "scripts" / "gen_receipts.py"
+        path.write_text(
+            "import subprocess\n" + path.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        self.assertTrue(
+            any(
+                "DRIVER_SURFACE_FORBIDDEN:gen_receipts.py" in error
+                and "spawn a process" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_the_absent_neighbour_exit_re_resolves_when_the_absence_ends(self) -> None:
+        """The exit expires by landed state, not by anyone remembering it."""
+        fake_repo = self.scratch / "repo"
+        for name in (*validator.NEIGHBOURS, validator.ABSENT_NEIGHBOUR):
+            (fake_repo / "skills" / name).mkdir(parents=True)
+        self.assertTrue(
+            any(
+                "has landed in this tree" in error
+                for error in validator.validate(SKILL_ROOT, fake_repo)
+            )
+        )
+
+    def test_a_duplicate_finding_binds_the_digest_of_the_file_it_names(self) -> None:
+        """The subject digest is the file at subject.path, or it binds nothing.
+
+        A monitor whose contract is digest-binding publishing a digest of its
+        own fingerprint string would put an unverifiable hex into every issue
+        the dispatcher files from a duplicate-discovery finding.
+        """
+        hits = driver.EXPERIMENTS["duplicate-discovery"](WAVE_17)
+        self.assertTrue(hits)
+        for hit in hits:
+            subject = hit["subject"]
+            expected = hashlib.sha256(
+                (WAVE_17 / subject["path"]).read_bytes()
+            ).hexdigest()
+            self.assertEqual(expected, subject["sha256"])
+
+    def test_unchanged_context_cannot_acquit_an_added_enforcement_shape(self) -> None:
+        """Detection and acquittal read the same bytes.
+
+        Detecting on added lines while acquitting on the whole patch lets a
+        diff be exculpated by a word it did not add - including the word
+        `falsification`, which every catalogue entry contains.
+        """
+        bundle = self.scratch / "context-acquittal"
+        (bundle / "diffs").mkdir(parents=True)
+        (bundle / "diffs" / "planted.diff").write_text(
+            "--- a/limits.json\n"
+            "+++ b/limits.json\n"
+            "@@ -1,3 +1,4 @@\n"
+            ' {\n'
+            '   "note": "see the falsification recipe in the catalogue",\n'
+            '+  "threshold": 36,\n'
+            '   "owner": "fitness"\n',
+            encoding="utf-8",
+        )
+        self.assertTrue(driver.EXPERIMENTS["shape-copying"](bundle))
 
 
 if __name__ == "__main__":

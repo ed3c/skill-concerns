@@ -128,6 +128,7 @@ Concern layers:
 
 ```sh
 python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name>   # SHADOW: reader-only
+python3 scripts/shadow_driver.py --bundle <dir> --class <class-id>                # one class's recipe
 python3 scripts/shadow_driver.py --bundle <dir> --append-record                   # append one run record
 python3 scripts/shadow_driver.py --add-class <class.json>                         # BUILD: refuses an unadjudicated class
 python3 scripts/validate_red_team.py [--selftest]
@@ -137,7 +138,7 @@ python3 scripts/gen_receipts.py                                                 
 ## Non-claims
 
 - No mid-flight intervention of any kind toward a worker or a subject. The escalation channel carries a signal to the dispatcher and nothing else.
-- No filing. The driver never creates, edits, comments on, closes or merges anything at the provider; `DRIVER_SURFACE_FORBIDDEN` is the scan that keeps that true rather than the sentence that claims it.
+- No filing. Nothing in this bundle creates, edits, comments on, closes or merges anything at the provider; `DRIVER_SURFACE_FORBIDDEN` is what keeps that true rather than the sentence that claims it, and it covers every script under `scripts/` in two forms - the verb scan over each file, and an import check that no module here can spawn a process or open a socket at all. The verb scan exempts exactly one file, its own owner `validate_red_team.py`, which necessarily carries the verbs it looks for; the import check is what covers that file, and it is the stronger of the two.
 - No fourth judgment angle. `spatial-loop-grounded` issues clause verdicts over supervised conduct, `context-closure-engineering` compiles and checks one bounded context projection, `dynamic-workflow` classifies runtime liveness of dispatch lanes, and the unadmitted `shadow-architect` (ed3c/skill-concerns#75) will carry the architecture angle. Those read and question; this one executes falsification. The differential is the verb.
 - No autonomous catalogue growth and no gate replacement. A class enters only from an adjudicated verdict, and a class that gains a mechanical gate leaves active sampling rather than being re-checked by hand.
 - No ownership of the consumer's issue-admission gate. `validate_red_team.completeness_reasons` is a declared MIRROR of that gate's shape, names the functions it mirrors and the two checks it deliberately omits, and exists so the round-trip fixture can prove the block's grammar without this repository depending on the other one.

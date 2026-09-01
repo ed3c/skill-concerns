@@ -11,7 +11,7 @@
     {
       "id": "validator-selftest",
       "expected": "PASS",
-      "note": "Sixteen planted hollowings and schema controls, each of which must red exactly one tie.",
+      "note": "Every planted hollowing and schema control in the validator selftest reds exactly one tie, bounded on both sides by the positive arm and the residue arm.",
       "test": "test_red_team.RedTeamEvals.test_validator_selftest_passes"
     },
     {
@@ -127,6 +127,54 @@
       "expected": "FAIL",
       "note": "Three post-admission waves without a falling recurrence is a finding about the architecture; two waves is not-yet-evidence rather than a green.",
       "test": "test_red_team.RedTeamEvals.test_a_flat_curve_after_three_waves_is_itself_a_finding"
+    },
+    {
+      "id": "recipe-flag-the-driver-has-not-got",
+      "expected": "FAIL",
+      "note": "A recipe naming a flag absent from shadow_driver.build_parser() reds. COMMAND_RE certifies that a step looks like a command; only the real parser certifies that it runs, and a runnable-command-sequence field that certifies unrunnable sequences is the opinion registry the field exists to prevent.",
+      "test": "test_red_team.RedTeamEvals.test_every_recipe_runs_through_the_drivers_own_parser"
+    },
+    {
+      "id": "method-claim-without-authorization-refused",
+      "expected": "FAIL",
+      "note": "A method_claims entry with no authorization reds with the repository's own BUILD_CURE_UNAUTHORIZED: the catalogue's non-detector grounds carry the same who-adjudicated-this readback every other grounded thing here carries.",
+      "test": "test_red_team.RedTeamEvals.test_a_method_claim_without_an_authorization_is_refused"
+    },
+    {
+      "id": "hand-typed-run-id-refused",
+      "expected": "FAIL",
+      "note": "A run_id that is a label rather than the producer's ISO-8601 instant reds, and so does a record inserted before the one preceding it.",
+      "test": "test_red_team.RedTeamEvals.test_a_hand_typed_run_id_reds_the_ledger"
+    },
+    {
+      "id": "bundle-script-that-could-spawn-a-process-refused",
+      "expected": "FAIL",
+      "note": "The no-filing property covers every script in the bundle: a module that imports subprocess reds even when it contains no provider verb, which is the form of the check that can cover the scanner itself.",
+      "test": "test_red_team.RedTeamEvals.test_a_bundle_script_that_could_spawn_a_process_reds"
+    },
+    {
+      "id": "absent-neighbour-exit-re-resolves",
+      "expected": "FAIL",
+      "note": "When skills/shadow-architect exists in the tree, the named-but-unavailable exit reds and demands promotion. An exit with no expiry is the free-exit class this bundle catalogues, aimed at itself.",
+      "test": "test_red_team.RedTeamEvals.test_the_absent_neighbour_exit_re_resolves_when_the_absence_ends"
+    },
+    {
+      "id": "duplicate-finding-digest-binds-its-file",
+      "expected": "PASS",
+      "note": "Every duplicate-discovery finding's subject.sha256 is recomputed from the file at subject.path. A digest-binding monitor publishing the digest of its own fingerprint string binds nothing at the path it names.",
+      "test": "test_red_team.RedTeamEvals.test_a_duplicate_finding_binds_the_digest_of_the_file_it_names"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "expected": "FAIL",
+      "note": "Detection and acquittal read the same bytes. A diff whose unchanged context merely mentions the word falsification does not exculpate the threshold it adds.",
+      "test": "test_red_team.RedTeamEvals.test_unchanged_context_cannot_acquit_an_added_enforcement_shape"
+    },
+    {
+      "id": "flat-curve-leaves-through-the-exit-code",
+      "expected": "FAIL",
+      "note": "R7 exits non-zero. A finding printed on stdout at status 0 is prose no caller consumes; the run itself is clean, so the status can only have come from the curve.",
+      "test": "test_red_team.RedTeamEvals.test_a_flat_curve_leaves_through_the_exit_code"
     }
   ]
 }

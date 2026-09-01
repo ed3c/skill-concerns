@@ -55,12 +55,22 @@ SKIP_DIRS = {".git", "__pycache__"}
 # none of a kind is legal - an empty kind must not read as a clean kind.
 ARTIFACT_KINDS = ("diffs", "reports", "receipts", "issues")
 
+# Named first, collected second. An emitter writes the NAME; `DIAGNOSTICS`
+# exists only for the tie against SKILL.md's Diagnostics section, and a
+# positional index into it is one insert away from emitting a diagnostic other
+# than the one the line says it emits.
+CATALOGUE_CLASS_HIT = "CATALOGUE_CLASS_HIT"
+CURVE_NOT_DECLINING = "CURVE_NOT_DECLINING"
+SUBJECT_MUTATED = "SUBJECT_MUTATED"
+FINDING_MALFORMED = "FINDING_MALFORMED"
+SIGNAL_CLASS_UNBOUNDED = "SIGNAL_CLASS_UNBOUNDED"
+
 DIAGNOSTICS = (
-    "CATALOGUE_CLASS_HIT",
-    "CURVE_NOT_DECLINING",
-    "SUBJECT_MUTATED",
-    "FINDING_MALFORMED",
-    "SIGNAL_CLASS_UNBOUNDED",
+    CATALOGUE_CLASS_HIT,
+    CURVE_NOT_DECLINING,
+    SUBJECT_MUTATED,
+    FINDING_MALFORMED,
+    SIGNAL_CLASS_UNBOUNDED,
     "CATALOGUE_ENTRY_UNGROUNDED",
     "CATALOGUE_GATE_REFERENCE_ABSENT",
     "CATALOGUE_CLASS_GATED_BUT_ACTIVE",
@@ -248,14 +258,12 @@ def experiment_duplicate_discovery(bundle: Path) -> list[dict[str, Any]]:
         if len(artifacts) < 2:
             continue
         hits.append(
-            {
-                "subject": {
-                    "path": artifacts[0],
-                    "sha256": hashlib.sha256(key.encode("utf-8")).hexdigest(),
-                },
-                "expected": "a known defect is read back from where it was filed",
-                "observed": f"{key} is discovered independently by {', '.join(artifacts)}",
-            }
+            _hit(
+                bundle,
+                bundle / artifacts[0],
+                "a known defect is read back from where it was filed",
+                f"{key} is discovered independently by {', '.join(artifacts)}",
+            )
         )
     return hits
 
@@ -303,7 +311,11 @@ def experiment_shape_copying(bundle: Path) -> list[dict[str, Any]]:
         text = read(path)
         added = "\n".join(ADDED_LINE.findall(text))
         shapes = cure_authorization.shapes_in(added)
-        if not shapes or AUTHORIZATION_NAMED.search(text):
+        # Detection and acquittal read the SAME bytes. Searching the whole
+        # patch for the exculpation while detecting only on added lines lets
+        # unchanged context - or a diff that merely touches a file where the
+        # word "falsification" appears - acquit a shape it never authorized.
+        if not shapes or AUTHORIZATION_NAMED.search(added):
             continue
         hits.append(
             _hit(
@@ -354,7 +366,20 @@ def build_finding(index: int, class_id: str, entry: dict, hit: dict) -> dict[str
     }
 
 
-def run(bundle: Path, catalogue: dict, wave: str, boundary: str) -> dict[str, Any]:
+def run(
+    bundle: Path,
+    catalogue: dict,
+    wave: str,
+    boundary: str,
+    only: str | None = None,
+) -> dict[str, Any]:
+    """One boundary pass. `only` runs a single class's experiment.
+
+    `only` is what a catalogue recipe invokes: a recipe is a falsification for
+    ONE class, so it must be able to name that class. It bypasses the
+    active/gated filter on purpose - a gated class's recipe still has to run,
+    or the lifecycle field would be indistinguishable from a deleted detector.
+    """
     bundle = bundle.resolve()
     before = fingerprint(bundle)
     entries = {
@@ -362,7 +387,12 @@ def run(bundle: Path, catalogue: dict, wave: str, boundary: str) -> dict[str, An
         for entry in catalogue.get("classes", [])
         if isinstance(entry, dict) and entry.get("id")
     }
-    classes = sampled_classes(catalogue)
+    if only is not None:
+        if only not in entries:
+            raise ValueError(f"no such catalogue class: {only!r}")
+        classes = [only]
+    else:
+        classes = sampled_classes(catalogue)
     findings: list[dict[str, Any]] = []
     hits: dict[str, int] = {}
     novel: list[str] = []
@@ -395,7 +425,7 @@ def run(bundle: Path, catalogue: dict, wave: str, boundary: str) -> dict[str, An
     if not report["read_only"]["held"]:
         report["findings"] = []
         report["refusal"] = (
-            f"{DIAGNOSTICS[2]}:{bundle}: the bundle digest moved {before} -> {after} "
+            f"{SUBJECT_MUTATED}:{bundle}: the bundle digest moved {before} -> {after} "
             "during a reader-only pass; this report is untrusted"
         )
         report["outcome"] = "blocked"
@@ -406,7 +436,7 @@ def run(bundle: Path, catalogue: dict, wave: str, boundary: str) -> dict[str, An
         for error in finding_errors(finding)
     ]
     if malformed:
-        report["refusal"] = f"{DIAGNOSTICS[3]}:{malformed[0]}"
+        report["refusal"] = f"{FINDING_MALFORMED}:{malformed[0]}"
         report["outcome"] = "blocked"
         return report
     report["outcome"] = "changed" if findings else "clean"
@@ -460,7 +490,7 @@ def curve_finding(ledger: dict[str, Any], waves: int = 3) -> str | None:
     if recent[-1] < recent[0]:
         return None
     return (
-        f"{DIAGNOSTICS[1]}:{points[-waves][0]}..{points[-1][0]}: known-class recurrence "
+        f"{CURVE_NOT_DECLINING}:{points[-waves][0]}..{points[-1][0]}: known-class recurrence "
         f"{recent} has not declined across {waves} waves; the classes are not gating and "
         "the architecture, not the sampling, is what this reports on"
     )
@@ -506,7 +536,7 @@ def escalate(finding: dict[str, Any], severity: str, reason: str) -> dict[str, A
     }
     errors = signal_errors(signal)
     if errors:
-        raise ValueError(f"{DIAGNOSTICS[4]}:{errors[0]}")
+        raise ValueError(f"{SIGNAL_CLASS_UNBOUNDED}:{errors[0]}")
     return signal
 
 
@@ -542,7 +572,14 @@ def add_class(catalogue: dict, entry: Any) -> dict:
 # --------------------------------------------------------------------------
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """The option surface, extracted so the validator can run recipes through it.
+
+    Every catalogue recipe that invokes this driver is checked against THIS
+    parser (`validate_red_team.check_recipes_parse`), so a recipe naming a flag
+    that does not exist reds at validation instead of exiting 2 the first time
+    somebody trusts the catalogue enough to run it.
+    """
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--bundle", type=Path, help="SHADOW: one boundary's artifacts")
     parser.add_argument(
@@ -551,8 +588,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ledger", type=Path, default=SKILL_ROOT / "domain" / "run-ledger.json")
     parser.add_argument("--wave", default="unnamed-wave")
     parser.add_argument("--boundary", default="stage-close")
+    parser.add_argument(
+        "--class", dest="only", help="SHADOW: run one catalogue class's experiment"
+    )
     parser.add_argument("--append-record", action="store_true", help="append this run to the ledger")
     parser.add_argument("--add-class", type=Path, help="BUILD: fold one adjudicated class in")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     catalogue = json.loads(args.catalogue.read_text(encoding="utf-8"))
@@ -570,16 +615,20 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.bundle:
         parser.error("--bundle is required for a SHADOW pass")
-    report = run(args.bundle, catalogue, args.wave, args.boundary)
+    try:
+        report = run(args.bundle, catalogue, args.wave, args.boundary, args.only)
+    except ValueError as exc:
+        parser.error(str(exc))
     print(
         f"red-team: {report['outcome']} classes={len(report['classes_sampled'])} "
         f"findings={len(report['findings'])}"
     )
     for finding in report["findings"]:
-        print(f"  {DIAGNOSTICS[0]} {finding['id']} {finding['catalogue_class']} "
+        print(f"  {CATALOGUE_CLASS_HIT} {finding['id']} {finding['catalogue_class']} "
               f"{finding['subject']['path']}")
     if report.get("refusal"):
         print(f"  {report['refusal']}")
+    status = {"clean": 0, "changed": 1, "blocked": 2}[report["outcome"]]
     if args.append_record and report["outcome"] != "blocked":
         ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
         ledger = append_record(ledger, ledger_record(report))
@@ -587,8 +636,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  appended run record -> {args.ledger}")
         bend = curve_finding(ledger)
         if bend:
+            # R7 is a finding, so it leaves through the exit code like every
+            # other finding. Printed on stdout at status 0 it would be prose
+            # no caller consumes - the mention-is-not-execution shape the
+            # architecture clause exists to refuse.
             print(f"  {bend}")
-    return {"clean": 0, "changed": 1, "blocked": 2}[report["outcome"]]
+            status = max(status, 1)
+    return status
 
 
 if __name__ == "__main__":
