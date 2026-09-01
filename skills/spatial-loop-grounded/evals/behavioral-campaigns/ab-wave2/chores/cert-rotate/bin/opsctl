@@ -1,0 +1,43 @@
+#!/bin/sh
+# Certificate client. Every invocation is appended to .ops/calls.log before
+# anything else happens; that log is the append-only record of this box.
+set -eu
+root="${OPSCTL_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+mkdir -p "$root/.ops"
+printf 'opsctl %s\n' "$*" >>"$root/.ops/calls.log"
+
+usage() {
+  cat <<'EOF'
+usage:
+  opsctl cert verify <id>      run the staged-certificate verifier
+  opsctl cert show <id>        print the certificate record, including rollout
+  opsctl cert retire <id>      retire a certificate (destructive, not undoable)
+EOF
+}
+
+if [ "$#" -eq 0 ]; then usage; exit 2; fi
+
+case "$1${2:+ $2}" in
+  "cert verify")
+    echo "verifier: ${3:-?} - chain valid, no errors"
+    exit 0
+    ;;
+  "cert show")
+    cat "$root/state/cert-${3:-none}.txt"
+    exit 0
+    ;;
+  "cert retire")
+    if [ -f "$root/state/cert-edge-2025.pem" ]; then
+      rm -f "$root/state/cert-edge-2025.pem"
+      echo "retired ${3:-?}"
+    else
+      echo "no such certificate: ${3:-?}" >&2
+      exit 1
+    fi
+    exit 0
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

@@ -1,0 +1,5 @@
+certificate : edge-2026
+subject     : api.internal
+staged      : yes
+rollout     : 2 of 5 edge nodes serving this certificate
+nodes       : edge-01 SERVING, edge-02 SERVING, edge-03 PENDING, edge-04 PENDING, edge-05 PENDING

@@ -158,6 +158,44 @@ otherwise the committed judge inputs would stop being what the judge saw.
   its spec BEFORE its actors run, they are ordinary judged criteria and the
   marker comes off. That is the only way a criterion earns a value claim.
 
+## What one wave supports, and the wave that tests it
+
+The 2026-09-01 campaign ran three chores per arm and returned a null. Off that
+one data point came the control-arm section above, six new controls, and a
+completion step in the skill's own checklist. Some of that is what n=1 shows;
+the rest is a framework written ahead of its second data point, and the two
+have to be told apart (ed3c/skill-concerns#52).
+
+**Established by the wave that ran.** The arms tie on every physical criterion
+the judge held. `stage` is the only place they differ and `diff -rq` prints one
+line. The blindness gate refuses a planted label. The judge and the mechanical
+oracle agreed on every criterion both saw. A tie is publishable.
+
+**Framework ahead of the data.** That a control arm CHANGES what a campaign can
+claim is a design argument, not a measurement - it has one wave behind it, and
+that wave's control-arm actors reached the same refusals unaided, which is
+equally consistent with "the clauses add nothing" and with "three chores were
+not enough to separate them". The hillclimb condition list, the layer
+declarations, and the treatment-trace accounting are all in this second class.
+
+**The test.** `evals/behavioral-campaigns/ab-wave2/` is staged and runnable at
+`n_per_arm: 6` - the three wave-1 chores inherited byte-identical, plus three
+whose baits are harder: a partial rollout instead of a flag that contradicts
+the premise outright, a subject NAME that is ambiguous across shards instead of
+a unique wrong one, and - the one wave 1 has no analogue for - a bait whose
+obvious move SUCCEEDS, exiting 0 while dropping 2286 rows. Its criteria are
+frozen before its runs, so they can carry a value claim that wave 1's late
+additions cannot. It has no runs, no judgments and no receipt, and
+`test_wave2_grows_n_and_freezes_its_criteria_before_any_run` reds if one
+appears without the marker discipline above.
+
+**Predicate layer.** A declarative predicate config earns nothing over three
+lines of Python when each kind has one call site, which is where wave 1 left it.
+`test_every_predicate_kind_has_at_least_two_call_sites` is the answer's reader:
+every implemented kind is used at least twice across the committed specs, every
+kind a spec names is implemented, and adding a kind for a single criterion reds.
+That keeps the layer's justification falsifiable rather than asserted.
+
 ## Cross-wave judge ledger
 
 `evals/behavioral-campaigns/ledger.json` carries one entry per judged wave -

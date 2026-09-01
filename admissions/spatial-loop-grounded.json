@@ -9,7 +9,7 @@
   "subject_files": [
     {
       "path": "skills/spatial-loop-grounded/AGENTS.md",
-      "sha256": "70e208b76594f8259d6c9ca6bdc4f11f577a1273b056921977f4a0728ede8682"
+      "sha256": "71fd6157ff7d6555443897b17dac796d41dc1ef1f615c521e54b5d392c1db2fd"
     },
     {
       "path": "skills/spatial-loop-grounded/README.md",
@@ -496,6 +496,66 @@
       "sha256": "859d507e2df4dbd6d7adf01f4eb22b7c0981374af3f49a38b23355f1144f8e80"
     },
     {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/assignment.json",
+      "sha256": "d002bb5e59279f1017f8394d854f7ad1f2a9b8073b542ce4928bb573be8292e1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/backfill-green/TASK.md",
+      "sha256": "65a3aa1864df5bb5b55f3e3e01a2898205854f4c2cd25748ffcf944ad9e7b4d6"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/backfill-green/bin/opsctl",
+      "sha256": "7dcbf87005b24a9b3dccf5268c390db05e3f70612820755a05795e35b467f2e1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/backfill-green/state/backfill.log",
+      "sha256": "0e8ab44bc80dfcf8a7731bce8436983638c95158e8f3d47c7e1c27e750a3c7eb"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/cert-rotate/TASK.md",
+      "sha256": "60f0383a60e6dde885154ff13491b16dab2595c9a4b8556affb0f72070fb882d"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/cert-rotate/bin/opsctl",
+      "sha256": "baf67a73b2b640440cb7d581fe060ef50b0c39e8db73c1d5ac2577311077dca1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/cert-rotate/state/cert-edge-2025.pem",
+      "sha256": "5ba7fe11045339184a3eb25a27d956a01400c74ad50577b5c19757a0cab70ffa"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/cert-rotate/state/cert-edge-2025.txt",
+      "sha256": "f2958c3ba8a3ab63d2e51afb16ae5d9c581df27da08ac3a2d62d17d1b45f4d1e"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/cert-rotate/state/cert-edge-2026.txt",
+      "sha256": "b3429d9085c72d48818a21123c3b2a4210654295793855170f2191840b228ec1"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/shard-purge/TASK.md",
+      "sha256": "83e69d7364cea1a57f24e46506ef3cd5f36a1698dc42f8f1f7e25117ee44bb60"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/shard-purge/bin/opsctl",
+      "sha256": "1a4c9b85d6db6872b9253e1e96a4a5db8278c3009ac439b43828f0894fc5f99f"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/shard-purge/state/consumer-a-invoice-writer.txt",
+      "sha256": "2289a41c98c02318d0b967184599f86e8ec3e37ded2bf035c641397f09001679"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/shard-purge/state/consumer-b-invoice-writer.txt",
+      "sha256": "eb7382de6ef2c69819b877880bc171e305588b120320fdd63c8d84bd5a4e1a60"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/chores/shard-purge/state/consumers.txt",
+      "sha256": "f7f0875e0a260ebbe5f924968d7102ad74f0d84aecf7a7ac622f454836322c63"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/spec.json",
+      "sha256": "db0ecf7531c578fb3b5818ca9e87561ddca512a419598c68960371ef422eb7fa"
+    },
+    {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
       "sha256": "b1b912ca03f49229d84aa9624fdff719673ff2c8da41dcd8f4ae0f347fd51750"
     },
@@ -545,11 +605,11 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral.json",
-      "sha256": "bf639d0125c5530262dd49e986c2ef4acbcae1ba51295de262cece500df2ea04"
+      "sha256": "6308014c3bc593c1f05b5a8209a88bc42c390879b83f3b1bd467e7a1a0a8eaeb"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "2f82e7218a4c97fe92de1c97cbdfdd6fd279526083c264c56e6a024019068c4d"
+      "sha256": "7a6c75380e2dff9596102bca161e038e2ee8636ddd91d9132d626161708f12ef"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
@@ -561,7 +621,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
-      "sha256": "509639a56ac2d4fb7dcc442477c8171b9e1939b53003b31275ae58cd7b314a5e"
+      "sha256": "c4416b49334032c4f55fefee2e0a9378b89fee50b2784d948094651f905c1b10"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -597,10 +657,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "ce8125023ade9733c7515e131faf1f75da4f9ec2d1d901b7d8450a149e17f64b"
+      "sha256": "c24f289742c77431bb1c59c4a5dae4e593a347af712b19136eddcee3efd0d40f"
     }
   ],
-  "skill_tree_sha256": "ea77bcba6c23afc83dd0c73c1f74000969a248bfdf5b324c3a0abc767e828ee3",
+  "skill_tree_sha256": "807f9b831e5ce46823377f352d7441b13fe7ab81bbdbe508b2c60c951098c614",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -766,6 +826,26 @@
     },
     {
       "id": "ab-post-hoc-criterion-reaches-the-judge-rubric",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-completion-ritual-unsplit",
+      "state": "PASS"
+    },
+    {
+      "id": "wave2-not-frozen-before-its-runs",
+      "state": "PASS"
+    },
+    {
+      "id": "wave2-arms-differ-by-more-than-the-treatment",
+      "state": "PASS"
+    },
+    {
+      "id": "wave2-criterion-cannot-refuse",
+      "state": "PASS"
+    },
+    {
+      "id": "predicate-kind-with-one-call-site",
       "state": "PASS"
     }
   ],

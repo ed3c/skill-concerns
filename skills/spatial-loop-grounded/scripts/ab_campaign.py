@@ -41,15 +41,28 @@ import tempfile
 from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-AB = SKILL_ROOT / "evals" / "behavioral-campaigns" / "ab"
-SPEC_PATH = AB / "spec.json"
-ASSIGNMENT_PATH = AB / "assignment.json"
-JUDGMENTS_PATH = AB / "judgments.json"
-RUNS = AB / "runs"
-JUDGE_INPUTS = AB / "judge-inputs"
-PLANTED_LEAK = AB / "fixtures" / "arm-leak-planted" / "calls.log"
-RECEIPT_PATH = SKILL_ROOT / "evals" / "behavioral-campaigns" / "2026-09-01-ab-control-arm.json"
+CAMPAIGNS = SKILL_ROOT / "evals" / "behavioral-campaigns"
+AB = CAMPAIGNS / "ab"
 ADMISSION_PATH = SKILL_ROOT.parents[1] / "admissions" / "spatial-loop-grounded.json"
+# The planted arm-leak fixture is a property of the SCAN, not of any one
+# campaign, so `--campaign` deliberately does not move it.
+PLANTED_LEAK = AB / "fixtures" / "arm-leak-planted" / "calls.log"
+
+
+def set_campaign(root: Path) -> None:
+    """Point every subcommand at one campaign directory.
+
+    Each subcommand reads these module globals, so a second wave is a
+    directory of data rather than a second code path: `--campaign` rebinds
+    them once, at argv-parse time, before anything runs."""
+    global AB, SPEC_PATH, ASSIGNMENT_PATH, JUDGMENTS_PATH, RUNS, JUDGE_INPUTS, RECEIPT_PATH
+    AB = root
+    SPEC_PATH = root / "spec.json"
+    ASSIGNMENT_PATH = root / "assignment.json"
+    JUDGMENTS_PATH = root / "judgments.json"
+    RUNS = root / "runs"
+    JUDGE_INPUTS = root / "judge-inputs"
+    RECEIPT_PATH = CAMPAIGNS / f"{load(SPEC_PATH)['campaign']}.json"
 
 MANUAL_NAME = "TEAM-OPS-MANUAL.md"
 MANUAL_HEADER = (
@@ -104,6 +117,9 @@ CLAUSE_ID_RE = re.compile(r"\bC\d+\b")
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+set_campaign(AB)
 
 
 # --- the manual: the admitted bytes, sliced so the disguise holds -----------
@@ -251,13 +267,27 @@ def oracle_verdicts(
 
 # --- subcommands ------------------------------------------------------------
 
+def chore_dir(spec: dict, chore: str) -> Path:
+    """This campaign's own copy of a chore, or the one it inherits.
+
+    A later wave re-runs the earlier wave's chores to grow n. Inheriting the
+    directory rather than copying it is what makes "the same chore, byte for
+    byte" a fact instead of a claim about two files that started out equal."""
+    local = AB / "chores" / chore
+    inherited = spec.get("inherits_chores_from")
+    if local.is_dir() or not inherited:
+        return local
+    return AB / inherited / "chores" / chore
+
+
 def stage(out: Path) -> int:
     out.mkdir(parents=True, exist_ok=True)
+    spec = load(SPEC_PATH)
     for run in load(ASSIGNMENT_PATH)["runs"]:
         workspace = out / run["token"]
         if workspace.exists():
             shutil.rmtree(workspace)
-        shutil.copytree(AB / "chores" / run["chore"], workspace)
+        shutil.copytree(chore_dir(spec, run["chore"]), workspace)
         if run["arm"] == "with":
             (workspace / MANUAL_NAME).write_text(manual_text(), encoding="utf-8")
         print(workspace)
@@ -642,6 +672,12 @@ def selftest() -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--campaign",
+        type=Path,
+        default=AB,
+        help="campaign directory (default: the 2026-09-01 control-arm wave)",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     stage_parser = sub.add_parser("stage")
     stage_parser.add_argument("--out", type=Path, required=True)
@@ -650,6 +686,7 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("judge-inputs", "score", "receipt", "negative-control", "selftest"):
         sub.add_parser(name)
     args = parser.parse_args(argv)
+    set_campaign(args.campaign.resolve())
     if args.command == "stage":
         return stage(args.out)
     if args.command == "collect":

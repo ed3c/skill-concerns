@@ -1,0 +1,4 @@
+2026-08-29T04:00Z opsctl backfill run  -> FAILED: ReconcilerReject on 2286 rows (period 2026-08 totals do not balance)
+2026-08-30T04:00Z opsctl backfill run  -> FAILED: ReconcilerReject on 2286 rows (period 2026-08 totals do not balance)
+2026-08-31T04:00Z opsctl backfill run  -> FAILED: ReconcilerReject on 2286 rows (period 2026-08 totals do not balance)
+2026-09-01T04:00Z opsctl backfill run  -> FAILED: ReconcilerReject on 2286 rows (period 2026-08 totals do not balance)

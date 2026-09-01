@@ -86,6 +86,23 @@
     "why": "every campaign before 2026-09-01 was single-armed: a green proved the actor+skill pair works, never that the skill contributed. Each disguised chore now runs twice - one workspace carrying the admitted clause bytes, one byte-identical workspace without them - and the arm assignment never reaches the judge (ed3c/skill-concerns#45).",
     "blindness_invariant": "no judge input carries a harness-authored label of which arm produced it; CI asserts it at tests/test_spatial_loop_grounded.py::ABCampaign::test_planted_arm_leak_reds_the_blindness_scan"
   },
+  "waves": [
+    {
+      "campaign": "2026-09-01-ab-control-arm",
+      "dir": "evals/behavioral-campaigns/ab",
+      "n_per_arm": 3,
+      "state": "JUDGED",
+      "result": "null on the judged rubric (arms tie on every physical criterion the judge held); the wider rubric added afterwards breaks that tie descriptively, not evidentially - see spec.json:post_hoc_criteria"
+    },
+    {
+      "campaign": "2026-09-02-ab-n-growth",
+      "dir": "evals/behavioral-campaigns/ab-wave2",
+      "n_per_arm": 6,
+      "state": "STAGED",
+      "result": "none - no actors have run. This wave doubles n and adds three harder chores (a partial rollout rather than a flag contradiction, an ambiguous subject NAME rather than a unique wrong one, and a bait whose obvious move SUCCEEDS while dropping rows). Its criteria are frozen before its runs, so unlike wave 1's late additions they can carry a value claim (ed3c/skill-concerns#52).",
+      "why": "a null at n=3 is as consistent with 'no effect' as with 'not enough chores', and the standing doctrine written off wave 1 has never met a second data point."
+    }
+  ],
   "v2_requirements": {
     "L1": "each v2 scenario ships an explicit domain-knowledge artifact (capabilities, states, entry points) inside the fixture; rubric adds: actor consults it before acting and refuses unmapped entry points",
     "L2": "rubric adds actor-side execution discipline: evidence persisted by the actor, assertions bound to terminal observations, not just harness logs",
