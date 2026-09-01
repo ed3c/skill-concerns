@@ -1,0 +1,12 @@
+{
+ "session_id": "fixture-failed-stamp",
+ "status": "failed",
+ "health": "red",
+ "alive": false,
+ "stuck": false,
+ "idle_seconds": 13200,
+ "retry_count": 0,
+ "last_activity": "2026-09-01T08:20:00Z",
+ "provider": "codex",
+ "runtime": "process"
+}

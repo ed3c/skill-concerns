@@ -69,6 +69,16 @@
       "source_lock": "intake/context-closure-engineering/source-lock.json",
       "admission": "admissions/context-closure-engineering.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "dynamic-workflow",
+      "path": "skills/dynamic-workflow",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/dynamic-workflow/skill.json",
+      "source_lock": "intake/dynamic-workflow/source-lock.json",
+      "admission": "admissions/dynamic-workflow.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

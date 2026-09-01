@@ -1,0 +1,12 @@
+{
+ "session_id": "fixture-stale-stamp",
+ "status": "running",
+ "health": "green",
+ "alive": true,
+ "stuck": false,
+ "idle_seconds": 166814,
+ "retry_count": 0,
+ "last_activity": "2026-08-30T13:41:46Z",
+ "provider": "codex",
+ "runtime": "process"
+}

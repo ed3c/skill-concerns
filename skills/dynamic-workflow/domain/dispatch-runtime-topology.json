@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "note": "L1 domain knowledge: the observables of the two dispatch runtimes this reader supervises. Every shape here was read off real on-disk archives on 2026-09-01; the counts in `observed` are what that reading returned at that moment and are not a claim about any other moment.",
+  "classes": {
+    "complete": {
+      "definition": "a completion notification exists for this lane",
+      "authority": "terminal"
+    },
+    "healthy": {
+      "definition": "no completion notification, no death signature, newest ledger write within the stall threshold",
+      "authority": "provisional"
+    },
+    "stalled-suspect": {
+      "definition": "no completion notification, no death signature, newest ledger write older than the stall threshold",
+      "authority": "provisional",
+      "never": "dead",
+      "law": "spatial-loop-grounded K10 - the completion notification is the only death certificate; silence, missing artifacts and absence from process lists are all consistent with still-running"
+    },
+    "dead": {
+      "definition": "no completion notification AND a death signature present in this runtime's own record",
+      "authority": "terminal",
+      "requires": "death_signature",
+      "age_alone_insufficient": true
+    }
+  },
+  "stall_threshold_seconds": 10800,
+  "stall_threshold_derivation": "10800s (3h) is calibrated to the exact duration of the C10 grounding incident (grounding_receipts.still-running-not-crashed below): a wave silent for ~3h was misdiagnosed as crashed while still running. It is NOT derived from either runtime's own timing contract: codex's own SESSION_LIVENESS_WINDOW_SECONDS is 3600 and heartbeat ttl_seconds is 30 (both far shorter), and claude-code-workflow's own observed max legitimate write gap is 590s. The one global number is deliberately more conservative (slower to flag) than both runtimes' own internal notions of staleness, so it can under-flag but can never falsely stalled-suspect a session either daemon would itself still call live - the same directional bias K10 requires.",
+  "runtimes": {
+    "claude-code-workflow": {
+      "what": "Claude Code Workflow waves: one workflow directory per dispatched wave, one lane per subagent",
+      "root_glob": "~/.claude/projects/*/*/subagents/workflows/wf_*",
+      "root_glob_note": "anchored at the operator's home directory because Claude Code Workflow storage is the operator's own tool state, not per-project data - unlike codex-noodle-session below, whose root is anchored at <project> because .noodle/sessions lives inside each project's own checkout. Both are placeholders an operator substitutes on any machine; this field documents the shape, it is not read by any script (grep scripts/*.py for root_glob: no hits).",
+      "files": {
+        "journal.jsonl": "wave-level lane index; one JSON object per line",
+        "agent-<agentId>.jsonl": "one lane's full transcript, append-only, every line carries an ISO-8601 `timestamp`",
+        "agent-<agentId>.meta.json": "thin lane descriptor: agentType, spawnDepth, model"
+      },
+      "journal_event_types": {
+        "started": "{type, key, agentId} - lane admitted to the wave",
+        "result": "{type, key, agentId, result} - THE completion notification; `result` is the lane's structured output"
+      },
+      "lane_index": "every agentId appearing in a `started` row",
+      "completion_notification": "a `result` row bearing that agentId",
+      "liveness_source": "newest line `timestamp` across this lane's transcript (equivalently its file mtime)",
+      "death_signatures": [
+        "[Request interrupted by user]",
+        "[Request interrupted by user for tool use]"
+      ],
+      "death_signature_position": "tail of the lane transcript, with no `result` row for that agentId",
+      "stamped_fields_that_are_not_liveness": [
+        "agent-<agentId>.meta.json has no state field at all - it carries agentType, spawnDepth and model only, so nothing in it can be mistaken for a lane state"
+      ],
+      "observed": {
+        "when": "2026-09-01",
+        "where": "/Users/neon/.claude/projects/-Users-neon-noodles/d4332216-1347-4dc5-8057-7772de22e49c/subagents/workflows",
+        "workflows_scanned": 20,
+        "lanes_scanned": 196,
+        "complete_waves": "14 of 20 had every started lane carrying a result row",
+        "lanes_without_result": "13, of which every single one ends on a death signature line",
+        "max_intra_lane_write_gap_seconds": 590,
+        "max_gap_note": "the widest gap inside any live lane transcript was 9m50s; a multi-hour gap is far out of distribution but is still not a death certificate"
+      }
+    },
+    "codex-noodle-session": {
+      "what": "codex-driven daemon sessions: one session directory per spawned cook",
+      "root_glob": "<project>/.noodle/sessions/<session_id>",
+      "files": {
+        "spawn.json": "{session_id, provider, model, runtime, worktree_path, created_at, title}",
+        "process.json": "{pid, session_id, started_at} - a spawn-time stamp, not a liveness probe",
+        "heartbeat.json": "{timestamp, ttl_seconds} - the freshness contract; ttl_seconds observed at 30",
+        "meta.json": "STAMPED rollup: status, health, alive, stuck, idle_seconds, retry_count, last_activity, current_action, context_window_usage_pct",
+        "events.ndjson": "{type, payload, timestamp, session_id}; types observed: spawned, action, cost",
+        "canonical.ndjson": "{provider, type, message, timestamp}; types observed: init, action, error, result",
+        "raw.ndjson": "unnormalised provider stream",
+        "stderr.log": "provider stderr"
+      },
+      "lane_index": "every session directory under the sessions root",
+      "completion_notification": "a `result` line in canonical.ndjson (observed message: \"turn complete\")",
+      "liveness_source": "newest event `timestamp` in events.ndjson / canonical.ndjson - the same rule the daemon itself enforces in claim_contract.py: \"Session liveness is derived only from the .noodle/sessions ledger event ages, never from a process table\" (SESSION_LIVENESS_WINDOW_SECONDS = 3600)",
+      "death_signatures": [
+        "canonical.ndjson's own tail record has type == \"error\" with no `result` line following it - the true event ledger's last word, never the meta.json rollup stamp"
+      ],
+      "death_signature_correction": "the original admission trusted `meta.json status == failed` as a death signature. That is exactly the stamp K10 forbids: status/health/alive are the SAME bulk-rewritten rollup pass for both `failed` and `exited`, and `exited` is correctly refused as a death signature two lines below - `failed` was an inconsistent exception with zero fixture or selftest coverage. Fixed at ed3c/skill-concerns#59 reconcile: the signature now lives in the true ledger (canonical.ndjson tail), matching the claude-code-workflow runtime's own tail-of-transcript shape.",
+      "stamped_fields_that_are_not_liveness": [
+        "meta.json `alive` / `status` / `health` are written by a rollup pass, not observed at read time: a session stamped status=running, alive=true, health=green was carrying a heartbeat 166814s old against a 30s ttl_seconds, while its own canonical ledger already held a terminal `result` line - the turn had finished 46 hours earlier. The stamp said running; the completion notification said complete. The notification settles it.",
+        "meta.json status == 'failed' is the identical rollup stamp as status == 'exited' (same bulk-rewritten pass, same missing observed-at-read-time property); neither may be promoted to a death certificate on its own.",
+        "meta.json mtime is bulk-rewritten: all 599 session meta.json files showed an mtime age of 0 minutes in the same scan, including sessions whose event ledgers had not moved in days. meta.json mtime carries no lane information.",
+        "process.json `pid` is a spawn-time stamp; a live pid number in a file is not a running process, and per the daemon's own rule a process table is not the liveness source anyway."
+      ],
+      "observed": {
+        "when": "2026-09-01",
+        "sessions_scanned": 599,
+        "status_health_alive_stuck_distribution": {
+          "exited/yellow/false/false": 563,
+          "failed/red/false/false": 33,
+          "running/green/true/false": 3
+        },
+        "falsely_alive_sessions": "of the sessions stamped `running`, one had a heartbeat 26s old against ttl 30 and was genuinely live; another was stamped running with a 46h-old heartbeat and a completed turn in its ledger",
+        "classified_by_this_skills_driver": {
+          "as_observed_2026-09-01_under_the_status=failed_signature_now_removed": {
+            "complete": 487,
+            "stalled-suspect": 79,
+            "dead": 33,
+            "healthy": 1
+          },
+          "note": "SUPERSEDED counts: the 33 `dead` came from the meta.json `status == failed` stamp, which death_signature_correction above retired as a K10 violation (the same untrusted rollup pass as `exited`). Under the corrected canonical.ndjson-tail signature those 33 fold into stalled-suspect pending a fresh scan; the previous split is kept here only as the historical snapshot the admission was reviewed against, per this file's own preamble that `observed` counts are not a claim about any other moment. The 79 already-stalled-suspect sessions are sessions the runtime stamped `exited` that carry no `result` line and no failure stamp; K10 holds them at stalled-suspect indefinitely rather than promoting a stamp to a death certificate. Whether those sessions have a completion notification this reader is not yet reading is an open lens-drift question, filed at skills/dynamic-workflow/domain/dispatch-runtime-topology.json (this entry), owner dynamic-workflow, DEFERRED."
+        }
+      }
+    }
+  },
+  "ceremony_boundary": {
+    "owner": "control-noodle",
+    "owner_path": "../../control-noodle/SKILL.md",
+    "rule": "this Skill reads codex cook sessions at the RUNTIME layer only. Everything in `not_owned_here` belongs to the ceremony owner's Monitor mode and is POINTED AT, never restated: a restated copy is the drift a single-owner discipline exists to prevent.",
+    "not_owned_here": [
+      "frontier receipt",
+      "quoted verbatim",
+      "stage boundary",
+      "handoff ordering"
+    ],
+    "not_owned_here_correction": "the original five entries were lifted from the owner adjudication's prose gloss and never appeared in control-noodle/SKILL.md at all - the validator only checked they were not restated in this file, never that they actually landed in the owner's, so a boundary could point at nothing and still pass every check. Replaced (ed3c/skill-concerns#59 reconcile) with the current entries, each grep-verified present in the owner file and now mechanically re-checked there on every validate() run.",
+    "adjudication": "ed3c/skill-concerns#59, owner boundary adjudication 2026-09-01"
+  },
+  "grounding_receipts": {
+    "still-running-not-crashed": {
+      "owner": "spatial-loop-grounded",
+      "owner_path": "../../spatial-loop-grounded/receipts.json",
+      "why_it_grounds_this_skill": "a monitored dispatch run was misdiagnosed as crashed from artifact and process absence while still running; manual work then raced its own land agents. That misread is the reason `stalled-suspect` exists as a class and can never resolve to `dead` on age."
+    },
+    "supervision-kernel": {
+      "owner": "spatial-loop-grounded",
+      "owner_path": "../../spatial-loop-grounded/references/portable-supervision-kernel.md",
+      "why_it_grounds_this_skill": "K1 (read-only, stage-boundary, receipt-quote plus question) and K10 (completion notification is the only death certificate) are the kernel this Skill's L0 policy instantiates."
+    }
+  }
+}

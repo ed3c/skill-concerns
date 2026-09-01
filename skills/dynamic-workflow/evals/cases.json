@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "dynamic-workflow-positive", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_positive_control_passes"},
+    {"id": "l2-liveness-selftest", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_l2_driver_selftest_passes"},
+    {"id": "dispatcher-prompt-files-exist", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_dispatcher_prompt_files_are_referencable"},
+    {"id": "observation-evidence-survives", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_observation_evidence_survives_the_run"},
+    {"id": "missing-layer-file", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_missing_layer_file_fails"},
+    {"id": "age-alone-declares-death", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_age_alone_declaring_death_fails"},
+    {"id": "death-signature-defused", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_death_signature_defused_fails"},
+    {"id": "ceremony-term-restated", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_restated_ceremony_term_fails"},
+    {"id": "k10-removed-from-topology", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_k10_removed_from_topology_fails"},
+    {"id": "judge-rule-removed", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_judge_rule_removed_fails"},
+    {"id": "unbacked-receipt-removed", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_unbacked_receipt_removed_fails"},
+    {"id": "reader-gains-exec-surface", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_reader_gaining_exec_surface_fails"},
+    {"id": "red-selftest-degrades-to-lens-suspect", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_red_selftest_degrades_report_to_lens_suspect"},
+    {"id": "boundary-term-absent-from-owner", "expected": "FAIL", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_boundary_term_absent_from_owner_fails"},
+    {"id": "codex-failed-stamp-alone-not-dead", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_meta_json_failed_stamp_promoted_to_dead_is_not_covered_by_a_stale_fixture"},
+    {"id": "observe-refuses-write-inside-subject", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_observe_refuses_to_write_inside_the_observed_subject"},
+    {"id": "observe-degrades-when-fixtures-absent", "expected": "PASS", "test": "test_dynamic_workflow.DynamicWorkflowEvals.test_observe_degrades_to_lens_suspect_when_fixtures_are_absent"}
+  ]
+}

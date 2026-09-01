@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "name": "dynamic-workflow",
+  "version": "0.1.0",
+  "kind": "domain-rich",
+  "entrypoint": "SKILL.md",
+  "portable_core_paths": [
+    "references/portable-supervision-policy.md"
+  ],
+  "domain_paths": [
+    "SKILL.md",
+    "README.md",
+    "receipts.json",
+    "references/README.md",
+    "domain/dispatch-runtime-topology.json"
+  ],
+  "execution_paths": [
+    "scripts/liveness_driver.py",
+    "scripts/validate_dynamic_workflow.py",
+    "references/prompts/monitor-prompt.md",
+    "references/prompts/judge-prompt.md"
+  ],
+  "test_paths": [
+    "tests/test_dynamic_workflow.py"
+  ],
+  "eval_inventory": "evals/cases.json",
+  "read_route": [
+    "AGENTS.md",
+    "README.md",
+    "SKILL.md",
+    "skill.json",
+    "domain/dispatch-runtime-topology.json"
+  ],
+  "forbidden_domain_literals": [
+    "/Users/neon/",
+    ".noodle/sessions",
+    "journal.jsonl",
+    "canonical.ndjson",
+    "agentId"
+  ],
+  "shared_contracts": [
+    "../../contracts/skill-manifest.schema.json",
+    "../../contracts/source-lock.schema.json",
+    "../../contracts/admission.schema.json"
+  ]
+}

@@ -1,0 +1,3 @@
+{"type": "started", "key": "v2:fixture-a", "agentId": "afixturecomplete01"}
+{"type": "started", "key": "v2:fixture-b", "agentId": "afixturehealthy02"}
+{"type": "result", "key": "v2:fixture-a", "agentId": "afixturecomplete01", "result": {"issue": 1, "merged": true, "pr": 2, "notes": "fixture lane finished"}}

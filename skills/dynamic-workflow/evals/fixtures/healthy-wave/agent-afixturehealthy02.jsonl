@@ -1,0 +1,2 @@
+{"type": "user", "isSidechain": true, "timestamp": "2026-09-01T11:52:30Z", "message": {"role": "user", "content": [{"type": "text", "text": "fixture prompt"}]}}
+{"type": "assistant", "isSidechain": true, "timestamp": "2026-09-01T11:58:04Z", "message": {"role": "assistant", "content": [{"type": "text", "text": "still working: rebasing onto origin/main"}]}}

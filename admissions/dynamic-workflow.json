@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "skill": "dynamic-workflow",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/dynamic-workflow/source-lock.json",
+    "sha256": "03e1a8b6f0807cde06995e9823aff463613ed64c82a5c8eea2c66ed4284f5c69"
+  },
+  "subject_files": [
+    {
+      "path": "skills/dynamic-workflow/AGENTS.md",
+      "sha256": "e272d5be098830a7269a653113508db1039920dadd76ecdd87003f58d793fdbd"
+    },
+    {
+      "path": "skills/dynamic-workflow/README.md",
+      "sha256": "8eed9004eec33c585eb7bf8f893d48d50b0bd961d76d6499d371642b62e6aa60"
+    },
+    {
+      "path": "skills/dynamic-workflow/SKILL.md",
+      "sha256": "7b895892cabf1382dc32bcb22710cae2e4c2cf5ab24e12079aba957f6664241b"
+    },
+    {
+      "path": "skills/dynamic-workflow/domain/dispatch-runtime-topology.json",
+      "sha256": "0f0499ec40c6b6d7ddbc7769e37080d6438d2125f73aac0dd8bafa86e93b3fdc"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/cases.json",
+      "sha256": "539fd3b78e9daa25726da362185284a2616e82d420e2ece32602882cca1b9b1f"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/canonical.ndjson",
+      "sha256": "5b5793fb41408b4435b6569084e4656cca4e5f282930b8c29d088b2e2ab9949c"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/events.ndjson",
+      "sha256": "ad8922350e97d15bbb8fb618379f0c06203551071173b8f3511639e0ccbe074c"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/heartbeat.json",
+      "sha256": "d217b51667fda258f7e8aa9619fdee26cbfaeaac97d98de9dc28cf2ba9ae3163"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-dead-session/meta.json",
+      "sha256": "15f4bb185f04219541ee30dc9f6b4800b378e5f2245ab832459101038ac6ec38"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/canonical.ndjson",
+      "sha256": "a120a0553704f8003ae6994cb5c90a1c0fa8e7121b5c03da8a071f2faae338f3"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/events.ndjson",
+      "sha256": "a31c3a338a50b53e15e7a6a61fa08af348d276780c4ab49aeffaa4093139d4c5"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/heartbeat.json",
+      "sha256": "0808f7b342262486fcd3cdde42f6fc6045223bd338cafde7a0df77d3b3bb13e2"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-failed-stamp-not-dead-session/meta.json",
+      "sha256": "9d18f0d3fb89a6c5515244bc654c1cd0e14d0357370bd679f41b8dea7a3960ca"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-healthy-session/canonical.ndjson",
+      "sha256": "c6e95680dd965af5ce36d11d749aac2a26939408ae31955b04a19e21a1739231"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-healthy-session/events.ndjson",
+      "sha256": "52024059db822df85113252e81df8c5e9170a558111dee985774abaa770e980e"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-healthy-session/heartbeat.json",
+      "sha256": "a5c9c9508a0f35966985aaf4a6c46c713f1b59e030c72a400ba9897de4c163ff"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-healthy-session/meta.json",
+      "sha256": "3a54bb1bb4c12e0775c6bc96372c7733211dbc27082544b4e9d69baead986e9a"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-stale-stamp-session/canonical.ndjson",
+      "sha256": "aff17e1f7ff0d053e5c67af52314dcfdeb7fc26fb4d896acc9c509565fa9c32a"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-stale-stamp-session/events.ndjson",
+      "sha256": "5eca3bb0b73ce251a13139fa1f95a10b095211e0b8c0a56cdd53a2c0c6c203f0"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-stale-stamp-session/heartbeat.json",
+      "sha256": "4d35737aacd0f8624146099b18acfe6980a69a707ce6c1d8870c3a04e8a2d101"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/codex-stale-stamp-session/meta.json",
+      "sha256": "fa7b759fbcc31ca3223d820b80a8188fbd60009c12bcb0f4f6a6f211d5ebf68b"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/dead-wave/agent-afixturedead04.jsonl",
+      "sha256": "5b5cf575316c810a7f7f1971657044fa2abd490c44cde396758f9ade90789763"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/dead-wave/journal.jsonl",
+      "sha256": "d38dbd4abe38c15d50b0ed4d22c35ef7dd11dcf5dbac368b2c13b8134d81ccca"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/healthy-wave/agent-afixturecomplete01.jsonl",
+      "sha256": "0049190ffd1ba54589b953525afe8ffc306cfe4e32c600d92123da16af7d42f1"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/healthy-wave/agent-afixturehealthy02.jsonl",
+      "sha256": "af8a8e488c8d76e48706d74ac103f31bee119d7869576dc14a896b8b72e30cc6"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/healthy-wave/journal.jsonl",
+      "sha256": "b0a398126b75a502a323678d0549794b6eab371d989ca3e62f38b9e1a38aa4ff"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/stuck-wave/agent-afixturestuck03.jsonl",
+      "sha256": "007b2e8a18b558f0be740c68521d7f3b82ad4ca19fedd99d316814412e53d3d8"
+    },
+    {
+      "path": "skills/dynamic-workflow/evals/fixtures/stuck-wave/journal.jsonl",
+      "sha256": "f8ac1dccce5880e9e76ac63262c1cbc7aba97d94b6f9983285240e4afea7c757"
+    },
+    {
+      "path": "skills/dynamic-workflow/receipts.json",
+      "sha256": "c801896075c137354437fcb9722c015a57634e1471ab1ccf43ca8a1df333f581"
+    },
+    {
+      "path": "skills/dynamic-workflow/references/README.md",
+      "sha256": "579ccc0707cac870d02a96d06a43e1af704c3e05136ba75b24b0e49ae6913b03"
+    },
+    {
+      "path": "skills/dynamic-workflow/references/portable-supervision-policy.md",
+      "sha256": "f4059ee2e8bbfdf2c4734d4048c964fa84663fa8c3aea626b0fae75ebd2a55eb"
+    },
+    {
+      "path": "skills/dynamic-workflow/references/prompts/judge-prompt.md",
+      "sha256": "c78da2e550026984689e27745550fb013018dfa0d96875d25331ac05088a339d"
+    },
+    {
+      "path": "skills/dynamic-workflow/references/prompts/monitor-prompt.md",
+      "sha256": "49dfe17f66c30fbba01da9a4ad8774054971ed38be81dd13bb7ab2b8c15c4147"
+    },
+    {
+      "path": "skills/dynamic-workflow/scripts/gen_admission.py",
+      "sha256": "5c2b076b3f7637182fde5a8645b2d0d5c220eb4739944b50a042b18350d3032e"
+    },
+    {
+      "path": "skills/dynamic-workflow/scripts/gen_source_lock.py",
+      "sha256": "87b023784271f5b7a749a32979d59829c89d65e93722d1b3c7f7820c54479237"
+    },
+    {
+      "path": "skills/dynamic-workflow/scripts/liveness_driver.py",
+      "sha256": "870755070fbb4b9d94bb96988c3391e7e727e3e6bf5822fe690553ae10bacb11"
+    },
+    {
+      "path": "skills/dynamic-workflow/scripts/validate_dynamic_workflow.py",
+      "sha256": "be85dcc483933e5a54c9efb27c26823ea29d7491dced4172517ea04458493f80"
+    },
+    {
+      "path": "skills/dynamic-workflow/skill.json",
+      "sha256": "a6d6f9a399bed4a1f916504d953b85d8af8006c6dede8fa6f1a20a1d05ce987c"
+    },
+    {
+      "path": "skills/dynamic-workflow/tests/test_dynamic_workflow.py",
+      "sha256": "87e7bec58495c763435661359ea7b3b0069d76cf0fcda772815e5a420fea8547"
+    }
+  ],
+  "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "dynamic-workflow-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "l2-liveness-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "dispatcher-prompt-files-exist",
+      "state": "PASS"
+    },
+    {
+      "id": "observation-evidence-survives",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-layer-file",
+      "state": "PASS"
+    },
+    {
+      "id": "age-alone-declares-death",
+      "state": "PASS"
+    },
+    {
+      "id": "death-signature-defused",
+      "state": "PASS"
+    },
+    {
+      "id": "ceremony-term-restated",
+      "state": "PASS"
+    },
+    {
+      "id": "k10-removed-from-topology",
+      "state": "PASS"
+    },
+    {
+      "id": "judge-rule-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "unbacked-receipt-removed",
+      "state": "PASS"
+    },
+    {
+      "id": "reader-gains-exec-surface",
+      "state": "PASS"
+    },
+    {
+      "id": "red-selftest-degrades-to-lens-suspect",
+      "state": "PASS"
+    },
+    {
+      "id": "boundary-term-absent-from-owner",
+      "state": "PASS"
+    },
+    {
+      "id": "codex-failed-stamp-alone-not-dead",
+      "state": "PASS"
+    },
+    {
+      "id": "observe-refuses-write-inside-subject",
+      "state": "PASS"
+    },
+    {
+      "id": "observe-degrades-when-fixtures-absent",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

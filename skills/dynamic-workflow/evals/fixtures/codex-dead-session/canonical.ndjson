@@ -1,0 +1,3 @@
+{"provider": "codex", "type": "init", "message": "codex session started", "timestamp": "2026-09-01T10:00:00Z"}
+{"provider": "codex", "type": "action", "message": "apply_patch", "timestamp": "2026-09-01T10:10:00Z"}
+{"provider": "codex", "type": "error", "message": "provider stream terminated", "timestamp": "2026-09-01T10:11:05Z"}
