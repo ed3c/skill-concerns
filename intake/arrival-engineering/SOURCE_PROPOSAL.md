@@ -32,8 +32,8 @@ One question, mechanized: for each declared capability, who consumes it, through
 which bound exit, and at which measured arrival level — and does every claim
 match?
 
-It is the single owner of the **L0 declared / L1 exercised / L2 production**
-arrival vocabulary. Other bundles may cite those levels; none may redefine them.
+It is the single owner of the **DECLARED / EXERCISED / PRODUCTION** arrival
+vocabulary. Other bundles may cite those levels; none may redefine them.
 
 ## Birth and upkeep ceremonies (pinned, read-only)
 

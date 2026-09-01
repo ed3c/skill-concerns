@@ -17,8 +17,9 @@ S1 warn / S2 review, and never patches what it finds.
 
 1. [`AGENTS.md`](AGENTS.md) - the bundle contract.
 2. [`README.md`](README.md) - this page.
-3. [`SKILL.md`](SKILL.md) - clauses A1-A6, the L0/L1/L2 arrival vocabulary this
-   bundle owns, and the diagnostics the driver emits.
+3. [`SKILL.md`](SKILL.md) - clauses A1-A6, the DECLARED / EXERCISED /
+   PRODUCTION arrival vocabulary this bundle owns, and the diagnostics the
+   driver emits.
 4. [`skill.json`](skill.json) - the concern split.
 5. [`domain/capability-topology.json`](domain/capability-topology.json) - the
    audited rows and the receipt behind each recorded level.
@@ -38,15 +39,18 @@ tree before and after the pass and refuses its own report if the digest moved.
 
 ## Arrival levels, and the two axes they are not
 
-- **L0 declared / L1 exercised / L2 production** - this bundle's vocabulary, and
-  it owns the definition. About *who reached the capability*.
+- **DECLARED / EXERCISED / PRODUCTION** - this bundle's vocabulary, and it owns
+  the definition. About *who reached the capability*.
 - **L0 procedural / L1 domain / L2 execution** - the bundle-anatomy concern
   layers every admitted Skill uses. About *where bytes belong*.
 - **L0_SOURCE_FREEZE .. L5_DELIVERY_AND_PRODUCTION** - the admission evidence
   ceiling in `registry.json`. About *what one commit proved*.
 
-Three numberings that all start at L0 is a real collision, so SKILL.md carries
-the disambiguation and the validator reds if it is deleted.
+An earlier draft numbered arrival from L0 too, making three L-numberings on one
+page, and shipped a validator clause requiring SKILL.md to keep them apart. The
+arrival axis was the newest of the three and had no consumers, so it is the one
+that moved: naming the levels removes the collision the prose was managing, and
+the gate that read that prose was deleted with it.
 
 ## Where the findings go
 

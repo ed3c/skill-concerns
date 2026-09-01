@@ -1,4 +1,4 @@
-"""The exercise receipt behind control-properly-bound's L1 arrival."""
+"""The exercise receipt behind control-properly-bound's EXERCISED arrival."""
 import sys
 import unittest
 from pathlib import Path

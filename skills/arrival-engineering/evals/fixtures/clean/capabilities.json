@@ -8,7 +8,7 @@
       "carrier": "src/indexer.py",
       "exit": "materialize_index",
       "bound_exit": "ops/checkout.sh",
-      "arrival": "L1",
+      "arrival": "EXERCISED",
       "receipts": [{"kind": "exercise", "ref": "tests/test_indexer.py"}],
       "expect": "no finding: reached on the adapter surface, bound to a shared exit, and recorded at the level its exercise receipt supports"
     },
@@ -18,7 +18,7 @@
       "carrier": "src/pinned_tool.py",
       "exit": "pinned_tool",
       "bound_exit": "ops/checkout.sh",
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "documented_pin": {"claim_in": "pins.json", "expects": "pinned_tool@4.2.0"},
       "pointer": {"target": "src/indexer.py", "tree": "self"},
       "receipts": [{"kind": "bytes", "ref": "pins.json"}],

@@ -8,7 +8,7 @@
       "carrier": "src/lonely_core.py",
       "exit": null,
       "bound_exit": null,
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "receipts": [{"kind": "bytes", "ref": "src/lonely_core.py"}],
       "expect": "CONSUMER_ABSENT"
     },
@@ -18,7 +18,7 @@
       "carrier": "src/orphan_probe.py",
       "exit": "python3 src/orphan_probe.py --emit",
       "bound_exit": null,
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "receipts": [{"kind": "bytes", "ref": "src/orphan_probe.py"}],
       "expect": "CONSUMER_ABSENT"
     },
@@ -28,7 +28,7 @@
       "carrier": "src/runtime_verb.py",
       "exit": "arrival_probe",
       "bound_exit": null,
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "receipts": [{"kind": "bytes", "ref": "src/runtime_verb.py"}],
       "expect": "VERB_WITHOUT_CONSUMER"
     },
@@ -38,9 +38,19 @@
       "carrier": "src/runtime_verb.py",
       "exit": "arrival_probe",
       "bound_exit": "ops/checkout.sh",
-      "arrival": "L2",
+      "arrival": "PRODUCTION",
       "receipts": [{"kind": "bytes", "ref": "src/runtime_verb.py"}],
       "expect": "CLAIM_ABOVE_ARRIVAL"
+    },
+    {
+      "id": "planted-claim-below-arrival",
+      "capability": "a capability recorded as declared while an exercise receipt already backs it",
+      "carrier": "src/pinned_tool.py",
+      "exit": "pinned_tool",
+      "bound_exit": "ops/checkout.sh",
+      "arrival": "DECLARED",
+      "receipts": [{"kind": "exercise", "ref": "ed3c/skill-concerns#73"}],
+      "expect": "CLAIM_BELOW_ARRIVAL"
     },
     {
       "id": "planted-false-documented-pin",
@@ -48,7 +58,7 @@
       "carrier": "src/pinned_tool.py",
       "exit": "pinned_tool",
       "bound_exit": "ops/checkout.sh",
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "documented_pin": {"claim_in": "pins.json", "expects": "pinned_tool@4.2.0"},
       "receipts": [{"kind": "bytes", "ref": "pins.json"}],
       "expect": "DOCUMENTED_PIN_FALSE"
@@ -59,7 +69,7 @@
       "carrier": "src/pinned_tool.py",
       "exit": "pinned_tool",
       "bound_exit": "ops/checkout.sh",
-      "arrival": "L0",
+      "arrival": "DECLARED",
       "pointer": {"target": "src/retired_station.py", "tree": "self"},
       "receipts": [{"kind": "bytes", "ref": "src/pinned_tool.py"}],
       "expect": "POINTER_DANGLING"

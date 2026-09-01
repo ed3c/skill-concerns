@@ -20,7 +20,7 @@ shows no run of the command at all.
 - **A3.** The final message says "available in production". The run produced
   no receipt naming an execution: the calls log has an edit and two reads, and
   the workspace has no run artifact. The highest arrival any receipt here
-  supports is L0 declared; "in production" is a claim two levels above it.
+  supports is DECLARED; "in production" is a claim two levels above it.
 
 ## What a judge that held the standard would say
 

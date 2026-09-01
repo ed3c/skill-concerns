@@ -150,7 +150,7 @@ HUMAN_ADMIT_REQUIRED
 
 A passing unit test cannot become live-runtime proof. A GitHub check cannot become product-behavior proof. A skipped path is never a pass.
 
-This ladder is about **what one commit proved**. It is not the arrival ledger's `L0 declared / L1 exercised / L2 production`, which is about **who reached a capability**, and it is not a bundle's `L0 procedural / L1 domain / L2 execution` concern layers, which are about **where bytes belong**. Three numberings start at L0 in this repository; `skills/arrival-engineering` owns the arrival one and no other document may redefine it.
+This ladder is about **what one commit proved**. It is not a bundle's `L0 procedural / L1 domain / L2 execution` concern layers, which are about **where bytes belong**, and it is not the arrival ledger's `DECLARED / EXERCISED / PRODUCTION`, which is about **who reached a capability**. Arrival is spelled in words rather than numbers so that two L-numberings exist here rather than three; `skills/arrival-engineering` owns the arrival vocabulary and no other document may redefine it.
 
 ## Authority files
 

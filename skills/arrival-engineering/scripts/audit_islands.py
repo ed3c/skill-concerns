@@ -42,8 +42,14 @@ SURFACES: dict[str, str] = {
 
 SOURCE_SUFFIXES = {".py", ".js", ".ts", ".sh"}
 ARTIFACT_SUFFIXES = {".json", ".lock", ".toml", ".yaml", ".yml"}
-LEVELS = ("L0", "L1", "L2")
-RECEIPT_KIND_LEVEL = {"bytes": "L0", "exercise": "L1", "run": "L2"}
+# Named, not numbered. An earlier draft called these L0/L1/L2 and shipped a
+# validator clause requiring SKILL.md to disambiguate them from the two other
+# axes in this repository that also count from L0 (bundle-anatomy concern
+# layers, and `common.EVIDENCE_LEVELS`). Coupling a gate to disambiguation
+# prose is the cure for a collision; not colliding is the cure for the cause.
+# This axis was the newest and had zero consumers, so it is the one that moved.
+LEVELS = ("DECLARED", "EXERCISED", "PRODUCTION")
+RECEIPT_KIND_LEVEL = {"bytes": "DECLARED", "exercise": "EXERCISED", "run": "PRODUCTION"}
 PROVIDER_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+$")
 HOST_REF = re.compile(r"^host:\S+$")
 
@@ -51,6 +57,7 @@ DIAGNOSTICS = (
     "CONSUMER_ABSENT",
     "VERB_WITHOUT_CONSUMER",
     "CLAIM_ABOVE_ARRIVAL",
+    "CLAIM_BELOW_ARRIVAL",
     "DOCUMENTED_PIN_FALSE",
     "POINTER_DANGLING",
     "TOPOLOGY_ROW_WITHOUT_RECEIPT",
@@ -75,7 +82,17 @@ def tree_files(tree: Path) -> list[Path]:
     ]
 
 
-def tree_digest(tree: Path) -> str:
+def tree_fingerprint(tree: Path) -> str:
+    """Did anything under `tree` move during this pass -- nothing more.
+
+    Deliberately NOT `scripts/common.tree_digest`, which is this repository's
+    tree *identity* (what an admission receipt pins) and is the only function
+    that may carry that name. This one is compared only against itself, minutes
+    apart, over a `--tree` that is usually some other repository: it must skip
+    `.git` (which mutates on read) and tolerate symlinks, where `common`'s
+    file selection keeps `.git` and raises `SYMLINK_FORBIDDEN`. Two functions
+    with different file selection may not share one name.
+    """
     digest = hashlib.sha256()
     for path in tree_files(tree):
         digest.update(path.relative_to(tree).as_posix().encode("utf-8"))
@@ -157,7 +174,13 @@ def receipt_level(receipt: Any, tree: Path) -> str | None:
 
 
 def supported_arrival(row: dict, tree: Path) -> str | None:
-    """The highest arrival this row's receipts actually support."""
+    """The arrival this row's receipts support -- the recorded value's producer.
+
+    `audit_row` ties the recorded `arrival` to this by equality, not by `<=`.
+    An over-claim was always a finding; an under-claim used to be invisible,
+    which made a permanently-understated row exactly the stale list this
+    ledger exists to kill -- accurate only as long as an author remembered.
+    """
     levels = [
         level
         for level in (receipt_level(item, tree) for item in row.get("receipts") or [])
@@ -185,6 +208,37 @@ def in_this_tree(value: Any, tree: Path) -> bool:
     return isinstance(value, str) and bool(value) and (tree / value).exists()
 
 
+def arrival_mismatch(row: dict, supported: str) -> tuple[str, str, str] | None:
+    """(diagnostic, detail, action) when `arrival` is not the derived value.
+
+    One declaration, two readers: the SHADOW driver below and
+    `validate_arrival_engineering.check_topology` both call this. A second copy
+    of the comparison is how the live audit and the committed-ledger gate come
+    to disagree about the same row.
+    """
+    claimed = row.get("arrival")
+    if claimed not in LEVELS:
+        return (
+            "CLAIM_ABOVE_ARRIVAL",
+            f"arrival {claimed!r} is not one of {LEVELS}",
+            "record one of DECLARED / EXERCISED / PRODUCTION",
+        )
+    if claimed == supported:
+        return None
+    if LEVELS.index(claimed) > LEVELS.index(supported):
+        return (
+            "CLAIM_ABOVE_ARRIVAL",
+            f"records {claimed} while its receipts support only {supported}",
+            f"lower the row to {supported}, or add the receipt that would justify {claimed}",
+        )
+    return (
+        "CLAIM_BELOW_ARRIVAL",
+        f"records {claimed} while its receipts already support {supported}",
+        f"raise the row to {supported}; a row that only ever moves when an author "
+        "remembers it is the stale list this ledger exists to kill",
+    )
+
+
 def audit_row(row: dict, tree: Path, index: dict[str, list[tuple[str, str]]]) -> tuple[list[dict], list[dict]]:
     findings: list[dict] = []
     unreachable: list[dict] = []
@@ -202,25 +256,16 @@ def audit_row(row: dict, tree: Path, index: dict[str, list[tuple[str, str]]]) ->
             )
         )
     else:
-        claimed = row.get("arrival")
-        if claimed not in LEVELS:
+        mismatch = arrival_mismatch(row, supported)
+        if mismatch is not None:
+            diagnostic, detail, action = mismatch
             findings.append(
                 finding(
                     row_id,
-                    "CLAIM_ABOVE_ARRIVAL",
-                    str(claimed),
-                    f"arrival {claimed!r} is not one of {LEVELS}",
-                    "record one of L0 declared / L1 exercised / L2 production",
-                )
-            )
-        elif LEVELS.index(claimed) > LEVELS.index(supported):
-            findings.append(
-                finding(
-                    row_id,
-                    "CLAIM_ABOVE_ARRIVAL",
+                    diagnostic,
                     row.get("capability") or row_id,
-                    f"records {claimed} while its receipts support only {supported}",
-                    f"lower the row to {supported}, or add the receipt that would justify {claimed}",
+                    detail,
+                    action,
                 )
             )
 
@@ -351,7 +396,7 @@ def audit(
         resolved = topology_path.resolve()
         if resolved.is_relative_to(tree):
             exclude = frozenset({resolved.relative_to(tree).as_posix()})
-    before = tree_digest(tree)
+    before = tree_fingerprint(tree)
     index = index_fn(tree, exclude)
     findings: list[dict] = []
     unreachable: list[dict] = []
@@ -364,7 +409,7 @@ def audit(
         row_findings, row_unreachable = audit_row(row, tree, index)
         findings.extend(row_findings)
         unreachable.extend(row_unreachable)
-    after = tree_digest(tree)
+    after = tree_fingerprint(tree)
     report = {
         "schema_version": 1,
         "mode": "shadow",
@@ -434,7 +479,7 @@ def selftest() -> int:
         return tree, json.loads(path.read_text(encoding="utf-8")), path
 
     planted_tree, planted, planted_path = load("planted")
-    before = tree_digest(planted_tree)
+    before = tree_fingerprint(planted_tree)
     report = audit(planted_tree, planted, planted_path)
     seen = {item["diagnostic"] for item in report["findings"]}
     expected = set(DIAGNOSTICS) - {"TOPOLOGY_ROW_WITHOUT_RECEIPT"}
@@ -450,7 +495,7 @@ def selftest() -> int:
     )
     record(
         "planted_fixture_is_never_repaired_by_the_audit",
-        tree_digest(planted_tree) == before,
+        tree_fingerprint(planted_tree) == before,
         f"digest={before}",
     )
     record(
@@ -483,7 +528,7 @@ def selftest() -> int:
     )
 
     # BUILD half: the append refusal, and its own positive control.
-    receiptless = {"id": "planted-aspirational-row", "capability": "a thing we mean to do", "arrival": "L2"}
+    receiptless = {"id": "planted-aspirational-row", "capability": "a thing we mean to do", "arrival": "PRODUCTION"}
     try:
         append_row(clean, receiptless, clean_tree)
         record("receiptless_row_is_refused_at_append", False, "append returned instead of refusing")
@@ -499,10 +544,10 @@ def selftest() -> int:
         "carrier": "capabilities.json",
         "exit": None,
         "bound_exit": None,
-        "arrival": "L0",
+        "arrival": "DECLARED",
         "receipts": [{"kind": "bytes", "ref": "ed3c/skill-concerns#73"}],
     }
-    clean_before = tree_digest(clean_tree)
+    clean_before = tree_fingerprint(clean_tree)
     grown = append_row(clean, receipted, clean_tree)
     record(
         "receipted_row_appends",
@@ -511,7 +556,7 @@ def selftest() -> int:
     )
     record(
         "append_returns_a_new_ledger_and_writes_nothing",
-        tree_digest(clean_tree) == clean_before,
+        tree_fingerprint(clean_tree) == clean_before,
         "append_row is pure; only --append-row writes, and only the file it was given",
     )
 

@@ -27,7 +27,13 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_islands import DIAGNOSTICS, LEVELS, SURFACES, supported_arrival  # noqa: E402
+from audit_islands import (  # noqa: E402
+    DIAGNOSTICS,
+    LEVELS,
+    SURFACES,
+    arrival_mismatch,
+    supported_arrival,
+)
 from gen_receipts import render  # noqa: E402
 
 CLAUSE_RE = re.compile(r"^## (A\d+)\. ", re.M)
@@ -38,10 +44,25 @@ LAW_RE = re.compile(r"\bLAW-[A-Z-]+\b")
 ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 CLOSURE_OWNER = "../context-closure-engineering/references/portable-context-closure-policy.md"
 POINTED_LAWS = {"LAW-TRACE-GAP", "LAW-NO-PROMOTION"}
-# The other two axes that also count from L0. Naming them is what stops an
-# arrival level being read as an admitted evidence ceiling.
-OTHER_L_AXES = ("L0 procedural", "L0_SOURCE_FREEZE")
 RUN_SHAPED = ("chore.txt", "calls.log", "terminal-state.txt", "actor-final-message.txt")
+
+# SKILL.md's `## ` headings, in order. Read out of these bytes by
+# `scripts/check_skill_bundles.py` (parsed, never imported) and compared to the
+# document's own headings, so a clause deleted from SKILL.md reds against a
+# file the deletion never touched.
+SKILL_MD_CLAUSES = (
+    "The arrival ledger - DECLARED / EXERCISED / PRODUCTION",
+    "Clause form",
+    "A1. Audit five surfaces, or the audit itself only proves declaration",
+    "A2. Availability is not use: an unbound verb is a planned island",
+    "A3. A claim above its measured arrival is a finding",
+    'A4. Every "recorded in X" is checked against X\'s bytes',
+    "A5. Cross-repo pointers are re-verified against live trees",
+    "A6. Closure is by pointer to its owner, never by restatement",
+    "Diagnostics",
+    "Knowledge placement",
+    "Non-claims",
+)
 
 
 def clause_bodies(text: str) -> dict[str, str]:
@@ -140,18 +161,17 @@ def check_diagnostic_tie(text: str, errors: list[str]) -> None:
 
 
 def check_arrival_vocabulary(text: str, topology: dict, errors: list[str]) -> None:
-    """This bundle owns L0/L1/L2 arrival, and must not be confusable with the
-    two other axes in this repository that also count from L0."""
+    """This bundle owns the arrival vocabulary, and defines every level it uses.
+
+    There is no clause here requiring SKILL.md to disambiguate itself from the
+    other two L-axes in this repository. There used to be, when this axis was
+    also numbered from L0; renaming the axis - the newest of the three, and the
+    only one with no consumers - removed the collision the prose was there to
+    manage, and the gate that read that prose went with it.
+    """
     for level in LEVELS:
-        if f"**{level} " not in text:
+        if f"**{level}**" not in text:
             errors.append(f"arrival level {level} is not defined in SKILL.md")
-    for axis in OTHER_L_AXES:
-        if axis not in text:
-            errors.append(
-                f"SKILL.md does not disambiguate arrival levels from the {axis!r} axis - "
-                "three numberings starting at L0 on one page is how a sandbox arrival "
-                "gets read as an admitted evidence ceiling"
-            )
     declared = topology.get("arrival_levels")
     if not isinstance(declared, dict) or set(declared) != set(LEVELS):
         errors.append(f"topology arrival_levels must declare exactly {LEVELS}")
@@ -224,14 +244,10 @@ def check_topology(topology: dict, repo_root: Path, errors: list[str]) -> None:
                 "shape out of the ledger"
             )
             continue
-        claimed = row.get("arrival")
-        if claimed not in LEVELS:
-            errors.append(f"topology row {row_id!r} arrival {claimed!r} is not one of {LEVELS}")
-        elif LEVELS.index(claimed) > LEVELS.index(supported):
-            errors.append(
-                f"CLAIM_ABOVE_ARRIVAL:{row_id}: records {claimed} while its receipts "
-                f"support only {supported}"
-            )
+        mismatch = arrival_mismatch(row, supported)
+        if mismatch is not None:
+            diagnostic, detail, _ = mismatch
+            errors.append(f"{diagnostic}:{row_id}: {detail}")
 
 
 def check_receipts_are_produced(skill_root: Path, topology: dict, errors: list[str]) -> None:
@@ -445,10 +461,20 @@ def selftest() -> int:
             body = json.loads(path.read_text(encoding="utf-8"))
             for row in body["rows"]:
                 if row["id"] == "noodles-scip-validation-core":
-                    row["arrival"] = "L2"
+                    row["arrival"] = "PRODUCTION"
             path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
 
         mutate("claim_above_arrival_reds", overclaim, "CLAIM_ABOVE_ARRIVAL")
+
+        def underclaim(copy: Path) -> None:
+            path = copy / "domain" / "capability-topology.json"
+            body = json.loads(path.read_text(encoding="utf-8"))
+            for row in body["rows"]:
+                if row["id"] == "sc-control-backup-checks":
+                    row["arrival"] = "DECLARED"
+            path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+
+        mutate("claim_below_arrival_reds", underclaim, "CLAIM_BELOW_ARRIVAL")
 
         def strip_receipts(copy: Path) -> None:
             path = copy / "domain" / "capability-topology.json"
@@ -500,14 +526,18 @@ def selftest() -> int:
 
         mutate("answer_key_inside_the_judge_input_reds", unblind_the_key, "sits inside the judge input")
 
-        def drop_disambiguation(copy: Path) -> None:
+        def drop_a_level_definition(copy: Path) -> None:
             path = copy / "SKILL.md"
             path.write_text(
-                path.read_text(encoding="utf-8").replace("L0_SOURCE_FREEZE", "the ceiling"),
+                path.read_text(encoding="utf-8").replace("**EXERCISED**", "EXERCISED"),
                 encoding="utf-8",
             )
 
-        mutate("undisambiguated_l_numbering_reds", drop_disambiguation, "does not disambiguate")
+        mutate(
+            "undefined_arrival_level_reds",
+            drop_a_level_definition,
+            "arrival level EXERCISED is not defined",
+        )
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
 

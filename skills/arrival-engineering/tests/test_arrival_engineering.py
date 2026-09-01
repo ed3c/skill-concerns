@@ -65,7 +65,7 @@ class ArrivalEngineeringEvals(unittest.TestCase):
     def test_validator_selftest_passes(self) -> None:
         self.assertEqual(validator.selftest(), 0)
 
-    def test_planted_fixtures_produce_the_five_island_classes(self) -> None:
+    def test_planted_fixtures_produce_every_island_class(self) -> None:
         tree, topology, path = load_fixture("planted")
         report = audit_islands.audit(tree, topology, path)
         seen = {item["diagnostic"] for item in report["findings"]}
@@ -95,7 +95,9 @@ class ArrivalEngineeringEvals(unittest.TestCase):
         tree, topology, _ = load_fixture("clean")
         with self.assertRaises(audit_islands.AppendRefused) as raised:
             audit_islands.append_row(
-                topology, {"id": "aspirational", "capability": "someday", "arrival": "L2"}, tree
+                topology,
+                {"id": "aspirational", "capability": "someday", "arrival": "PRODUCTION"},
+                tree,
             )
         self.assertIn("TOPOLOGY_ROW_WITHOUT_RECEIPT:aspirational", str(raised.exception))
 
@@ -129,10 +131,28 @@ class ArrivalEngineeringEvals(unittest.TestCase):
         body = json.loads(path.read_text(encoding="utf-8"))
         for row in body["rows"]:
             if row["id"] == "noodles-where-is-x-slice":
-                row["arrival"] = "L2"
+                row["arrival"] = "PRODUCTION"
         path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
         self.assertTrue(
             any("CLAIM_ABOVE_ARRIVAL" in error for error in validator.validate(copy, REPO_ROOT))
+        )
+
+    def test_claim_below_arrival_fails(self) -> None:
+        """An understated row reds too, or the ledger is only author memory.
+
+        The over-claim direction was always caught. This one is the direction
+        that made a permanently-stale row invisible: nothing ever noticed a row
+        whose receipts had outgrown it.
+        """
+        copy = self.copy()
+        path = copy / "domain" / "capability-topology.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        for row in body["rows"]:
+            if row["id"] == "sc-spatial-loop-grounded-checks":
+                row["arrival"] = "DECLARED"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any("CLAIM_BELOW_ARRIVAL" in error for error in validator.validate(copy, REPO_ROOT))
         )
 
     def test_a6_restating_the_owner_laws_fails(self) -> None:
@@ -170,12 +190,12 @@ class ArrivalEngineeringEvals(unittest.TestCase):
             any("announces itself" in error for error in validator.validate(copy, REPO_ROOT))
         )
 
-    def test_undisambiguated_l_numbering_fails(self) -> None:
+    def test_undefined_arrival_level_fails(self) -> None:
         copy = self.copy()
-        self.edit(copy / "SKILL.md", "`L0_SOURCE_FREEZE`", "the admitted ceiling")
+        self.edit(copy / "SKILL.md", "**EXERCISED**", "EXERCISED")
         self.assertTrue(
             any(
-                "does not disambiguate" in error
+                "arrival level EXERCISED is not defined" in error
                 for error in validator.validate(copy, REPO_ROOT)
             )
         )

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "campaign": "2026-09-01-arrival-shadow",
   "status": "UNJUDGED",
-  "status_note": "Fixtures are complete and blind; no live judge has run this batch yet. The status flips to JUDGED only when a ledger entry records a judged wave, so an unjudged campaign can never read as a judged one. This bundle's own topology row records L1 for the same reason.",
+  "status_note": "Fixtures are complete and blind; no live judge has run this batch yet. The status flips to JUDGED only when a ledger entry records a judged wave, so an unjudged campaign can never read as a judged one. This bundle's own topology rows record EXERCISED for the same reason.",
   "machinery": "spatial-loop-grounded behavioral-campaign shape: run-shaped judge inputs (chore.txt, calls.log, terminal-state.txt, workspace/), one answer key per negative arm kept outside every judge input, and a blind scan over the judge-facing bytes.",
   "blind_discipline": "A negative arm that names its own violation measures reading comprehension, not the judge's standard. The judge-facing half is run-shaped only; the self-describing half lives in the sibling answer key the judge never receives.",
   "giveaway_tokens": [

@@ -6,7 +6,8 @@ description: >
   and does every claim match? Use when a capability, verb, pin, or cross-repo
   pointer has been declared and nobody has proved a consumer reaches it, or
   when a claim ("available", "recorded in X", "in use") needs reducing to the
-  arrival its receipts actually support. Owns the L0/L1/L2 arrival vocabulary.
+  arrival its receipts actually support. Owns the DECLARED / EXERCISED /
+  PRODUCTION arrival vocabulary.
 ---
 
 # Arrival Engineering
@@ -23,37 +24,32 @@ the island audit and reports findings at severities S0 observe / S1 warn /
 S2 review, never patching what it finds. A SHADOW pass that mutated its subject
 refuses its own report.
 
-## The arrival ledger - L0 / L1 / L2
+## The arrival ledger - DECLARED / EXERCISED / PRODUCTION
 
 This Skill is the single owner of this vocabulary. Other bundles may cite these
 levels; none may redefine them.
 
-- **L0 declared** - the bytes exist and a validator or gate can see them.
+- **DECLARED** - the bytes exist and a validator or gate can see them.
   Proves possibility only.
-- **L1 exercised** - a fixture, selftest, or test ran the capability on
+- **EXERCISED** - a fixture, selftest, or test ran the capability on
   synthetic input. Sandbox arrival.
-- **L2 production** - a session, cycle, or cadence receipt from a real run
-  names it. Production arrival.
+- **PRODUCTION** - a session, cycle, or cadence receipt from a real run
+  names it.
 
-The levels do not imply each other. A capability's recorded level is the
-highest one an actual receipt supports (`bytes` -> L0, `exercise` -> L1,
-`run` -> L2), and any claim above the recorded level is a finding, never a
-rounding error.
+The levels do not imply each other. A capability's recorded level is not a
+judgement but a derivation: it must **equal** the highest level an actual
+receipt supports (`bytes` -> DECLARED, `exercise` -> EXERCISED, `run` ->
+PRODUCTION). Above reds `CLAIM_ABOVE_ARRIVAL`; below reds
+`CLAIM_BELOW_ARRIVAL`, because a row that rises only when an author remembers
+to raise it is the stale list this ledger exists to kill.
 
-### Three L-numberings, one page - do not mix them
-
-Two other axes in this repository also count from L0, and a reader who
-conflates them will read a sandbox arrival as an admitted evidence ceiling:
-
-- **Arrival levels (here)**: L0 declared / L1 exercised / L2 production. About
-  *who reached this capability*.
-- **Concern layers**: `L0 procedural` / L1 domain knowledge / L2 execution +
-  assertions - the bundle-anatomy axis every admitted Skill uses to say where a
-  piece of knowledge lives. About *where bytes belong*.
-- **Evidence ceiling**: `L0_SOURCE_FREEZE` .. L5_DELIVERY_AND_PRODUCTION, owned
-  by `registry.json` and the admission receipt. About *what one commit proved*.
-
-An arrival level is never an evidence ceiling and never a concern layer.
+These names are words, not numbers, on purpose. Two other axes in this
+repository count from L0 - the bundle-anatomy concern layers, and the
+`L0_SOURCE_FREEZE .. L5` evidence ceiling that `registry.json` and the
+admission receipt own. An earlier draft numbered arrival too and carried a
+paragraph asking the reader to keep three L-numberings apart. This axis was
+the newest of the three and had no consumers, so it was the one that moved:
+naming it removes the collision instead of documenting it.
 
 ## Clause form
 
@@ -61,10 +57,10 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 **Action** (what to do) -> **Why** (the finding that proves it) ->
 `evidence:` (ids resolved against [`receipts.json`](receipts.json)).
 
-## A1. Audit five surfaces, or the audit is itself L0
+## A1. Audit five surfaces, or the audit itself only proves declaration
 
 - Signal: about to answer "is this consumed?" for a script, verb, module, artifact, or pin.
-- Action: scan all five consumption surfaces before answering - `imports` (production code that names it), `value_flow` (committed artifacts read back by something), `ci` (a gate or workflow whose argv reaches it), `adapter` (an installed entrypoint, wrapper, or scheduler job), `cli_text` (a documented invocation an agent would actually run). Report the surface set, not a verdict; an audit that read only the import graph has proved declaration, not arrival, and is itself an L0 claim about an L0 question.
+- Action: scan all five consumption surfaces before answering - `imports` (production code that names it), `value_flow` (committed artifacts read back by something), `ci` (a gate or workflow whose argv reaches it), `adapter` (an installed entrypoint, wrapper, or scheduler job), `cli_text` (a documented invocation an agent would actually run). Report the surface set, not a verdict; an audit that read only the import graph has proved declaration, not arrival, and is itself a DECLARED-level claim about a question that was never about declaration.
 - Why: the trigger island had an offline-provable core and zero runtime consumers, and every earlier reading of it "looked wired" because only one surface was ever consulted - the verb was absent, the execution skill silent, and the actual navigation was unguided text search.
 - evidence: five-surface-audit, consumer-less-core
 
@@ -112,6 +108,7 @@ The island audit driver emits exactly these, and only these:
 - `CONSUMER_ABSENT` - no surface names the capability's exit (A1).
 - `VERB_WITHOUT_CONSUMER` - an exit exists with no bound exit a consumer traverses (A2).
 - `CLAIM_ABOVE_ARRIVAL` - the recorded level exceeds what the receipts support (A3).
+- `CLAIM_BELOW_ARRIVAL` - the receipts already support more than the recorded level (A3).
 - `DOCUMENTED_PIN_FALSE` - a "recorded in X" whose value is absent from X (A4).
 - `POINTER_DANGLING` - a cross-repo or cross-tree pointer that does not resolve (A5).
 - `TOPOLOGY_ROW_WITHOUT_RECEIPT` - an aspirational row, refused at append (A3/A6).

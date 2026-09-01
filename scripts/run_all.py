@@ -91,6 +91,10 @@ SKILL_CHECKS: dict[str, tuple[tuple[str, ...], ...]] = {
         ("skills/dynamic-workflow/scripts/validate_dynamic_workflow.py",),
         (*DISCOVER, "skills/dynamic-workflow/tests"),
     ),
+    "arrival-engineering": (
+        ("skills/arrival-engineering/scripts/validate_arrival_engineering.py",),
+        (*DISCOVER, "skills/arrival-engineering/tests"),
+    ),
 }
 
 

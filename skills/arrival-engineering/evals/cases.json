@@ -17,14 +17,14 @@
     {
       "id": "validator-selftest",
       "expected": "PASS",
-      "note": "Eleven planted hollowings, each of which must red exactly one tie.",
+      "note": "Twelve planted hollowings, each of which must red exactly one tie.",
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_validator_selftest_passes"
     },
     {
-      "id": "five-planted-island-classes",
+      "id": "every-planted-island-class",
       "expected": "PASS",
-      "note": "The planted fixture tree yields exactly the five trigger classes and nothing the driver cannot name.",
-      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_planted_fixtures_produce_the_five_island_classes"
+      "note": "The planted fixture tree yields exactly the island classes the driver declares, and nothing it cannot name.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_planted_fixtures_produce_every_island_class"
     },
     {
       "id": "negative-controls-unflagged",
@@ -59,8 +59,14 @@
     {
       "id": "claim-above-arrival",
       "expected": "FAIL",
-      "note": "A row recorded L2 on a declaration receipt reds, which is the whole ledger discipline in one assertion.",
+      "note": "A row recorded PRODUCTION on a declaration receipt reds, which is the whole ledger discipline in one assertion.",
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_claim_above_arrival_fails"
+    },
+    {
+      "id": "claim-below-arrival",
+      "expected": "FAIL",
+      "note": "An understated row reds too: the arrival column equals what the receipts support, so a row nobody remembered to raise is caught by the same tie that catches an over-claim.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_claim_below_arrival_fails"
     },
     {
       "id": "a6-loses-its-owner-pointer",
@@ -81,10 +87,10 @@
       "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_self_announcing_negative_arm_fails"
     },
     {
-      "id": "l-numbering-undisambiguated",
+      "id": "arrival-level-undefined",
       "expected": "FAIL",
-      "note": "Deleting the disambiguation lets an arrival level be read as an admitted evidence ceiling.",
-      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_undisambiguated_l_numbering_fails"
+      "note": "SKILL.md that stops defining a level the driver can emit reds: this bundle is the vocabulary's single owner, so an undefined level has no owner at all.",
+      "test": "test_arrival_engineering.ArrivalEngineeringEvals.test_undefined_arrival_level_fails"
     }
   ]
 }
