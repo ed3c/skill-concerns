@@ -440,6 +440,15 @@ def receipt() -> int:
         "judge_oracle_agreement": result["judge_oracle_agreement"],
         "treatment_traces": result["treatment_traces"],
         "per_run": result["per_run"],
+        # judgments.json's own "negative_control".citation cites line numbers
+        # (e.g. "line 2") against the pre-#49 single-file transcript. That
+        # fixture is now split into judge-input/calls.log + ANSWER-KEY.md with
+        # a different line count, so the citation no longer points at the
+        # current judge-input/calls.log bytes (which read line 3 / line 5 -
+        # see ANSWER-KEY.md "Expected verdict"). It stays uncorrected: this is
+        # the judge's committed record of what it read at the time, and
+        # hand-editing a judgment is the laundering C5 forbids. Current byte
+        # locator for this stale field: judgments.json:61.
         "negative_control": judgments.get("negative_control", {}),
         "finding": (
             "physical criteria: both arms score "
