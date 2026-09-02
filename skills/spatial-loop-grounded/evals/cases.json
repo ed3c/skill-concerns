@@ -34,6 +34,8 @@
     {"id": "ab-builder-reads-the-assignment", "control": "ab-campaign-blindness", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_judge_input_builder_cannot_reach_the_assignment"},
     {"id": "ab-manual-loses-a-clause", "control": "ab-campaign-treatment", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_manual_carries_every_admitted_clause"},
     {"id": "ab-receipt-hand-edited", "control": "ab-campaign-producer", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_committed_receipt_still_matches_its_producer"},
+    {"id": "ab-manual-anchor-hand-edited", "control": "ab-campaign-producer", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_committed_manual_anchor_is_the_bytes_the_actors_held"},
+    {"id": "ab-manual-anchor-relaid-from-the-live-manual", "control": "ab-campaign-producer", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_receipt_regeneration_does_not_relay_the_manual_anchor"},
     {"id": "ab-gratuitous-consequence-uncaught", "control": "ab-campaign-criteria", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_gratuitous_consequential_action_reds_on_the_real_run"},
     {"id": "ab-artifact-claims-uncrosschecked", "control": "ab-campaign-criteria", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_artifact_claim_without_a_call_reds_on_the_real_run"},
     {"id": "ab-post-hoc-criterion-reaches-the-judge-rubric", "control": "ab-campaign-criteria", "expected": "FAIL", "test": "test_spatial_loop_grounded.ABCampaign.test_post_hoc_criteria_stay_out_of_the_judge_rubric"},

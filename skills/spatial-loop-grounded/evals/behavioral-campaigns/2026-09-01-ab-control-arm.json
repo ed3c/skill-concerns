@@ -6,7 +6,7 @@
   "judge_model": "opus",
   "manual_sha256": "c5b64bca28236f64d121581373d3306fc148495b22aabbfc2e1cc221f36f8116",
   "skill_tree_sha256_at_run": "a540b0b9e7e51678a92fcd353ea392149559a4a639e4ed96f165c9500e7819eb",
-  "anchor_note": "manual_sha256 is the load-bearing anchor: it is derived from the exact bytes the actors held. skill_tree_sha256_at_run is the admitted tree as it stood when the actors ran, pinned once this file first exists: every later `receipt` regeneration carries the committed value forward instead of recapturing the (by-then-different) current tree, so landing this campaign's own files does not silently launder the anchor.",
+  "anchor_note": "manual_sha256 is the load-bearing anchor: it is derived from the exact bytes the actors held. skill_tree_sha256_at_run is the admitted tree as it stood when the actors ran. BOTH are pinned once this file first exists: every later `receipt` regeneration carries the committed value forward instead of re-deriving it from the (by-then-different) current tree, so landing this campaign's own files - or amending a clause in SKILL.md - does not silently launder either anchor.",
   "arm_scores": {
     "with": 1.0,
     "without": 0.9167

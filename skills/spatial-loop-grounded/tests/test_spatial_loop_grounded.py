@@ -634,6 +634,59 @@ class ABCampaign(unittest.TestCase):
         for clause in re.findall(r"^## (C\d+)\. ", skill_md, re.M):
             self.assertIn(f"## {clause}. ", body, f"{clause} is not in the arm-with manual")
 
+    # The sha256 of the manual bytes the wave-1 actors physically held. It is
+    # NOT sha256(manual_text()) on this tree and must not be: SKILL.md has been
+    # amended since the campaign ran, which is exactly the move that used to
+    # relay this anchor. A pinned literal is the only reader that can red on a
+    # hand-edit, because the producer now echoes the committed value back and
+    # therefore cannot vouch for it (ed3c/skill-concerns#104).
+    MANUAL_AT_RUN = "c5b64bca28236f64d121581373d3306fc148495b22aabbfc2e1cc221f36f8116"
+
+    def test_committed_manual_anchor_is_the_bytes_the_actors_held(self) -> None:
+        """Reds when the committed anchor is edited away from the pinned value."""
+        committed = ab_campaign.load(ab_campaign.RECEIPT_PATH)
+        self.assertEqual(committed["manual_sha256"], self.MANUAL_AT_RUN)
+        self.assertNotEqual(
+            self.MANUAL_AT_RUN,
+            hashlib.sha256(ab_campaign.manual_text().encode("utf-8")).hexdigest(),
+            "SKILL.md's current slice hashes back to the wave-1 anchor again, so this "
+            "test can no longer tell a pinned anchor from a live re-derivation",
+        )
+
+    def test_receipt_regeneration_does_not_relay_the_manual_anchor(self) -> None:
+        """The planted control for the pin: change the bytes the producer would
+        hash, regenerate, and require the committed anchor not to follow.
+
+        Both directions in one test, because the first half alone is also
+        satisfied by a producer that stopped reading the manual at all: with no
+        committed receipt at the path, the SAME changed bytes must land.
+        """
+        changed = "these are not the bytes any actor held\n"
+        original = ab_campaign.manual_text
+        self.addCleanup(setattr, ab_campaign, "manual_text", original)
+        ab_campaign.manual_text = lambda: changed
+
+        path = ab_campaign.RECEIPT_PATH
+        before = path.read_bytes()
+        self.addCleanup(path.write_bytes, before)
+        # stdout swallowed for the reason test_admission_stamp.py documents.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ab_campaign.receipt(), 0)
+        self.assertEqual(path.read_bytes(), before, "regeneration moved the committed receipt")
+
+        temp = tempfile.TemporaryDirectory(prefix="slg-ab-anchor-")
+        self.addCleanup(temp.cleanup)
+        self.addCleanup(setattr, ab_campaign, "RECEIPT_PATH", path)
+        ab_campaign.RECEIPT_PATH = Path(temp.name) / "first-write.json"
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(ab_campaign.receipt(), 0)
+        first = ab_campaign.load(ab_campaign.RECEIPT_PATH)
+        self.assertEqual(
+            first["manual_sha256"],
+            hashlib.sha256(changed.encode("utf-8")).hexdigest(),
+            "a first write must take the live derivation, or the pin is a constant",
+        )
+
     def test_committed_receipt_still_matches_its_producer(self) -> None:
         """Hand-editing the receipt is laundering; this reds when it happens.
 
