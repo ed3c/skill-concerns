@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
-      "sha256": "40cda100ab5a0b174463703b6cf240fbbf3bbf56d3567838c25028ceb90c267d"
+      "sha256": "58e7b623b5f3ffe2e0add4b692afacb40ddfc0a8c90ee176eafcd82d813da919"
     },
     {
       "path": "skills/red-team/domain/generation-close-runbook.md",
@@ -125,7 +125,7 @@
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "1aaa86cb58a45227c233e52f0089022c9fa86c78fde5e135cf6ed3f6b243e434"
+      "sha256": "0c0f873ece1f114f29274a279e980d02f26846e91c01cc4b16c2e5cc1ad17daf"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -136,7 +136,7 @@
       "sha256": "885dd4dd0192b92328bee517f7d98d3b9d64b780595124f6b6b6a6328f18fd2d"
     }
   ],
-  "skill_tree_sha256": "e7c4e7af2b90a4d9079b596250c1cb0f94ef384a20abb75d663bb447a9c20183",
+  "skill_tree_sha256": "92a53e37f5a5f1179186adbdac1dceb1e57f12336775f3ae26e10225de913503",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
