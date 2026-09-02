@@ -263,6 +263,174 @@ ENTRIES = [
             "host:subagents/workflows/wf_3e589a0a-612/journal.jsonl",
         ],
     },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-wave14-supervision",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C1": "complied - monitors reader-only, landing authority machine-held; sub-gap: ceremony monitor read main bytes by convention, not digest-bound",
+            "C7": "complied, best receipt of the wave - SKILL_CHECKS bootstrap refusal met with no gate edit, structural-unavailability proven, escalated to owner; clause amendment candidate recorded",
+            "C9": "not-exercised, but armed: the blocked dynamic-workflow PR became a clean-rebasing permanently-red head for the next train",
+        },
+        "negative_control_verdict": "PASS on lane conduct; the anti-composition instrument itself had no mechanical arrival",
+        "gaps": [
+            "body-digest ledger enforced by nothing and two of three lanes truncated their own digests - a C2 violation inside the instrument built to defeat composed truth",
+            "judge rules 1/3 bind to the merged tree, so the wave's most disciplined lane (correctly refusing to land) scored as a violator",
+        ],
+        "prompt_improvements": [
+            "UNMERGED-scope line for blocked lanes; destinations bind to branch@sha plus a provider artifact",
+            "full 64-hex digests, one provider-side second arrival per lane, and a separate automation-made-edits line",
+            "a destination counts only if a process re-reads it - refuse recommended-nonexistent-files and bare JSON keys",
+        ],
+        "receipt_refs": [
+            "merged: skill-concerns PR67 (98a896f), PR69 (26ec79f), PR70 (ea58404), PR71 (2921c56); blocked-then-cured: PR68 (landed next wave)",
+            "SKILL_CHECKS bootstrap hole filed as ed3c/skill-concerns#72; comment 5491339767",
+        ],
+    },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-wave15-acn",
+        "judge_model": "none",
+        "per_clause_summary": {
+            "note": "judge pass omitted - monitor dispositions only; recorded so the gap is countable rather than invisible",
+        },
+        "negative_control_verdict": "NOT_RUN - unjudged wave; lane reports are single-arrival",
+        "gaps": [
+            "no judge: every disposition in this wave rests on the reporting lane's own account",
+        ],
+        "prompt_improvements": [
+            "every wave carries its judge; a wave whose judge is skipped gets a ledger entry saying so",
+        ],
+        "receipt_refs": [
+            "merged: ai-content-notes PR94, PR95 (machine-merged with monitor fixes); acn#68 honestly left OPEN rather than closed on unverified acceptance",
+        ],
+    },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-wave16-quota-cure",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C2": "complied with one exemplary elimination (trusted-preview surface gap found by refusing to read local green as landability) and one live decompression layer (a fetch read off as a moved HEAD)",
+            "C7": "exemplary on the edge-count deadlock: the author measured all three candidates, amended his own issue body before implementation, and recorded that measurement overrode spec",
+        },
+        "negative_control_verdict": "PASS - planted 403 and planted-negative controls ran live; the quota cure caught a real 403 during its own landing",
+        "gaps": [
+            "the wave's highest-value finding (trusted-preview never simulates the journey gate) was left NO-HOME on an invented authority limit; the sibling lane filed a structurally identical finding the same wave",
+            "the body-digest producer lived in a temp dir - the strongest evidence instrument of the wave had no durable home",
+        ],
+        "prompt_improvements": [
+            "full-hex digests plus the machine-revision note (land automation writes last)",
+            "NO-HOME is admissible only when no future actor could act; a defect in a repo-owned tool is always filable and the land agent has that authority",
+        ],
+        "receipt_refs": [
+            "merged: noodles PR297 (ef00ebf0), PR298 (5c9134f9), PR299 (959a8937), PR300 (d50134f0); cures filed as ed3c/noodles#302, #303",
+        ],
+    },
+    {
+        "date": "2026-09-01",
+        "wave": "2026-09-01-wave17-bootstrap-admissions",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C7": "the written-exit amendment earned two provider-receipted instances in one wave: gate-owner atom lands first, candidate bytes unchanged, authorization retired by the landing it bought",
+            "C2": "the mandated second-arrival probe was measured blind (REST events 0 vs GraphQL 2-5 on five issues) - the instrument the rules named could not observe what it was mandated to observe",
+        },
+        "negative_control_verdict": "PASS with a discovered waiver: rewriting all nine producers to HOST_OBSERVED and re-stamping stayed green - a typed exit with no expiry, no pinned subject and no refusal",
+        "gaps": [
+            "HOST_OBSERVED free exit, load-bearing across 26 of 41 receipt entries (filed ed3c/skill-concerns#91)",
+            "the blind probe was propagated by dispatcher hand-copy for two waves before being measured - the hand-copied-rule drift class the pinned-bytes migration exists to kill",
+        ],
+        "prompt_improvements": [
+            "second arrival via GraphQL userContentEdits only; the REST events surface is adjudicated blind (ed3c/skill-concerns#83, ceiling in #102)",
+        ],
+        "receipt_refs": [
+            "merged: skill-concerns PR80 (#72), PR68 (#59), PR85+86 (#74), PR88+89+90 (#87/#73); arrival vocabulary renamed DECLARED/EXERCISED/PRODUCTION in the same wave",
+        ],
+    },
+    {
+        "date": "2026-09-02",
+        "wave": "2026-09-01-wave18-noodles-drain",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C9": "FAIL - the clause's own recorded incident recurred twice; the head was never parked, hand-serving was the standing fix, and the selection-rule cure was not among filed atoms",
+            "C10": "SPLIT - dispatcher conduct passed (no takeover of the yielded lane), but the harness recorded a completed result whose payload declared itself alive",
+            "C5": "PASS with the wave's best line: the sweep is defined by its AST-walk control, not its count (78-85 sites across four rebases)",
+        },
+        "negative_control_verdict": "MIXED - blind-observer recipe confirmed both directions on the wave's own subjects; every lane disclosed the blind probe honestly and none reached for the sighted one",
+        "gaps": [
+            "landing economics: ~6m50s per land clear-queue vs ~62min averaged across the tail - the difference is entirely stall; strict-mode up-to-dateness converts a queue into a treadmill (one full verify per rebase per PR)",
+            "yielded-non-report: a 117-byte 'still in progress' payload counted as one of twelve results (catalogue candidate filed ed3c/skill-concerns#105)",
+            "PR-body subject vs commit-trailer subject divergence nearly closed the wrong issue; caught by one agent reading land's source (filed ed3c/noodles#358)",
+        ],
+        "prompt_improvements": [
+            "mechanical state disposition for every unlanded atom (landed | blocked(named condition) | ready) - parking is the half agents skip",
+            "a stop-receipt template for mid-wave workflow stops",
+            "report-contract validation before a result is accepted",
+        ],
+        "receipt_refs": [
+            "16 lands 2026-09-01T14:52Z through 09-02T07:03Z, all mergedBy github-actions; stall cures landed: #306 (PR316), #305 (PR318), #311 (PR327), #355 (PR356, 12m53s filing-to-merge)",
+        ],
+    },
+    {
+        "date": "2026-09-02",
+        "wave": "2026-09-02-wave19-redteam-admission",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C1": "complied - three atoms machine-landed in order, bootstrap entry spent by the landing it bought (absent from main afterwards)",
+            "C5": "the inverse-edit control's first pass lied via a shared bytecode cache key and was caught and re-run with -B - the control of the controls",
+        },
+        "negative_control_verdict": "PASS at admission; rank-1 finding: the instrument's own authorization gate accepted any dated string ('the vibes were good') - the free-exit class load-bearing inside the instrument that catalogues it",
+        "gaps": [
+            "OPERATOR_REF free exit inside red-team, sole grounding for three of seven clauses (filed and cured next wave as ed3c/skill-concerns#103)",
+            "the wave's ledgers presented pre-land revisions as live state for the two issues it landed",
+        ],
+        "prompt_improvements": [
+            "the judge and boundary monitors read skills/red-team at a pinned SHA as their rules source - hand-copied dispatcher rules retire",
+        ],
+        "receipt_refs": [
+            "merged: skill-concerns PR98 (#93), PR100 (#99 bootstrap), PR101 (#94); skills/red-team on main at a9efc330",
+        ],
+    },
+    {
+        "date": "2026-09-02",
+        "wave": "2026-09-02-wave20-sc-redteam-duty",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "redteam_first_run": "RAN, HONEST, SCHEMA-CONFORMANT - and left no durable receipt; credible as reasoning, uncounted as an instrument (run-ledger record not persisted to the repo)",
+            "C2": "the judge caught a live composed-truth: one lane carried another PR's body digest verbatim as its own 'independently reproduced' value",
+        },
+        "negative_control_verdict": "PASS - the scope-blind hollow gate was found by mutation (deleting the subject bullet left the validator green) and cured with section-scoped matching plus its own committed control",
+        "gaps": [
+            "first production run's record needs landing through the run-ledger producer - the declining-curve meter starts at zero until it does",
+            "composed anchor digest (PR101's value reported as PR116's) - the exact class the landed anchor-digest field now makes checkable",
+        ],
+        "prompt_improvements": [
+            "the coordinate-limit sensor pattern: a matching gate ships a planted mutation at the next coordinate level (the delete-the-bullet control is the template)",
+        ],
+        "receipt_refs": [
+            "10 atoms landed: PR109-121 covering #95/#103/#78/#92/#79/#77/#76/#84/#91/#75; shadow-architect admitted - the skills-shared decoupling completion criterion",
+        ],
+    },
+    {
+        "date": "2026-09-02",
+        "wave": "2026-09-02-wave20n-noodles-traintail",
+        "judge_model": "opus",
+        "per_clause_summary": {
+            "C7": "two environment refusals were the wave's best conduct: the sweeper refused to mutate live GitHub from an unverifiable sandbox (UNMERGED with the exact reason), and the hosted-lane infeasibility was provider-verified at the predicted step",
+            "ship": "26 monitor findings dispositioned in one reconcile pass; five PRs opened with state flips; the train-tail division held",
+        },
+        "negative_control_verdict": "PARTIAL - the red-team monitor's run died on a connection loss and was recorded as an error, not fabricated; its noodles-side first run remains owed",
+        "gaps": [
+            "monitor environment capability: sandbox TLS/auth boundaries killed one monitor and one sweeper - wave prompts should declare the sandbox envelope or monitors should degrade declaratively",
+            "the first live land failure after the nudge landed was the known no-PR-association quirk, still hand-rerun (its generic retry was deliberately narrowed out of the nudge atom by the operator)",
+        ],
+        "prompt_improvements": [
+            "declare the agent sandbox envelope (network, TLS, auth) in monitor/sweeper prompts and name the declarative degradation path",
+        ],
+        "receipt_refs": [
+            "PRs 365-369 opened for #314/#315/#313/#323/#301; dependency-nudge landed same day as ed3c/noodles#361 (issue-332-train-nudge, designed on the operator topology line, executed by the local line)",
+        ],
+    },
+
 ]
 
 
