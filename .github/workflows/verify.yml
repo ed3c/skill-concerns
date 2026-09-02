@@ -38,13 +38,107 @@ jobs:
         working-directory: .candidate
         run: python3 scripts/run_all.py
 
-  verify:
+  # ed3c/skill-concerns#111. The job above grades `head.sha`: one commit,
+  # internally consistent. That is read as "main stays green after this lands",
+  # and the two statements coincide only while the base has not moved since the
+  # head was built -- the one condition nothing here checked. `refs/pull/<n>/merge`
+  # is the tree that actually becomes main, and this job is the only place it is
+  # graded. The silent half is what makes it worth a job: this repository's
+  # gates are digest ties, so two PRs can each re-stamp `admissions/<skill>.json`
+  # for their own tree, merge without one conflicting line, and produce a tree
+  # whose stamp matches neither.
+  #
+  # Trust split unchanged (ed3c/skill-concerns#111 non-claims): the merge tree is
+  # graded by its OWN `run_all.py`, exactly as `candidate-self-tests` grades the
+  # candidate's. This adds a third tree to grade, not a second source of trusted
+  # code -- the only thing taken from `.trusted` here is the mergeability
+  # resolver, whose answer decides whether a land may proceed.
+  merge-result:
     needs: candidate-self-tests
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      merge_state: ${{ steps.mergeability.outputs.merge_state }}
+      merge_sha: ${{ steps.graded_tree.outputs.merge_sha }}
+    steps:
+      - name: Checkout the trusted mergeability resolver from the default branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: .trusted
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      # The provider computes the merge ref asynchronously, so the first read
+      # after this event is normally `unknown`. Reading once and treating that
+      # as "nothing to check" would reproduce the blindness one layer down, so
+      # the resolver polls and gives MERGEABLE / UNMERGEABLE / UNKNOWN /
+      # UNREADABLE four different exits. Only MERGEABLE exits 0.
+      - name: Resolve mergeability into its own exit, never into a skip
+        id: mergeability
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 .trusted/scripts/merge_state.py
+          --repository "$REPOSITORY"
+          --pull "$PR_NUMBER"
+          --github-output "$GITHUB_OUTPUT"
+
+      - name: Checkout the merge result GitHub would actually write
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          path: .merge
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Name the merge commit that is about to be graded
+        id: graded_tree
+        run: |
+          set -euo pipefail
+          merge_sha="$(git -C .merge rev-parse HEAD)"
+          test "${#merge_sha}" -eq 40
+          echo "merge_sha=$merge_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Run the merge result's own hermetic gate
+        working-directory: .merge
+        run: python3 scripts/run_all.py
+
+  verify:
+    needs: [candidate-self-tests, merge-result]
+    # A job skipped because a dependency failed reports SKIPPED, and branch
+    # protection reads a skipped required check as passing -- the silent green
+    # this repository admits Skills to catch. So `verify` runs whenever the run
+    # was not cancelled and refuses on its dependencies' results explicitly,
+    # rather than letting a skip stand in for a refusal.
+    if: ${{ !cancelled() }}
     permissions:
       contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Refuse without a graded candidate and a graded merge result
+        env:
+          CANDIDATE_RESULT: ${{ needs.candidate-self-tests.result }}
+          MERGE_RESULT: ${{ needs.merge-result.result }}
+          MERGE_STATE: ${{ needs.merge-result.outputs.merge_state }}
+        run: |
+          set -euo pipefail
+          test "$CANDIDATE_RESULT" = success \
+            || { echo "CANDIDATE_UNGRADED:$CANDIDATE_RESULT"; exit 1; }
+          test "$MERGE_RESULT" = success \
+            || { echo "MERGE_RESULT_UNGRADED:$MERGE_RESULT:${MERGE_STATE:-ABSENT}"; exit 1; }
+
       # The cook cannot self-approve: validator bytes come from the default
       # branch, the candidate is only ever data underneath them.
       - name: Checkout trusted validators from the default branch
@@ -102,6 +196,8 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           VERIFY_RUN_ID: ${{ github.run_id }}
+          MERGE_SHA: ${{ needs.merge-result.outputs.merge_sha }}
+          MERGE_STATE: ${{ needs.merge-result.outputs.merge_state }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -114,6 +210,11 @@ jobs:
               "head_repository": os.environ["HEAD_REPOSITORY"],
               "base_ref": os.environ["BASE_REF"],
               "base_sha": os.environ["BASE_SHA"],
+              # Which tree earned the tick, not just which commit was read
+              # (ed3c/skill-concerns#111): a later reader can tell the graded
+              # merge result from the graded head without re-deriving either.
+              "merge_sha": os.environ["MERGE_SHA"],
+              "merge_state": os.environ["MERGE_STATE"],
               "verify_run_id": int(os.environ["VERIFY_RUN_ID"]),
               "trusted_sha": subprocess.run(
                   ["git", "-C", ".trusted", "rev-parse", "HEAD"],
@@ -121,6 +222,8 @@ jobs:
               ).stdout.strip(),
           }
           assert len(receipt["head_sha"]) == 40, receipt["head_sha"]
+          assert len(receipt["merge_sha"]) == 40, receipt["merge_sha"]
+          assert receipt["merge_state"] == "MERGEABLE", receipt["merge_state"]
           path = os.environ["RECEIPT"]
           with open(path, "w", encoding="utf-8") as handle:
               json.dump(receipt, handle, indent=2, sort_keys=True)
