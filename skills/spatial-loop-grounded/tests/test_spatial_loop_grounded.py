@@ -26,6 +26,7 @@ sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 from validate_spatial_loop_grounded import entry_digest, validate  # noqa: E402
 from gen_ledger import check_prefix_preserved  # noqa: E402
 import ab_campaign  # noqa: E402
+import gen_campaign_receipt  # noqa: E402
 
 BEHAVIORAL = Path("evals/behavioral.json")
 LEDGER = Path("evals/behavioral-campaigns/ledger.json")
@@ -438,6 +439,119 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         rewritten = [dict(committed[0], gaps=["laundered"])] + committed[1:]
         errors = check_prefix_preserved(committed, rewritten)
         self.assertTrue(any("laundering" in e for e in errors), errors)
+
+
+class PilotCampaignReceipt(unittest.TestCase):
+    """The 2026-08-31 pilot receipt's producer, and its anchor's reader.
+
+    Three producers write this one file - gen_campaign_receipt, then
+    apply_layer_audit, then bind_evidence_archive - and until
+    ed3c/skill-concerns#65 the first one both dropped what the other two wrote
+    and re-read its own tamper anchor from the live admission. Nothing read any
+    of it, so `run_all.py` stayed green either way.
+    """
+
+    # The admitted tree the pilot campaign actually evaluated. It is NOT the
+    # current admission digest and must not be: this repository's tree has
+    # moved many times since the campaign ran, and the whole point of
+    # ed3c/skill-concerns#65 problem 1 is that the receipt stops tracking it.
+    # A pinned literal is the only reader that can red on a hand-edit, because
+    # the producer now echoes the committed value back and cannot vouch for it.
+    PILOT_TREE_AT_RUN = "0c4332a725d6d31b082e116202e9bb4e1bdfb59e0a77ca28a9c259d3b9ab53aa"
+
+    def receipt_path(self) -> Path:
+        return SKILL_ROOT / "evals" / "behavioral-campaigns" / "2026-08-31-pilot.json"
+
+    def test_committed_pilot_anchor_is_the_tree_the_campaign_evaluated(self) -> None:
+        """Reds when the committed anchor is edited away from the pinned value."""
+        committed = json.loads(self.receipt_path().read_text(encoding="utf-8"))
+        self.assertEqual(committed["skill_tree_sha256_evaluated"], self.PILOT_TREE_AT_RUN)
+        self.assertNotEqual(
+            self.PILOT_TREE_AT_RUN,
+            json.loads(
+                (SKILL_ROOT.parents[1] / "admissions" / "spatial-loop-grounded.json")
+                .read_text(encoding="utf-8")
+            )["skill_tree_sha256"],
+            "the two agree again, so this test can no longer tell a pin from a live read",
+        )
+
+    def test_pilot_producer_reproduces_the_committed_bytes(self) -> None:
+        """Runs the real producer against the real tree; identical bytes or red.
+
+        This is the C5 claim gen_campaign_receipt.py could not make before:
+        it dropped `layers_exercised`, `evidence_archive` and one `notes`
+        entry, and rewrote the anchor. Bytes are restored on the way out so a
+        red here leaves no half-written receipt behind for the next check.
+        """
+        path = self.receipt_path()
+        before = path.read_bytes()
+        self.addCleanup(path.write_bytes, before)
+        # stdout is swallowed for the reason test_admission_stamp.py documents:
+        # the runner's own output is read elsewhere to prove a refusal.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gen_campaign_receipt.main(), 0)
+        self.assertEqual(path.read_bytes(), before)
+
+    def test_pilot_anchor_ignores_an_admission_tree_that_moved(self) -> None:
+        """The planted control for the pin itself: move the live input the old
+        producer read, and require the anchor not to follow.
+
+        Both directions are watched in one throwaway tree, because a pin that
+        is really a hardcoded constant would pass the first half and fail the
+        second: with the receipt removed the SAME moved value must land, which
+        is what makes the first half evidence of freezing rather than of
+        ignoring the admission altogether.
+        """
+        temp = tempfile.TemporaryDirectory(prefix="slg-pilot-")
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        receipt = root / gen_campaign_receipt.RECEIPT
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        receipt.write_bytes(self.receipt_path().read_bytes())
+        admission = root / "admissions" / "spatial-loop-grounded.json"
+        admission.parent.mkdir(parents=True, exist_ok=True)
+        moved = "f" * 64
+        admission.write_text(json.dumps({"skill_tree_sha256": moved}), encoding="utf-8")
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gen_campaign_receipt.main(root), 0)
+        self.assertEqual(receipt.read_bytes(), self.receipt_path().read_bytes())
+
+        receipt.unlink()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gen_campaign_receipt.main(root), 0)
+        first = json.loads(receipt.read_text(encoding="utf-8"))
+        self.assertEqual(first["skill_tree_sha256_evaluated"], moved)
+
+    def test_pilot_producer_carries_forward_a_key_it_has_never_heard_of(self) -> None:
+        """The dropped-field half, asked in a way the byte-compare cannot fake.
+
+        Reproducing the committed bytes is also satisfied by a producer that
+        happens to hardcode `layers_exercised` and `evidence_archive` itself -
+        which would leave the NEXT producer's field dropped exactly as before.
+        So the planted key here is one nothing in this repository writes: if it
+        survives, what survived is the rule, not a list of two names.
+        """
+        temp = tempfile.TemporaryDirectory(prefix="slg-pilot-keys-")
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        receipt = root / gen_campaign_receipt.RECEIPT
+        receipt.parent.mkdir(parents=True, exist_ok=True)
+        admission = root / "admissions" / "spatial-loop-grounded.json"
+        admission.parent.mkdir(parents=True, exist_ok=True)
+        admission.write_text(json.dumps({"skill_tree_sha256": "f" * 64}), encoding="utf-8")
+
+        committed = json.loads(self.receipt_path().read_text(encoding="utf-8"))
+        for key in ("layers_exercised", "evidence_archive"):
+            self.assertIn(key, committed, f"{key} is no longer in the receipt to preserve")
+        committed["written_by_a_producer_that_does_not_exist_yet"] = {"n": 1}
+        committed["notes"].append("a note no producer in this tree writes")
+        receipt.write_text(json.dumps(committed, indent=2) + "\n", encoding="utf-8")
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(gen_campaign_receipt.main(root), 0)
+        regenerated = json.loads(receipt.read_text(encoding="utf-8"))
+        self.assertEqual(regenerated, committed)
 
 
 class ABCampaign(unittest.TestCase):
