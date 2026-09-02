@@ -47,6 +47,41 @@ steady-state target of this bundle is its own silence. The classes are
 `blind-observer`, `free-exit`, `trusted-current-literal`,
 `duplicate-discovery`, `spec-first-lifecycle` and `shape-copying`.
 
+## The stations - where a pass is allowed to look
+
+[`domain/observation-topology.json`](domain/observation-topology.json) is the
+other half of the front-load: one row per station, each enumerating the inputs
+the pass reads there, its access mode (read-only) and its feedback path (issues
+and this bundle's ledger, nothing else). Two stations today - `wave-boundary`,
+the one this bundle was admitted with, and `noodles-generation-close`, the
+resident pass at a supervised generation's close-out.
+
+The row ids are the run ledger's `subject` vocabulary, so the declining curve
+slices by station and a record naming a station nobody declared reds instead of
+inventing one. The generation-close row also names its
+[runbook](domain/generation-close-runbook.md) step, whose completion IS the
+appended run record: a close-out that carries no record for that generation is
+incomplete in the next disposition rather than silently skipped. Its arrival is
+tracked as a row in the ledger `skills/arrival-engineering` owns - the fixture
+generation is what that row's receipts support today, and only a real
+generation's record plus the matching run receipt move it.
+
+A class whose falsification recipe is fully mechanical graduates into a consumer
+CI gate through an ordinary atom and then leaves active sampling by the existing
+lifecycle fields. The station's resident cost therefore trends toward the
+judgement-needing residue, which is the same declining curve R7 already reads.
+
+## The residual-sensor register
+
+[`domain/residual-sensor-register.json`](domain/residual-sensor-register.json)
+carries one row per known gap these gates cannot close, with four required
+fields: the gap, the honest reason no mechanical form is available, the SENSOR
+that would detect the gap being exploited, and the ESCALATION trigger with the
+path a hit takes to become a filed tightening. A sensor is a readback this tree
+can open holding a phrase that is really in it, so a sensor pointing at a duty
+nobody wrote reds rather than reading as coverage. Gaps are findings, sensors
+are oracles, triggers are class guards in waiting.
+
 ## Clause form
 
 Every clause is trigger-shaped: **Signal** (when to think of it) ->
@@ -102,6 +137,20 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 - Why: a monitor that presumes its own effect is the observer whose silence nobody checked; the same defect class it exists to catch, one level up.
 - evidence: duplicate-discovery
 
+## R8. A resident station runs at the closed boundary and leaves a record
+
+- Signal: a supervised generation is closing, or someone wants the monitor to watch one while it is still running.
+- Action: run the pass only at the closed boundary, against artifacts read from a clone or a fixture, naming the station with `--subject`; append the run record, and treat that record as the step's completion. There is no mid-generation observation and no daemon-side invocation - the daemon never spawns a monitor - and a close-out with no record for its station is incomplete rather than clean.
+- Why: the zero-injection adjudication drew this boundary before the first run, and a resident duty whose completion is nobody's readback is a duty that gets skipped silently - which is the same absence-read-as-clean shape the blind-observer class exists to catch, one level up.
+- evidence: zero-injection-boundary
+
+## R9. Every gap the gates cannot close carries a sensor and a trigger
+
+- Signal: about to write that something here is checked "only for shape", "not retroactively", or otherwise admit a limit in prose.
+- Action: put the gap in the register with its four fields, and name the register row on the same line as the admission. If no sensor can be named, that is the finding: an admitted gap watched by nothing is an exemption with better manners, and a mechanical form that would only check that something is MENTIONED is refused as performative rather than counted as coverage.
+- Why: a typed exit with no expiry, no pinned subject and no refusal is a waiver wearing a type - the class this bundle already catalogues - and an honest ceiling in a docstring is exactly that exit in prose form unless something is watching it.
+- evidence: free-exit
+
 ## Diagnostics
 
 The driver emits exactly these, and only these:
@@ -116,6 +165,9 @@ The driver emits exactly these, and only these:
 - `CATALOGUE_CLASS_GATED_BUT_ACTIVE` - a class still sampled after its gate landed (R6).
 - `DRIVER_SURFACE_FORBIDDEN` - a provider-mutating verb in the driver's own bytes (R3).
 - `DEMONSTRATION_BLOCK_INCOMPLETE` - a rendered block the consumer's admission dry-run reads as empty (R4).
+- `OBSERVATION_TARGET_UNGROUNDED` - a station with no enumerated inputs, no declared access or feedback, a runbook pointer that resolves to nothing, or a run record naming a station the topology does not carry (R8).
+- `CEILING_WITHOUT_SENSOR` - a register row missing one of its four fields or citing a readback that does not exist, or a ceiling admitted in this bundle's prose with no register row named on the line (R9).
+- `STATION_ARRIVAL_UNTIED` - a station whose records have outgrown the arrival row that tracks it, or an arrival row claiming a run the ledger never recorded (R8).
 - `BUILD_CURE_UNAUTHORIZED` - a catalogue class folded in with no cure-authorization (R6). The rule and its decision live once in the repository's `scripts/cure_authorization.py`, which every BUILD carrier calls.
 
 ## Knowledge placement
@@ -123,11 +175,12 @@ The driver emits exactly these, and only these:
 Concern layers:
 
 - L0 procedural - [`references/portable-falsification-kernel.md`](references/portable-falsification-kernel.md): one domain-free kernel per clause.
-- L1 domain knowledge - [`domain/catalogue.json`](domain/catalogue.json) (the classes, their provenance and lifecycle) and [`domain/run-ledger.json`](domain/run-ledger.json) (the append-only run records the curve reads).
+- L1 domain knowledge - [`domain/catalogue.json`](domain/catalogue.json) (the classes, their provenance and lifecycle), [`domain/run-ledger.json`](domain/run-ledger.json) (the append-only run records the curve reads, sliced by station), [`domain/observation-topology.json`](domain/observation-topology.json) (the stations and their access and feedback), [`domain/generation-close-runbook.md`](domain/generation-close-runbook.md) (the one close-out step this bundle owns) and [`domain/residual-sensor-register.json`](domain/residual-sensor-register.json) (the gaps, their sensors and their triggers).
 - L2 execution + assertions - [`scripts/shadow_driver.py`](scripts/shadow_driver.py) and [`scripts/validate_red_team.py`](scripts/validate_red_team.py), plus the fixtures under [`evals/fixtures/`](evals/fixtures/).
 
 ```sh
 python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name>   # SHADOW: reader-only
+python3 scripts/shadow_driver.py --bundle <dir> --subject <station> --append-record  # one station's record
 python3 scripts/shadow_driver.py --bundle <dir> --class <class-id>                # one class's recipe
 python3 scripts/shadow_driver.py --bundle <dir> --append-record                   # append one run record
 python3 scripts/shadow_driver.py --add-class <class.json>                         # BUILD: refuses an unadjudicated class
@@ -140,5 +193,6 @@ python3 scripts/gen_receipts.py                                                 
 - No mid-flight intervention of any kind toward a worker or a subject. The escalation channel carries a signal to the dispatcher and nothing else.
 - No filing. Nothing in this bundle creates, edits, comments on, closes or merges anything at the provider; `DRIVER_SURFACE_FORBIDDEN` is what keeps that true rather than the sentence that claims it, and it covers every script under `scripts/` in two forms - the verb scan over each file, and an import check that no module here can spawn a process or open a socket at all. The verb scan exempts exactly one file, its own owner `validate_red_team.py`, which necessarily carries the verbs it looks for; the import check is what covers that file, and it is the stronger of the two.
 - No fourth judgment angle. `spatial-loop-grounded` issues clause verdicts over supervised conduct, `context-closure-engineering` compiles and checks one bounded context projection, `dynamic-workflow` classifies runtime liveness of dispatch lanes, and the unadmitted `shadow-architect` (ed3c/skill-concerns#75) will carry the architecture angle. Those read and question; this one executes falsification. The differential is the verb.
+- No ceremony and no wiring audit. `control-noodle` decides whether an atom's boundary was conducted correctly; `arrival-engineering` audits whether a declared capability is wired to anything, and owns the arrival vocabulary this bundle's station row is graded in. Stationing the pass at generation close put a red-team carrier inside both surfaces - a runbook step at a ceremony boundary, and a row in the arrival ledger - so the differential is named here instead of left to the reader: this bundle reads what they own and appends one row through their own producer, and grades neither.
 - No autonomous catalogue growth and no gate replacement. A class enters only from an adjudicated verdict, and a class that gains a mechanical gate leaves active sampling rather than being re-checked by hand.
 - No ownership of the consumer's issue-admission gate. `validate_red_team.completeness_reasons` is a declared MIRROR of that gate's shape, names the functions it mirrors and the two checks it deliberately omits, and exists so the round-trip fixture can prove the block's grammar without this repository depending on the other one.

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "note": "One row per KNOWN gap this bundle's own gates cannot close. Four required fields per row: the gap, the honest reason no mechanical form is available (a form that would only check that something is MENTIONED is refused as performative), the SENSOR that would detect the gap being exploited, and the ESCALATION trigger with the path a hit takes to become a filed tightening. The register is this skill applying its own method to itself: gaps are findings, sensors are oracles, triggers are class guards in waiting.",
+  "reflexive_rule": "any document in this bundle that admits a structural ceiling must name a row here on the same line, in the form CEILING:<row-id>; a ceiling admitted in prose with no row reds as CEILING_WITHOUT_SENSOR. The marker is phrase-scoped, which is itself a structural ceiling and is registered as one. CEILING:reflexive-marker-discipline",
+  "statuses": {
+    "OPEN": "the gap stands; the sensor is the only thing watching it",
+    "SENSOR_FIRED_ESCALATION_LANDED": "the sensor fired on a confirmed instance and the tightening it triggered has landed; escalation.landed names it",
+    "GATED": "a machine closes this gap now; gate_ref names it, and the row stays as the worked example of a ceiling that graduated"
+  },
+  "rows": [
+    {
+      "id": "rubber-stamp-authorization",
+      "gap": "the BUILD gate checks that a cure-authorization EXISTS and that its ref carries the form its kind declares; it never checks that the adjudication behind that ref measured anything. A well-formed authorization naming a body with no measurement in it passes.",
+      "no_mechanical_form": "whether a named adjudication carries a discriminating measurement is a reading of that body, not a shape. The mechanical form available - assert the ref is mentioned somewhere - would certify the mention and nothing else, which is the performative check this register refuses to pretend is a gate.",
+      "sensor": {
+        "readback": "skills/red-team/receipts.json",
+        "phrase": "authorization",
+        "how": "gen_receipts carries every method claim's authorization into the evidence table on purpose, so a judge sampling cited authorizations has one place to read them from and can compare each ref against what its body actually holds"
+      },
+      "escalation": {
+        "trigger": "one confirmed rubber-stamp instance - an authorization whose named artifact carries no adjudication",
+        "path": "file the authorization-quality tightening as an atom at ed3c/skill-concerns naming the ref and what it failed to carry; the tightening lands through BUILD, and this row's status records that the sensor fired"
+      },
+      "status": "OPEN"
+    },
+    {
+      "id": "sampling-theater",
+      "gap": "which classes a pass samples at a given boundary is judgement. A pass can run, report cleanly and never have run the one class that would have found the defect, and the report looks identical either way.",
+      "no_mechanical_form": "there is no mechanical rule for which classes matter at which boundary; a check that only counted samples would certify motion, and a rule forcing every class every run would make the graduation split - the thing that makes this station cheap - impossible.",
+      "sensor": {
+        "readback": "skills/red-team/domain/run-ledger.json",
+        "phrase": "classes_sampled",
+        "how": "every run record names the classes it sampled, so slicing the ledger by class makes an active class that is never sampled visible as an absence rather than as silence"
+      },
+      "escalation": {
+        "trigger": "a catalogue class that is active and absent from classes_sampled across three consecutive run records",
+        "path": "file the sampling-obligation tightening naming the class and the three records; either the class earns a mandatory arm or it is retired from active status"
+      },
+      "status": "OPEN"
+    },
+    {
+      "id": "recipe-rot",
+      "gap": "a falsification recipe is a runnable command sequence against a subject that keeps moving. The recipe can still tokenize, still parse through the driver's own parser, and measure nothing at all, because what it points at changed.",
+      "no_mechanical_form": "running the recipes for real needs a provider and a live subject, and no module in this bundle may spawn a process or open a socket - that refusal is what keeps the reader-only property true, so buying recipe freshness here would cost the property the bundle exists to hold.",
+      "sensor": {
+        "readback": "scripts/maintain_skills.py",
+        "phrase": "check_rows",
+        "how": "the maintain cadence re-runs this Skill's declared checks and re-resolves every receipt ref outside admission time, and files each drift with a path:line destination rather than patching it"
+      },
+      "escalation": {
+        "trigger": "the first rotten recipe a maintain pass finds - a step whose subject no longer exists or no longer produces the arm the recipe names",
+        "path": "file the periodic-replay clause as an atom, naming the rotten recipe and the pass that found it, so replay becomes a cadence duty instead of an author's memory"
+      },
+      "status": "OPEN"
+    },
+    {
+      "id": "match-without-experiment",
+      "gap": "a catalogue class matched an artifact and was reported as a finding with no experiment attached - the match standing in for the measurement.",
+      "no_mechanical_form": "none is needed any more, and that is why this row is here: the finding schema closed it. The row is kept as the register's own worked example of a ceiling that graduated into a machine, so a reader can see what the other rows are aiming at.",
+      "sensor": {
+        "readback": "skills/red-team/scripts/validate_red_team.py",
+        "phrase": "experiment block has no",
+        "how": "the finding schema requires the experiment block's observed half, and the driver refuses to emit a record the schema rejects, so a match without an experiment cannot be reported at all"
+      },
+      "escalation": {
+        "trigger": "the gate's own red - a finding admitted with an empty observed half",
+        "path": "the driver refuses the report (FINDING_MALFORMED) before anything is published; no filing is needed because nothing gets out"
+      },
+      "status": "GATED",
+      "gate_ref": "skills/red-team/scripts/validate_red_team.py finding_errors(): the observed field is required and the driver blocks its own report on it (ed3c/skill-concerns#94)"
+    },
+    {
+      "id": "reflexive-marker-discipline",
+      "gap": "the reflexive rule above fires on a phrase. A ceiling admitted in words the matcher does not know is invisible to it, so the register's completeness rests on authors reaching for the marked phrase.",
+      "no_mechanical_form": "recognising an admission of a limit from arbitrary prose is a judgement. A matcher widened to every near-synonym would fire on ordinary sentences, and a rule that fires on ordinary sentences gets silenced - which is strictly worse than a narrow rule whose gap is named and watched. This row is adjudicated by the atom that built the rule (ed3c/skill-concerns#95): the mechanism and its own residue land together or neither does.",
+      "sensor": {
+        "readback": "skills/spatial-loop-grounded/SKILL.md",
+        "phrase": "C2. Count decompression layers before any claim",
+        "how": "the judge's decompression count over this bundle's prose is what an unmarked ceiling has to survive: a claim resting on an unstated limit is exactly the missing layer that clause makes the reviewer name"
+      },
+      "escalation": {
+        "trigger": "the first ceiling a judge or reviewer finds admitted in this bundle's prose without the marker",
+        "path": "file the marker-vocabulary widening naming the unmarked sentence, and add the row it should have pointed at in the same atom"
+      },
+      "status": "OPEN"
+    }
+  ]
+}

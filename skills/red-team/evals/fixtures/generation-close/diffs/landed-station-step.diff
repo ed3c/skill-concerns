@@ -1,0 +1,10 @@
+diff --git a/ops/close-out.md b/ops/close-out.md
+--- a/ops/close-out.md
++++ b/ops/close-out.md
+@@ -3,6 +3,8 @@
+ ## Close-out order
+
+ 1. Land the generation's pull requests.
++2. Run the falsification pass over the closed generation's artifacts, naming
++   its station, and append its run record. The record is the step's receipt.
+ 3. Record the disposition.

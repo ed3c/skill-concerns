@@ -9,27 +9,39 @@
   "subject_files": [
     {
       "path": "skills/red-team/AGENTS.md",
-      "sha256": "d4addb35882a9af4dee66034ebb79aedc9f5b3eae06d0c927cc6b2af8acca3cf"
+      "sha256": "8639a09cf6ce8662c1277605c9b2967b5d7011172655312a866ec03406fc8b81"
     },
     {
       "path": "skills/red-team/README.md",
-      "sha256": "bcdb60fdd2488a9a105c47eef59def57ca30d9a578c55b207b24afb62c82bac6"
+      "sha256": "3930817b95e99ac0d32815fa341351e9973d49522cbc7653dec5a492bcd305c9"
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "c1a84e3bd5514a4368564e5602b268441b326be8da2de865b62037be079a97d1"
+      "sha256": "4756869d25a3a9a4789df79b16168d41d8bfc9ee3507c95935dacbe760a57850"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
       "sha256": "a983df7a70cced4a5edf9b4c1fa2e71bf1c49f15e14be6653f2c0ad5e9b81934"
     },
     {
+      "path": "skills/red-team/domain/generation-close-runbook.md",
+      "sha256": "9f7b8d5aedd080a78c2957598f483ab21eef6f7968e679dacf31389775bf6524"
+    },
+    {
+      "path": "skills/red-team/domain/observation-topology.json",
+      "sha256": "7cec066403f9570efa05a908629f424cc6f5fae821c84ee4b169a7e811b0d2ce"
+    },
+    {
+      "path": "skills/red-team/domain/residual-sensor-register.json",
+      "sha256": "7ada54f541149e3c3e20a15563aa73fc8f6c0ea0b38c1b8ea16c92b32ae0d6ec"
+    },
+    {
       "path": "skills/red-team/domain/run-ledger.json",
-      "sha256": "73f5a52f4e918649753dd84bb83a254f58749e723d1a100574a0b96d2d6395a3"
+      "sha256": "6e5993d4af8de74b0146289e0f45f2a155cdf95134685bb164191c660b8d7376"
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "390266618bc06b6c69976eef0d37b1156e2e7e506104c934d2cab937f7c8a056"
+      "sha256": "bcdd48274cbead2f6ab4497fc41ee35b6f3829fef7c272950548cb416330b075"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -50,6 +62,18 @@
     {
       "path": "skills/red-team/evals/fixtures/clean/scripts/gen_receipts.py",
       "sha256": "c2d1306e784b26686cdb5af159d9d8d6efbd32b9ea831b275a2cf435f375d062"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/generation-close/diffs/landed-station-step.diff",
+      "sha256": "a66f6b24bd40b10ee5fd557522fc516c922c9e853a7658e4bc2ad3bb3ab9757f"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/generation-close/issues/filed-during-the-generation.md",
+      "sha256": "bf4001230657319fe31848a45a69a6f2d50e85733e7033448867a902930df29f"
+    },
+    {
+      "path": "skills/red-team/evals/fixtures/generation-close/receipts/session-receipts.json",
+      "sha256": "033da2a2582f2b83292925b29510c6aaa746c9105fad5a0b123feb56901d115e"
     },
     {
       "path": "skills/red-team/evals/fixtures/issue-round-trip/body-template.md",
@@ -81,7 +105,7 @@
     },
     {
       "path": "skills/red-team/references/portable-falsification-kernel.md",
-      "sha256": "e64fc8c98211639e34982201bf199e25d10f6d561fdc78785c7128c6eaa36ddb"
+      "sha256": "aed0af6fb1f3560211c8f014af8bfde78717e5172d8c18e00799d8dae343ee8f"
     },
     {
       "path": "skills/red-team/scripts/gen_admission.py",
@@ -97,22 +121,22 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "9cb19a9e9530a9708fc1db402553cb690676a418f41645e48eb968433a1e30ae"
+      "sha256": "de0616e6dee6dc2a0edb48a031d20a199c0e368dc0e463f6968a8a72df08db63"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "6138c9a89230c3c2acfe8cda3d6ed3421d5f0c27bdfff253598bf4bc35b878f4"
+      "sha256": "a9dfa73d978b48213c1bb61c57f3fb1682aa1f75a32c39063c045b37d5075411"
     },
     {
       "path": "skills/red-team/skill.json",
-      "sha256": "9fc12012ab0643a574b5f2ac03a538ba0130741eab238e61d3cace7b277ab614"
+      "sha256": "d067ad3ba2afb8d7740ba99b92fb91e49df317641ff7e88294df042fd6d94a36"
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "114edc918239b2a8782e5b36ea4e71d55c706e58ff8c9fb3dcdbe414d2da748c"
+      "sha256": "c32a2d72abe44bb4d7e308d70444bc2b07b9505fa7dadccba61b3d5fed5c3bfa"
     }
   ],
-  "skill_tree_sha256": "ba74f1c1670e972e6c31e9ca008ee9e34b6876ed919de293913ee7d5ba7fd211",
+  "skill_tree_sha256": "7d1765b04b6f5e0d2abf26e7f479b75f909eb0db3216f7a8d69aefe89d5211aa",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -286,6 +310,46 @@
     },
     {
       "id": "context-cannot-acquit-an-added-shape",
+      "state": "PASS"
+    },
+    {
+      "id": "station-record-is-derived",
+      "state": "PASS"
+    },
+    {
+      "id": "station-clean-bundle-still-records",
+      "state": "PASS"
+    },
+    {
+      "id": "graduated-class-leaves-the-next-runs-sampling",
+      "state": "PASS"
+    },
+    {
+      "id": "runbook-step-names-its-receipt",
+      "state": "PASS"
+    },
+    {
+      "id": "register-sensors-are-readbacks-that-exist",
+      "state": "PASS"
+    },
+    {
+      "id": "undeclared-station-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "arrival-row-claiming-an-unrecorded-run-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "register-row-missing-a-required-field-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "prose-ceiling-without-a-register-row-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "landed-escalation-must-name-where-refused",
       "state": "PASS"
     },
     {

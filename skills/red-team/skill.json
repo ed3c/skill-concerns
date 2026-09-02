@@ -12,6 +12,9 @@
     "README.md",
     "domain/catalogue.json",
     "domain/run-ledger.json",
+    "domain/observation-topology.json",
+    "domain/generation-close-runbook.md",
+    "domain/residual-sensor-register.json",
     "receipts.json"
   ],
   "execution_paths": [

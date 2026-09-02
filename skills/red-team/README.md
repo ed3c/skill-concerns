@@ -19,7 +19,7 @@ S0 observe / S1 warn / S2 review, never patching what it finds.
 
 1. [`AGENTS.md`](AGENTS.md) - the bundle contract.
 2. [`README.md`](README.md) - this page.
-3. [`SKILL.md`](SKILL.md) - clauses R1-R7, the catalogue contract, the diagnostics.
+3. [`SKILL.md`](SKILL.md) - clauses R1-R9, the catalogue contract, the stations, the diagnostics.
 4. [`skill.json`](skill.json) - the concern split.
 5. [`domain/catalogue.json`](domain/catalogue.json) - the pinned classes, their provenance, recipes and lifecycle.
 
@@ -27,7 +27,7 @@ S0 observe / S1 warn / S2 review, never patching what it finds.
 
 ```sh
 python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name>
-python3 scripts/shadow_driver.py --bundle <dir> --append-record
+python3 scripts/shadow_driver.py --bundle <dir> --subject <station> --append-record
 python3 scripts/shadow_driver.py --add-class <class.json>
 python3 scripts/validate_red_team.py --selftest
 python3 scripts/gen_receipts.py
@@ -47,11 +47,30 @@ gate's fence-stripping, proven by the round-trip fixture rather than asserted.
 The only real-time channel out is one escalation signal to the dispatcher, for
 two enumerated urgent classes, carrying no instruction and no patch.
 
+## Stations, and the one that is resident
+
+[`domain/observation-topology.json`](domain/observation-topology.json) declares
+where a pass may look: `wave-boundary`, and `noodles-generation-close` - the
+resident pass at a supervised generation's close-out, read-only against the
+generation's landed diffs, session receipts and filed issues, at the closed
+boundary and never earlier. That station's
+[runbook step](domain/generation-close-runbook.md) has exactly one completion
+receipt: the appended run record. A close-out carrying no record for its station
+is incomplete rather than clean.
+
+## The residual-sensor register
+
+[`domain/residual-sensor-register.json`](domain/residual-sensor-register.json)
+holds the gaps these gates cannot close - one row each, carrying the gap, the
+honest reason no mechanical form is available, the sensor that would detect it
+being exploited, and the escalation trigger with its path. A ceiling admitted
+anywhere in this bundle names its row on the same line, or validation reds.
+
 ## The declining curve
 
 Every run appends one record to [`domain/run-ledger.json`](domain/run-ledger.json):
-classes sampled, hits per class, novel-class candidates, judge gaps, duplicate
-blocks. Known-class recurrence must trend to zero as classes gate. Three
+station, classes sampled, hits per class, novel-class candidates, judge gaps,
+duplicate blocks. Known-class recurrence must trend to zero as classes gate. Three
 post-admission waves without a falling curve is a finding delivered to the
 dispatcher - the instrument reports its own failure to bend the curve rather
 than presuming success.

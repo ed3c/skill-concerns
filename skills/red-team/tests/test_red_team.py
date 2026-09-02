@@ -29,11 +29,17 @@ import validate_red_team as validator  # noqa: E402
 FIXTURES = SKILL_ROOT / "evals" / "fixtures"
 WAVE_17 = FIXTURES / "wave-17"
 CLEAN = FIXTURES / "clean"
+GENERATION_CLOSE = FIXTURES / "generation-close"
 TEMPLATE = FIXTURES / "issue-round-trip" / "body-template.md"
+STATION = "noodles-generation-close"
 
 
 def catalogue() -> dict:
     return json.loads((SKILL_ROOT / "domain" / "catalogue.json").read_text(encoding="utf-8"))
+
+
+def domain(name: str) -> dict:
+    return json.loads((SKILL_ROOT / "domain" / name).read_text(encoding="utf-8"))
 
 
 class RedTeamEvals(unittest.TestCase):
@@ -450,6 +456,228 @@ class RedTeamEvals(unittest.TestCase):
                 (WAVE_17 / subject["path"]).read_bytes()
             ).hexdigest()
             self.assertEqual(expected, subject["sha256"])
+
+    # -------------------------------------------- the generation-close station
+
+    def test_the_station_record_is_what_the_fixture_generation_produces(self) -> None:
+        """The committed generation-close record is derived, and zero writes happened.
+
+        The fixture bundle carries the three kinds the station's topology row
+        enumerates and one known catalogue-class instance. The record is what
+        the run produces, the finding satisfies the schema, and the bundle's
+        digest is the same before and after - measured, not promised.
+        """
+        report = driver.run(
+            GENERATION_CLOSE,
+            catalogue(),
+            "generation-fixture",
+            "generation-close-fixture",
+            subject_kind=STATION,
+        )
+        self.assertTrue(report["read_only"]["held"])
+        self.assertEqual(
+            ["free-exit"], [finding["catalogue_class"] for finding in report["findings"]]
+        )
+        for finding in report["findings"]:
+            self.assertEqual([], validator.finding_errors(finding))
+        produced = driver.ledger_record(report)
+        committed = dict(
+            next(
+                record
+                for record in domain("run-ledger.json")["records"]
+                if record["subject"] == STATION
+            )
+        )
+        produced.pop("run_id")
+        committed.pop("run_id")
+        self.assertEqual(committed, produced)
+
+    def test_a_clean_bundle_at_the_station_still_appends_its_record(self) -> None:
+        """The planted negative arm: no findings, and the record lands anyway.
+
+        A station whose clean runs leave no trace is a station whose silence
+        cannot be told from its absence, which is the whole reason the record
+        is the close-out step's receipt.
+        """
+        ledger = self.scratch / "station-ledger.json"
+        ledger.write_text(json.dumps({"records": []}), encoding="utf-8")
+        status = driver.main(
+            [
+                "--bundle", str(CLEAN),
+                "--wave", "generation-clean-fixture",
+                "--boundary", "generation-close-fixture",
+                "--subject", STATION,
+                "--ledger", str(ledger),
+                "--append-record",
+            ]
+        )
+        self.assertEqual(0, status)
+        records = json.loads(ledger.read_text(encoding="utf-8"))["records"]
+        self.assertEqual(1, len(records))
+        self.assertEqual(STATION, records[0]["subject"])
+        self.assertEqual(0, records[0]["judge_gaps"])
+        self.assertEqual({0}, set(records[0]["hits"].values()))
+
+    def test_a_graduated_class_is_absent_from_the_next_runs_sampled_list(self) -> None:
+        """Graduation, read back off the run record rather than off the filter.
+
+        A class whose recipe has become a machine elsewhere is marked gated with
+        its gate reference, and the very next run must not sample it. Both
+        directions: the same fixture with the class still active does.
+        """
+        active = driver.ledger_record(
+            driver.run(GENERATION_CLOSE, catalogue(), "g", "generation-close-fixture", subject_kind=STATION)
+        )
+        self.assertIn("free-exit", active["classes_sampled"])
+        self.assertEqual(1, active["hits"]["free-exit"])
+
+        graduated = catalogue()
+        for entry in graduated["classes"]:
+            if entry["id"] == "free-exit":
+                entry["status"] = "gated"
+                entry["gate_ref"] = "a consumer CI gate landed by an ordinary atom"
+        record = driver.ledger_record(
+            driver.run(GENERATION_CLOSE, graduated, "g", "generation-close-fixture", subject_kind=STATION)
+        )
+        self.assertNotIn("free-exit", record["classes_sampled"])
+        self.assertNotIn("free-exit", record["hits"])
+        self.assertEqual(0, record["judge_gaps"])
+
+    def test_a_run_record_naming_an_undeclared_station_reds(self) -> None:
+        """The subject vocabulary is the topology's ids, not a second list."""
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["records"][0]["subject"] = "a-seam-nobody-declared"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "OBSERVATION_TARGET_UNGROUNDED:run record 0" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_the_stations_runbook_step_names_its_completion_receipt(self) -> None:
+        """Positive control for the runbook pointer, and its negative arm."""
+        target = next(
+            row
+            for row in domain("observation-topology.json")["targets"]
+            if row["id"] == STATION
+        )
+        runbook = SKILL_ROOT / target["runbook"]["path"]
+        self.assertIn(target["runbook"]["step"], runbook.read_text(encoding="utf-8"))
+        self.assertTrue((SKILL_ROOT / target["runbook"]["receipt"]).is_file())
+
+        copy = self.copy()
+        (copy / target["runbook"]["path"]).unlink()
+        self.assertTrue(
+            any(
+                "does not resolve, so the named close-out step" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_an_arrival_row_claiming_a_run_the_ledger_never_recorded_reds(self) -> None:
+        """The other direction of the arrival tie.
+
+        The station reaches PRODUCTION only when a real generation's record and
+        the row's run receipt arrive together; a row that claims the receipt
+        while every record came from a fixture is the overclaim the arrival
+        ledger exists to catch, seen from this side.
+        """
+        fake_repo = self.scratch / "repo"
+        for name in validator.NEIGHBOURS:
+            (fake_repo / "skills" / name).mkdir(parents=True)
+        topology = fake_repo / validator.ARRIVAL_TOPOLOGY
+        topology.parent.mkdir(parents=True, exist_ok=True)
+        topology.write_text(
+            json.dumps(
+                {
+                    "rows": [
+                        {
+                            "id": "sc-red-team-generation-close-station",
+                            "receipts": [{"kind": "run", "ref": "a generation that never ran"}],
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        self.assertTrue(
+            any(
+                "STATION_ARRIVAL_UNTIED" in error and "came from a fixture" in error
+                for error in validator.validate(SKILL_ROOT, fake_repo)
+            )
+        )
+
+    # ------------------------------------------ the residual-sensor register
+
+    def test_every_register_sensor_is_a_readback_that_exists(self) -> None:
+        """Each row's sensor names bytes this tree can open, holding its phrase.
+
+        A register whose sensors point at duties nobody wrote reads as coverage
+        while watching nothing, which is the gap class it exists to record.
+        """
+        rows = domain("residual-sensor-register.json")["rows"]
+        self.assertEqual(5, len(rows))
+        for row in rows:
+            with self.subTest(row=row["id"]):
+                readback = REPO_ROOT / row["sensor"]["readback"]
+                self.assertTrue(readback.is_file())
+                self.assertIn(row["sensor"]["phrase"], readback.read_text(encoding="utf-8"))
+                self.assertTrue(str(row["escalation"]["trigger"]).strip())
+                self.assertTrue(str(row["escalation"]["path"]).strip())
+        gated = next(row for row in rows if row["id"] == "match-without-experiment")
+        self.assertEqual("GATED", gated["status"])
+        self.assertTrue(str(gated["gate_ref"]).strip())
+
+    def test_a_register_row_missing_any_required_field_reds(self) -> None:
+        """All four fields, each proven load-bearing on its own."""
+        for field in validator.REGISTER_FIELDS:
+            with self.subTest(field=field):
+                copy = self.copy()
+                path = copy / "domain" / "residual-sensor-register.json"
+                body = json.loads(path.read_text(encoding="utf-8"))
+                body["rows"][0].pop(field)
+                path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+                self.assertTrue(
+                    any(
+                        "CEILING_WITHOUT_SENSOR" in error and field in error
+                        for error in validator.validate(copy, REPO_ROOT)
+                    )
+                )
+
+    def test_a_prose_ceiling_with_no_register_row_reds(self) -> None:
+        """The reflexive rule, on a document and on a script alike."""
+        for relative in ("SKILL.md", "scripts/shadow_driver.py"):
+            with self.subTest(relative=relative):
+                copy = self.copy()
+                path = copy / relative
+                path.write_text(
+                    path.read_text(encoding="utf-8")
+                    + "\n# sampling stays a judgement here, a structural ceiling\n",
+                    encoding="utf-8",
+                )
+                self.assertTrue(
+                    any(
+                        "no register row is named" in error
+                        for error in validator.validate(copy, REPO_ROOT)
+                    )
+                )
+
+    def test_a_register_row_landing_a_tightening_names_where_it_landed(self) -> None:
+        """A status claiming the escalation landed carries the ref that proves it."""
+        copy = self.copy()
+        path = copy / "domain" / "residual-sensor-register.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["rows"][0]["status"] = "SENSOR_FIRED_ESCALATION_LANDED"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "is not a provider ref that says where" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
 
     def test_unchanged_context_cannot_acquit_an_added_enforcement_shape(self) -> None:
         """Detection and acquittal read the same bytes.

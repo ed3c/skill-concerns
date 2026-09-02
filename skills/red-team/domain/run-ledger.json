@@ -1,10 +1,12 @@
 {
   "schema_version": 1,
   "purpose": "one record per SHADOW boundary run, so the skill measures its own effect instead of presuming it: known-class recurrence per wave must trend to zero as classes gate, and a curve that has not bent after three post-admission waves is itself a finding about the architecture.",
+  "subject_kinds": "the subject field names the station the run served, and its vocabulary is the target ids of domain/observation-topology.json - never a second list here. A record naming a station that file does not carry reds as OBSERVATION_TARGET_UNGROUNDED, and the declining curve is sliceable by station because of this one field.",
   "record_schema": [
     "run_id",
     "wave",
     "boundary",
+    "subject",
     "classes_sampled",
     "hits",
     "novel_class_candidates",
@@ -18,6 +20,7 @@
       "run_id": "2026-09-01T20:15:43+00:00",
       "wave": "wave-17",
       "boundary": "admission-fixture",
+      "subject": "wave-boundary",
       "classes_sampled": [
         "blind-observer",
         "free-exit",
@@ -35,6 +38,29 @@
       "novel_class_candidates": [],
       "judge_gaps": 5,
       "duplicate_blocks": 1
+    },
+    {
+      "run_id": "2026-09-02T06:39:55+00:00",
+      "wave": "generation-fixture",
+      "boundary": "generation-close-fixture",
+      "subject": "noodles-generation-close",
+      "classes_sampled": [
+        "blind-observer",
+        "free-exit",
+        "trusted-current-literal",
+        "duplicate-discovery",
+        "spec-first-lifecycle"
+      ],
+      "hits": {
+        "blind-observer": 0,
+        "free-exit": 1,
+        "trusted-current-literal": 0,
+        "duplicate-discovery": 0,
+        "spec-first-lifecycle": 0
+      },
+      "novel_class_candidates": [],
+      "judge_gaps": 1,
+      "duplicate_blocks": 0
     }
   ]
 }
