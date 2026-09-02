@@ -1,0 +1,13 @@
+{
+  "gate": "scripts/check_receipt_provenance.py",
+  "refusal": "ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS",
+  "structural_reason": "the checks that grade a candidate are read from run_all.SKILL_CHECKS in the TRUSTED default-branch checkout, so the row authorizing this bundle cannot exist on a branch the bundle's own commit is not on yet; and it cannot ride in the same tree either, because an authorization whose skill directory is already present reds BOOTSTRAP_ENTRY_STALE. Two landings is the only shape that exists.",
+  "unavailability_probed": "not assumed: the trusted-side path was run against a real worktree, and one added newline to the candidate tree flipped the refusal from NO_DECLARED_CHECKS to BOOTSTRAP_DIGEST_MISMATCH, which is the authorization doing the work rather than the name",
+  "authorization": {
+    "kind": "trusted-side entry, its own atom",
+    "subject_sha256": "0e57fe030f066fad2f8d35e6de543b49cf14d6cc9359979332e3d16e24b07c2c",
+    "retired_by": "the landing it buys: the commit that lands the bundle deletes the entry in the same commit, because an entry outliving its admission is a standing key for a name"
+  },
+  "filed_at": "ed3c/skill-concerns#87",
+  "lane_exit": "UNMERGED"
+}

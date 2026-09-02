@@ -91,8 +91,9 @@ goes to the escalation channel, never into steering.
 
 - Signal: a failure recurs, a review comment repeats, or a new gate/feature lands while siblings are in flight.
 - Action: classify the failure into the enforcement hierarchy and sink it to the strongest layer that holds it (architecture > CI > lint > rules); when a new gate outruns in-flight work, the gate stays and the admission data catches up via its own atom - candidates must never widen the surface they are judged against.
-- Why: five invalid-state classes were eliminated in one session at the architecture layer, and when the surface gate correctly refused three in-flight siblings, a one-line map-revision atom (not a gate rollback) unblocked them within the hour.
-- evidence: invalid-state-eliminations, map-revision-protocol
+- Exit when the catch-up atom cannot live in the candidate: prove the in-candidate exit structurally unavailable rather than assuming it (the gate reads its authorization only from the trusted default-branch checkout, so the data cannot ride in the tree being graded), then escalate quarantine-shaped to the gate owner - a receipt naming the gate, its refusal string verbatim, and that structural reason, filed where the owner reads it - and end the lane honestly unmerged. Touch no gate file. The authorization the receipt asks for is legal only byte-pinned to the exact reviewed subject (a sha256, never a standing key for a name) and retired by the landing it buys (the commit that lands the bundle deletes it); a typed exit with no pinned subject and no expiry is a waiver wearing a type, not this exit, and inconvenience is never the trigger.
+- Why: five invalid-state classes were eliminated in one session at the architecture layer, and when the surface gate correctly refused three in-flight siblings, a one-line map-revision atom (not a gate rollback) unblocked them within the hour; the escalation exit itself then ran end to end twice, each time as a pinned trusted-side entry that the landing it authorized deleted in the same commit, with no gate file edited in any of the four landings.
+- evidence: invalid-state-eliminations, map-revision-protocol, structural-exit-bootstrap
 
 ## C8. Bind every action to its exact subject
 

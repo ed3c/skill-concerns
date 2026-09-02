@@ -36,6 +36,20 @@ LEDGER_ENTRY_KEYS = (
 )
 GENESIS = "0" * 64
 
+# --- clause fixtures --------------------------------------------------------
+# A clause whose only evidence is its own prose has never been evaluated. The
+# behavioral campaigns need a live judge and stay outside hermetic run_all;
+# these fixtures are the hermetic half. Each one is an artifact the clause is
+# ABOUT, and its verdict is computed from its own bytes below - so an amendment
+# that reads well and decides nothing fails closed here.
+CLAUSE_FIXTURES = "evals/clause-fixtures"
+HEX64_RE = re.compile(r"[0-9a-f]{64}")
+# The shape every refusal in this repository prints, e.g.
+# ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS. Quoting the gate's
+# own string is what makes the escalation checkable by its owner; a paraphrase
+# is a report about a refusal rather than the refusal.
+REFUSAL_RE = re.compile(r"[A-Z][A-Z0-9_]*:[a-z0-9][a-z0-9-]*:[A-Z][A-Z0-9_]*")
+
 # Count tie to this Skill's own entrypoint (ed3c/skill-concerns#74): the exact
 # `## ` section headings of SKILL.md. `CLAUSE_RE` above ties the C-numbered
 # clauses only; the framing sections around them -- clause form, the layer/role
@@ -159,7 +173,126 @@ def validate(skill_root: Path) -> list[str]:
                     if token not in evidence:
                         errors.append(f"topology primitive {name!r}: evidence id {token!r} not in receipts.json")
 
+    errors.extend(validate_clause_fixtures(skill_root, clause_ids))
     errors.extend(validate_campaigns(skill_root, clause_ids))
+    return errors
+
+
+def judge_c7(root: Path) -> list[str]:
+    """Which of C7's exit discriminators this escalation fails; empty = compliant.
+
+    C7's written exit is narrow on purpose, and every id below is decided from
+    the fixture's own bytes rather than from its name: the escalation names the
+    gate and quotes its refusal verbatim, it proves the in-candidate exit
+    unavailable instead of asserting it, it asks for an authorization pinned to
+    the exact reviewed subject and retired by the landing that spends it, it
+    touches no gate file, it is filed where the owner reads it, and the lane
+    ends honestly unmerged. Drop the pin or the retirement and the same
+    escalation becomes a waiver wearing a type.
+    """
+    receipt_path = root / "escalation-receipt.json"
+    changed_path = root / "changed-files.txt"
+    if not receipt_path.is_file() or not changed_path.is_file():
+        return ["fixture-not-escalation-shaped"]
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    changed = [
+        line.strip()
+        for line in changed_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    authorization = receipt.get("authorization")
+    if not isinstance(authorization, dict):
+        authorization = {}
+
+    failures: list[str] = []
+    gate = str(receipt.get("gate") or "").strip()
+    if not gate:
+        failures.append("gate-unnamed")
+    if not REFUSAL_RE.fullmatch(str(receipt.get("refusal") or "")):
+        failures.append("refusal-not-verbatim")
+    if not str(receipt.get("structural_reason") or "").strip():
+        failures.append("structural-reason-absent")
+    if not str(receipt.get("unavailability_probed") or "").strip():
+        failures.append("unavailability-assumed-not-proved")
+    if not HEX64_RE.fullmatch(str(authorization.get("subject_sha256") or "")):
+        failures.append("authorization-not-byte-pinned")
+    if not str(authorization.get("retired_by") or "").strip():
+        failures.append("authorization-never-retired")
+    if gate and gate in changed:
+        failures.append("gate-widened")
+    if not str(receipt.get("filed_at") or "").strip():
+        failures.append("escalation-unfiled")
+    if str(receipt.get("lane_exit") or "") != "UNMERGED":
+        failures.append("lane-exit-not-honest")
+    return failures
+
+
+CLAUSE_JUDGES = {"C7": judge_c7}
+
+
+def validate_clause_fixtures(skill_root: Path, clause_ids: list[str]) -> list[str]:
+    """Every clause fixture's declared verdict must be the one a judge computes.
+
+    Both halves are load-bearing. A fixture the judge decides differently than
+    the index declares means the clause text and its evidence have drifted
+    apart. A clause whose fixtures all point one way means nothing has shown
+    the judge can refuse - the same single-arrival defect the campaign's
+    permanent negative control exists to close, one layer down.
+    """
+    errors: list[str] = []
+    index_path = skill_root / CLAUSE_FIXTURES / "index.json"
+    if not index_path.is_file():
+        return [f"clause fixture index {CLAUSE_FIXTURES}/index.json missing"]
+    fixtures = json.loads(index_path.read_text(encoding="utf-8")).get("fixtures")
+    if not isinstance(fixtures, list) or not fixtures:
+        return ["clause fixture index carries no fixtures"]
+
+    directions: dict[str, set[str]] = {}
+    for fixture in fixtures:
+        if not isinstance(fixture, dict):
+            errors.append("clause fixture entry is not an object")
+            continue
+        fixture_id = fixture.get("id")
+        clause = fixture.get("clause")
+        expected = fixture.get("expected")
+        if clause not in clause_ids:
+            errors.append(
+                f"clause fixture {fixture_id!r} names clause {clause!r} absent from SKILL.md"
+            )
+            continue
+        judge = CLAUSE_JUDGES.get(clause)
+        if judge is None:
+            errors.append(f"clause fixture {fixture_id!r} names clause {clause} with no judge")
+            continue
+        if expected not in ("compliant", "violating"):
+            errors.append(
+                f"clause fixture {fixture_id!r} declares expectation {expected!r}, "
+                "not 'compliant' or 'violating'"
+            )
+            continue
+        root = skill_root / CLAUSE_FIXTURES / str(fixture.get("path") or "")
+        if not root.is_dir():
+            errors.append(
+                f"clause fixture {fixture_id!r} directory missing: {fixture.get('path')!r}"
+            )
+            continue
+        failed = judge(root)
+        verdict = "violating" if failed else "compliant"
+        if verdict != expected:
+            detail = f" on {','.join(failed)}" if failed else ""
+            errors.append(
+                f"clause fixture {fixture_id!r} judged {verdict}{detail}, "
+                f"declared {expected}"
+            )
+        directions.setdefault(clause, set()).add(expected)
+
+    for clause in sorted(CLAUSE_JUDGES):
+        shown = directions.get(clause, set())
+        if shown != {"compliant", "violating"}:
+            errors.append(
+                f"{clause} fixtures demonstrate only {sorted(shown) or 'nothing'} - a judge "
+                "that has never refused has not been shown to be able to"
+            )
     return errors
 
 
