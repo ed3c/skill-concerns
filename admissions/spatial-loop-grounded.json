@@ -609,7 +609,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "abe9a19bbce114b80ca599a4310eea0634cc9acc0de4db52ec33d851a8ff81ae"
+      "sha256": "8ddebc1bee67126e01ef556ef0658d77c767facd4ec75ef80a25ce2329f2e8e8"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-events-probe/claim.json",
@@ -664,12 +664,16 @@
       "sha256": "7daa4435167c760fb58e6eeb2fc762cc4e13485ca6d6832215a934a274eec8e1"
     },
     {
+      "path": "skills/spatial-loop-grounded/scripts/frozen_anchor.py",
+      "sha256": "387a65dbeb43e2fa5a405f7bf11d49152e267bf06d6332fd664df0a6afa0b2d1"
+    },
+    {
       "path": "skills/spatial-loop-grounded/scripts/gen_admission.py",
       "sha256": "4d2f6b6a0bfa08c5019b45ba7982c4d13bb3406f668eae0bcf172bcbc5c4c910"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_campaign_receipt.py",
-      "sha256": "6c039e2f9b9e178d05d9c56e27b98c287f8378d92d5c9853e45276ee5c569fda"
+      "sha256": "c07ee140daebfd4ad12f0adaee950749b2f36fd3e6a9380ae46776026d95811e"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/gen_ledger.py",
@@ -689,10 +693,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "c2c92d6a17f358c219af8f6b35d3529f368ea8c83b408f1e6421af965426e285"
+      "sha256": "fb1066b4ad717cc18ed58e47de3dbb08fef7f10f5b140820a7c6a1e01eca8e88"
     }
   ],
-  "skill_tree_sha256": "b97389957f7bd79a82d8070a3ef0d0bebf7bb291a122a1cf5424dfdde89d1f56",
+  "skill_tree_sha256": "dd96d646c367d8d36b2f8e617af2bab80e4aa5cd93f28159c48ac06c52ea81f1",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -846,6 +850,22 @@
     },
     {
       "id": "ledger-key-missing",
+      "state": "PASS"
+    },
+    {
+      "id": "pilot-anchor-hand-edited",
+      "state": "PASS"
+    },
+    {
+      "id": "pilot-anchor-relaid-from-the-live-tree",
+      "state": "PASS"
+    },
+    {
+      "id": "pilot-receipt-not-reproducible",
+      "state": "PASS"
+    },
+    {
+      "id": "pilot-receipt-drops-a-later-producers-field",
       "state": "PASS"
     },
     {
