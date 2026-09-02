@@ -53,17 +53,40 @@ writes into `skills/` in `selftest()` is the negative control for that.
 BUILD is `--pass SKILL` and is the only half allowed to propose bytes. It may
 not apply them anywhere a reader would mistake for a landing:
 
-  branch          it creates `maintain/<skill>-<stamp>` and returns the
-                  checkout to the base branch before it exits; the base head
-                  sha is read before and after and must be unchanged.
-  edit scope      writes may land only under `skills/<skill>/` within this
-                  checkout. The guard is `git status --porcelain -uall`
-                  after every producer, not a promise: one out-of-scope path
-                  git can see refuses the whole producer, restores the tree,
-                  and blocks the pass. A producer that writes to an absolute
-                  path outside this checkout entirely is outside what a
-                  git-status diff can see - a known gap, not covered by this
-                  guard (filed: ed3c/skill-concerns#66).
+  isolation       it proposes inside a LINKED WORKTREE, never in the checkout
+                  it was handed (ed3c/skill-concerns#66). `git worktree add
+                  <tmp> -b maintain/<skill>-<stamp>` creates a disposable tree;
+                  producers, proof and the commit all run there, and the commit
+                  reaches `maintain/<skill>-<stamp>` in this repository because
+                  the object store is shared. `git checkout -b` in the caller's
+                  own tree is what this replaces, and it was unsafe whenever
+                  `root` was a checkout another session had open: it moved that
+                  session's HEAD regardless of dirty state, and a refusal's
+                  restore step could delete files that session wrote after the
+                  dirty check ran. Neither is reachable now, which is why the
+                  caller's tree no longer has to be clean for a pass to start.
+  root exclusive  the caller's checkout is MEASURED rather than assumed: HEAD
+                  and `git status --porcelain -uall` are read before and after,
+                  and any movement is `BUILD_CALLER_TREE_MUTATED`. That covers
+                  the escape a worktree does not prevent but does make visible -
+                  a producer that resolves the old root and writes into the
+                  caller's checkout.
+  edit scope      writes may land only under `skills/<skill>/` within the
+                  worktree. The guard is `git status --porcelain -uall` after
+                  every producer, not a promise: one out-of-scope path git can
+                  see refuses the whole producer and blocks the pass, and the
+                  worktree is deleted rather than restored. A producer that
+                  writes to an absolute path outside the worktree entirely is
+                  still outside what a git-status diff can see; #66 confines the
+                  blast radius to a disposable directory and does not claim to
+                  close that, and `report["caller"]["unseen"]` says so in the
+                  report rather than only here.
+  lifecycle       a `changed` outcome leaves ONE branch and nothing else: the
+                  worktree is removed on every outcome, and `clean` and
+                  `blocked` take the branch with it. A second pass for the same
+                  skill is refused with `DOCTOR_PROPOSAL_OUTSTANDING` naming the
+                  branch, so proposals cannot accumulate and the human who asked
+                  for one owns it until they land it or `git branch -D` it.
   producers       corrections regenerate through the subject Skill's own
                   `scripts/gen_*.py`, never by hand (spatial-loop-grounded C5).
                   `REPOSITORY_PRODUCERS` are excluded because their output is a
@@ -753,32 +776,54 @@ def build_producers(root: Path, skill: str) -> list[str]:
     ]
 
 
+def proposal_branches(root: Path, skill: str) -> list[str]:
+    """Every `maintain/<skill>-<stamp>` branch this repository already carries.
+
+    Matched by exact prefix rather than by a ref glob: `maintain/demo-*` also
+    matches `maintain/demo-subject-<stamp>`, and one skill's outstanding
+    proposal must never read as another's. The stamp carries no `-`, so the
+    split is unambiguous.
+    """
+    listing = _git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads/maintain/")
+    if listing["returncode"] != 0:
+        raise SystemExit(f"BUILD_REFS_UNREADABLE:{listing['tail']}")
+    prefix = f"maintain/{skill}"
+    return sorted(
+        name
+        for name in (line.strip() for line in listing["stdout"].splitlines())
+        if name and name.rsplit("-", 1)[0] == prefix
+    )
+
+
 def build_doctor(root: Path, skill: str) -> list[str]:
+    """Refuse before anything is created. Two blockers, and one that is gone.
+
+    `DOCTOR_WORKTREE_DIRTY` used to be here, and it was the right guard for a
+    pass that mutated the caller's checkout: a pass that starts dirty cannot
+    tell its own writes from the operator's. This pass no longer touches the
+    caller's checkout at all - it proposes inside a linked worktree - so the
+    guard now refuses runs for a hazard that cannot occur, and the caller's tree
+    is MEASURED before and after instead of pre-refused
+    (`BUILD_CALLER_TREE_MUTATED`, ed3c/skill-concerns#66).
+
+    `DOCTOR_PROPOSAL_OUTSTANDING` is what replaces it. On `outcome=changed` the
+    proposal branch survives with no registry row and no expiry, and repeated
+    passes accumulated one branch per run forever. Refusing while one is
+    outstanding bounds that at ONE live proposal per skill and names the human
+    as its owner: land it or `git branch -D` it. The alternative shape - pruning
+    stale branches automatically - deletes unpushed commits a human may still
+    intend to land, which is a larger loss than the accumulation it prevents.
+    """
     blockers: list[str] = []
     if not (root / "skills" / skill).is_dir():
         blockers.append(f"DOCTOR_SUBJECT_ABSENT:skills/{skill}")
     if _git(root, "rev-parse", "--git-dir")["returncode"] != 0:
         blockers.append("DOCTOR_NOT_A_CHECKOUT:BUILD proposes on a branch it creates")
         return blockers
-    dirty = worktree_changes(root)
-    if dirty:
-        # Refusing here is what makes the guard readable at all: a pass that
-        # starts dirty cannot tell its own writes from the operator's.
-        blockers.append(f"DOCTOR_WORKTREE_DIRTY:{','.join(dirty[:5])}")
+    outstanding = proposal_branches(root, skill)
+    if outstanding:
+        blockers.append(f"DOCTOR_PROPOSAL_OUTSTANDING:{','.join(outstanding)}")
     return blockers
-
-
-def restore(root: Path) -> list[str]:
-    """Undo everything a refused producer wrote. Returns what is still dirty."""
-    _git(root, "checkout", "--", ".")
-    # Whatever survives the checkout is untracked - producer output git has no
-    # committed byte to restore. Remove exactly those, then re-read the tree:
-    # the return value is a measurement, not the claim that it worked.
-    for relative in worktree_changes(root):
-        path = root / relative
-        if path.is_file():
-            path.unlink()
-    return worktree_changes(root)
 
 
 def proposal_additions(root: Path, scope: str) -> str:
@@ -807,32 +852,112 @@ def proposal_additions(root: Path, scope: str) -> str:
     return "\n".join(added)
 
 
-def abort_proposal(root: Path, report: dict[str, Any], base: str, base_head: str) -> dict[str, Any]:
-    """Undo the proposal, return to the base branch, and block the pass.
+def teardown(root: Path, tree: Path, scratch: Path, report: dict[str, Any], keep: bool) -> None:
+    """Remove the linked worktree, and the branch too unless a proposal survives.
 
-    One exit for every refusal after the branch exists (out-of-scope producer,
-    unproven correction, unauthorized cure), so a new refusal cannot ship a
-    fourth restore path that forgets one of these four assertions.
+    One exit for every ending, refusal or not, so a new outcome cannot ship a
+    path that forgets to remove the worktree. There is nothing to RESTORE here,
+    which is the point: every byte a refused producer wrote is inside `tree`,
+    and `tree` is deleted. The predecessor to this function undid writes in the
+    caller's own checkout with `git checkout -- .` plus targeted unlinks, and
+    that was only correct while nothing else touched that checkout
+    (ed3c/skill-concerns#66, gap 2).
+
+    `--force` twice over, and both are load-bearing: the worktree is dirty by
+    construction on a refusal, and it is removed whether or not the branch it
+    carried is being kept.
     """
-    residue = restore(root)
-    _git(root, "checkout", base)
-    if report.get("branch"):
-        _git(root, "branch", "-D", report["branch"])
-    report["branch"] = None
-    report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
-    report["base"]["untouched"] = report["base"]["head_after"] == base_head
-    # Assert the restore, never announce it: a refusal that leaves the bytes
-    # behind is the failure it claims to have prevented.
-    if residue or worktree_changes(root):
+    _git(root, "worktree", "remove", "--force", str(tree))
+    shutil.rmtree(scratch, ignore_errors=True)
+    branch = report.get("branch")
+    if not keep and branch:
+        _git(root, "branch", "-D", branch)
+        report["branch"] = None
+    # Assert the teardown, never announce it: a disposable directory that
+    # outlives its pass is residue, and a branch whose deletion did not delete is
+    # the accumulation this pass exists to bound.
+    #
+    # git's own view, not only the filesystem: deleting the directory leaves the
+    # admin entry behind as `prunable`, and a stale registration still holds the
+    # branch. A planted teardown defect that skipped the `worktree remove` went
+    # UNDETECTED while this read `path.exists()` alone.
+    listing = _git(root, "worktree", "list")["stdout"]
+    residue = [str(path) for path in (tree, scratch) if path.exists()]
+    if branch and branch in listing:
+        residue.append(f"registered:{branch}")
+    stale = [] if keep else proposal_branches(root, report["skill"])
+    if residue or stale:
         report["refusals"].append(
             finding(
                 root,
-                "BUILD_RESTORE_FAILED",
-                residue[0] if residue else "worktree",
-                f"refused writes survived the restore: {residue}",
-                "restore this checkout by hand before running any further pass",
+                "BUILD_TEARDOWN_FAILED",
+                residue[0] if residue else stale[0],
+                f"worktree residue={residue} branches={stale}",
+                "remove the linked worktree and the proposal branch by hand before "
+                "running any further pass",
             )
         )
+
+
+def caller_readback(
+    root: Path, report: dict[str, Any], base_head: str, changes_before: list[str]
+) -> None:
+    """The caller's checkout is MEASURED, not assumed (ed3c/skill-concerns#66).
+
+    Gap 1 of #66 is that a producer runs as a full subprocess with no cwd jail,
+    so a write to an absolute path outside the tree is invisible to a
+    `git status` diff. Proposing inside a linked worktree does not close that -
+    a determined absolute path still lands wherever it says - but it moves the
+    default blast radius from a shared checkout to a disposable directory, and
+    it makes the most likely escape VISIBLE: a producer that resolves the old
+    root, or hardcodes the caller's path, writes into the caller's checkout, and
+    that is exactly what this reads back. What it still cannot see is a write to
+    `~`, `/tmp`, or another checkout entirely, and that ceiling is stated rather
+    than papered over.
+    """
+    head_after = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+    changes_after = worktree_changes(root)
+    report["base"]["head_after"] = head_after
+    report["base"]["untouched"] = head_after == base_head
+    report["caller"] = {
+        "measured": True,
+        "root": str(root),
+        "changes_before": changes_before,
+        "changes_after": changes_after,
+        "untouched": head_after == base_head and changes_after == changes_before,
+        "unseen": "absolute-path writes outside this checkout are outside what git can report",
+    }
+    if report["caller"]["untouched"]:
+        return
+    report["refusals"].append(
+        finding(
+            root,
+            "BUILD_CALLER_TREE_MUTATED",
+            str(root),
+            f"HEAD {base_head} -> {head_after}; "
+            f"changes {changes_before} -> {changes_after}",
+            "a proposal pass may not touch the checkout it was handed; inspect this "
+            "tree by hand before running any further pass",
+        )
+    )
+
+
+def abort_proposal(
+    root: Path,
+    tree: Path,
+    scratch: Path,
+    report: dict[str, Any],
+    base_head: str,
+    changes_before: list[str],
+) -> dict[str, Any]:
+    """Discard the proposal and block the pass.
+
+    One exit for every refusal after the worktree exists (out-of-scope producer,
+    unproven correction, unauthorized cure), so a new refusal cannot ship a
+    fourth teardown path that forgets one of these assertions.
+    """
+    teardown(root, tree, scratch, report, keep=False)
+    caller_readback(root, report, base_head, changes_before)
     report["outcome"] = "blocked"
     return report
 
@@ -851,7 +976,12 @@ def build_pass(
         "outcome": "blocked",
         "doctor": [],
         "base": {},
+        # Never {}: a pass that stops at the doctor never measures the
+        # caller tree, and "not measured" must not read as "measured and
+        # untouched" - nor make a reader crash on a key that is not there.
+        "caller": {"measured": False, "untouched": None},
         "branch": None,
+        "worktree": None,
         "producers": [],
         "corrections": [],
         "proof": [],
@@ -871,21 +1001,36 @@ def build_pass(
     base = _git(root, "rev-parse", "--abbrev-ref", "HEAD")["stdout"].strip()
     base_head = _git(root, "rev-parse", "HEAD")["stdout"].strip()
     report["base"] = {"branch": base, "head_before": base_head}
+    changes_before = worktree_changes(root)
 
     # Microsecond stamp, not `generated_utc`: two passes in the same second
     # would otherwise collide on the branch name and the second one would
     # report `blocked` for a reason that has nothing to do with the subject.
     branch = f"maintain/{skill}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')}"
-    if _git(root, "checkout", "-b", branch)["returncode"] != 0:
-        report["doctor"].append(f"DOCTOR_BRANCH_REFUSED:{branch}")
+
+    # ed3c/skill-concerns#66, gap 2: this used to be `git checkout -b` in the
+    # caller's own checkout, which moves the HEAD of whatever tree it was
+    # handed. Correct in the single-actor case and unsafe the moment `root` is a
+    # checkout another session has open - it yanks that session's HEAD, and a
+    # refusal's cleanup could delete files that session wrote. A linked worktree
+    # cannot do either, whatever else goes wrong inside it, and the proposal
+    # commit still lands on `branch` in this same repository because the object
+    # store is shared.
+    scratch = Path(tempfile.mkdtemp(prefix=f"maintain-build-{skill}-"))
+    tree = scratch / "proposal"
+    added = _git(root, "worktree", "add", "--quiet", str(tree), "-b", branch)
+    if added["returncode"] != 0:
+        shutil.rmtree(scratch, ignore_errors=True)
+        report["doctor"].append(f"DOCTOR_WORKTREE_REFUSED:{branch}:{added['tail']}")
         return report
     report["branch"] = branch
+    report["worktree"] = str(tree)
 
     scope = f"skills/{skill}/"
-    producers = build_producers(root, skill)
+    producers = build_producers(tree, skill)
     for relative in producers:
-        outcome = _run([sys.executable, relative], root)
-        changed = worktree_changes(root)
+        outcome = _run([sys.executable, relative], tree)
+        changed = worktree_changes(tree)
         escaped = [path for path in changed if not path.startswith(scope)]
         report["producers"].append(
             {
@@ -919,9 +1064,9 @@ def build_pass(
             break
 
     if report["refusals"]:
-        return abort_proposal(root, report, base, base_head)
+        return abort_proposal(root, tree, scratch, report, base_head, changes_before)
 
-    proposed = [path for path in worktree_changes(root) if path.startswith(scope)]
+    proposed = [path for path in worktree_changes(tree) if path.startswith(scope)]
     if proposed:
         # ed3c/skill-concerns#93: before the proposal is proven, it has to be
         # ADJUDICATED. Detection is the beginning of an adjudication, so a
@@ -931,16 +1076,16 @@ def build_pass(
         # BUILD carrier in this repository makes; there is no copy of it here.
         cure = cure_authorization.refuse(
             f"skills/{skill}",
-            proposal_additions(root, scope),
+            proposal_additions(tree, scope),
             authorization,
-            tree=root,
+            tree=tree,
         )
         if cure is not None:
             report["refusals"].append(
                 finding(root, cure.diagnostic, cure.subject, cure.detail, cure.action)
             )
             report["corrections"] = []
-            return abort_proposal(root, report, base, base_head)
+            return abort_proposal(root, tree, scratch, report, base_head, changes_before)
         # "One PR of PROVEN corrections" (pstack donor, step 6). Regenerated
         # bytes nobody re-ran are a proposal about a Skill, not a correction
         # to it, so the subject's own declared row runs against the proposal
@@ -959,7 +1104,7 @@ def build_pass(
         # pass-through to a commit.
         if skill in run_all.SKILL_CHECKS:
             proof, proof_findings = drive_checks(
-                root,
+                tree,
                 [(f"skill:{skill}", list(argv)) for argv in run_all.SKILL_CHECKS[skill]],
             )
         else:
@@ -984,17 +1129,17 @@ def build_pass(
                     "a correction that reds the Skill's own row is a regression; fix the producer, not the receipt",
                 )
             )
-            return abort_proposal(root, report, base, base_head)
-        _git(root, "add", "--", f"skills/{skill}")
+            return abort_proposal(root, tree, scratch, report, base_head, changes_before)
+        _git(tree, "add", "--", f"skills/{skill}")
         commit = _git(
-            root,
+            tree,
             "commit",
             "-m",
             f"maintain({skill}): propose regenerated evidence\n\n"
             f"Producers: {', '.join(producers)}",
             identity=True,
         )
-        head = _git(root, "rev-parse", "HEAD")["stdout"].strip()
+        head = _git(tree, "rev-parse", "HEAD")["stdout"].strip()
         if commit["returncode"] != 0 or head == base_head:
             report["refusals"].append(
                 finding(
@@ -1008,28 +1153,17 @@ def build_pass(
         report["corrections"] = proposed
         report["proposal_head"] = head
 
-    _git(root, "checkout", base)
-    report["base"]["head_after"] = _git(root, "rev-parse", "HEAD")["stdout"].strip()
-    report["base"]["untouched"] = report["base"]["head_after"] == base_head
-    if not report["base"]["untouched"] or worktree_changes(root):
-        report["refusals"].append(
-            finding(
-                root,
-                "BUILD_BASE_MUTATED",
-                base,
-                f"{base} moved {base_head} -> {report['base']['head_after']} during a proposal pass",
-                "a proposal never lands; restore the base branch by hand",
-            )
-        )
+    # A proposal survives as a branch; nothing else does. `clean` and
+    # `blocked` both take the branch with the worktree, so the only thing an
+    # operator can be left holding is a proposal they asked for.
+    teardown(root, tree, scratch, report, keep=bool(proposed))
+    caller_readback(root, report, base_head, changes_before)
 
     if report["refusals"]:
         report["outcome"] = "blocked"
     elif report["corrections"]:
         report["outcome"] = "changed"
     else:
-        if report["branch"]:
-            _git(root, "branch", "-D", report["branch"])
-            report["branch"] = None
         report["outcome"] = "clean"
     return report
 
@@ -1220,6 +1354,54 @@ def selftest() -> int:
             and not worktree_changes(build_root),
             f"base={proposal['base']} dirty={worktree_changes(build_root)}",
         )
+        # ed3c/skill-concerns#66: the caller's checkout is measured, and the
+        # disposable tree does not outlive the pass.
+        record(
+            "build_leaves_the_callers_checkout_measurably_untouched",
+            proposal["caller"]["untouched"] is True
+            and proposal["caller"].get("changes_after") == proposal["caller"].get("changes_before"),
+            f"caller={proposal['caller']}",
+        )
+        record(
+            "the_proposal_worktree_does_not_outlive_the_pass",
+            proposal["worktree"] is not None
+            and not Path(proposal["worktree"]).exists()
+            # git's listing, not only the directory: a removed directory whose
+            # admin entry survives is still a registration, and it still holds
+            # the branch. The first version of this arm read `path.exists()`
+            # alone and stayed green under a planted teardown defect.
+            and proposal["branch"] not in _git(build_root, "worktree", "list")["stdout"],
+            f"worktree={proposal['worktree']} "
+            f"list={_git(build_root, 'worktree', 'list')['stdout'].strip()}",
+        )
+        # Planted negative: a second pass while a proposal is outstanding. The
+        # `changed` branch above is still there, and the obligation it hands the
+        # human is mechanical rather than remembered.
+        outstanding = build_pass(build_root, "demo-subject")
+        record(
+            "a_second_pass_is_refused_while_a_proposal_is_outstanding",
+            outstanding["outcome"] == "blocked"
+            and any(
+                blocker.startswith(f"DOCTOR_PROPOSAL_OUTSTANDING:{proposal['branch']}")
+                for blocker in outstanding["doctor"]
+            )
+            and outstanding["branch"] is None
+            and outstanding["worktree"] is None,
+            f"doctor={outstanding['doctor']}",
+        )
+        # The human discharges the obligation the only two ways there are: land
+        # it, or discard it. Every arm below starts from a repository with no
+        # outstanding proposal, exactly as a human leaves it.
+        def discard(branch: str | None) -> None:
+            if branch:
+                _git(build_root, "branch", "-D", branch)
+
+        discard(proposal["branch"])
+        record(
+            "discarding_the_proposal_clears_the_refusal",
+            proposal_branches(build_root, "demo-subject") == [],
+            f"branches={proposal_branches(build_root, 'demo-subject')}",
+        )
 
         # Planted negative: a producer that reaches outside the subject Skill.
         (build_root / "skills" / "demo-subject" / "scripts" / "gen_escape.py").write_text(
@@ -1241,13 +1423,21 @@ def selftest() -> int:
             and diagnostics == ["BUILD_EDIT_SCOPE_REFUSED"],
             f"outcome={refused['outcome']} refusals={diagnostics}",
         )
+        # The escape now lands in the disposable worktree and never reaches this
+        # checkout at all (ed3c/skill-concerns#66): before, `policy/owned.json`
+        # here was overwritten and then restored, and the assertion measured the
+        # restore. It measures containment now, and `caller.untouched` says the
+        # same thing from the pass's own report.
         record(
             "refused_build_pass_leaves_no_bytes_and_no_branch",
             (build_root / "policy" / "owned.json").read_text(encoding="utf-8") == "{}\n"
             and refused["branch"] is None
+            and refused["caller"]["untouched"]
+            and not Path(refused["worktree"]).exists()
             and not worktree_changes(build_root)
             and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == escaped_head,
-            f"branch={refused['branch']} dirty={worktree_changes(build_root)}",
+            f"branch={refused['branch']} caller={refused['caller']['untouched']} "
+            f"worktree={refused['worktree']} dirty={worktree_changes(build_root)}",
         )
         # Planted negative: a producer whose output reds the subject's own
         # declared row. BUILD must refuse to commit bytes that regress the
@@ -1362,6 +1552,49 @@ def selftest() -> int:
             f"outcome={authorized['outcome']} branch={authorized['branch']} "
             f"corrections={authorized['corrections']}",
         )
+        discard(authorized["branch"])
+
+        # Planted negative, ed3c/skill-concerns#66 gap 1: a producer that writes
+        # to an ABSOLUTE path outside the worktree - the escape a git-status diff
+        # inside the worktree cannot see by construction. The worktree does not
+        # prevent this and the report does not pretend it does; what changed is
+        # that the caller's checkout is read before and after, so the likeliest
+        # form of the escape - a write landing in the tree the operator handed
+        # the pass - is NAMED instead of silent. `reached.txt` is written by
+        # absolute path so the producer bypasses `parents[3]` entirely.
+        reached = build_root / "reached.txt"
+        (build_root / "skills" / "demo-subject" / "scripts" / "gen_evidence.py").write_text(
+            "from pathlib import Path\n"
+            "root = Path(__file__).resolve().parents[3]\n"
+            "(root / 'skills' / 'demo-subject' / 'evidence.json').write_text(\n"
+            "    '{\"regenerated\": true}\\n', encoding='utf-8')\n"
+            f"Path({str(reached)!r}).write_text('reached\\n', encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+        _git(build_root, "add", "-A")
+        _git(build_root, "commit", "-q", "-m", "plant the absolute-path reach", identity=True)
+        reach_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+        escaping = build_pass(build_root, "demo-subject")
+        record(
+            "a_producer_reaching_into_the_callers_checkout_is_named",
+            escaping["outcome"] == "blocked"
+            and "BUILD_CALLER_TREE_MUTATED"
+            in [f["diagnostic"] for f in escaping["refusals"]]
+            and escaping["caller"]["untouched"] is False
+            and "reached.txt" in escaping["caller"].get("changes_after", [])
+            and escaping["branch"] is None
+            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == reach_head,
+            f"outcome={escaping['outcome']} "
+            f"refusals={[f['diagnostic'] for f in escaping['refusals']]} "
+            f"caller={escaping['caller']}",
+        )
+        record(
+            "the_escape_is_named_rather_than_repaired",
+            reached.is_file(),
+            "a pass that quietly deleted what it found in the caller's tree would "
+            "be the mechanism ed3c/skill-concerns#66 gap 2 warns about, one layer up",
+        )
+        reached.unlink(missing_ok=True)
 
         del run_all.SKILL_CHECKS["demo-subject"]
 
