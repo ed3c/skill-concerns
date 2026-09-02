@@ -27,6 +27,7 @@ from validate_spatial_loop_grounded import entry_digest, validate  # noqa: E402
 from gen_ledger import check_prefix_preserved  # noqa: E402
 import ab_campaign  # noqa: E402
 import gen_campaign_receipt  # noqa: E402
+from frozen_anchor import pin  # noqa: E402
 
 BEHAVIORAL = Path("evals/behavioral.json")
 LEDGER = Path("evals/behavioral-campaigns/ledger.json")
@@ -439,6 +440,30 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         rewritten = [dict(committed[0], gaps=["laundered"])] + committed[1:]
         errors = check_prefix_preserved(committed, rewritten)
         self.assertTrue(any("laundering" in e for e in errors), errors)
+
+
+class FrozenAnchorPin(unittest.TestCase):
+    """`frozen_anchor.pin` itself, direct -- not through a receipt producer.
+
+    Presence, not truthiness (slg wave-21 finding on
+    ed3c/skill-concerns#65/#104): every anchor today is a non-empty sha256
+    hex, so `committed.get(key) or fresh` never misfired in practice. It
+    still had the wrong shape. This is the recipe that would have caught it.
+    """
+
+    def test_committed_falsy_value_survives(self) -> None:
+        # The regression this class exists to block: the old `or fresh`
+        # treated a committed "" (or 0, or False) as absent and silently
+        # relaid the fresh value over history.
+        self.assertEqual(pin({"k": ""}, "k", "fresh"), "")
+        self.assertEqual(pin({"k": 0}, "k", 99), 0)
+        self.assertEqual(pin({"k": False}, "k", True), False)
+
+    def test_absent_key_falls_through_to_fresh(self) -> None:
+        # Both-direction control: an unwritten key must still take the fresh
+        # value, or a first write can never happen.
+        self.assertEqual(pin({}, "k", "fresh"), "fresh")
+        self.assertEqual(pin({"other": "x"}, "k", "fresh"), "fresh")
 
 
 class PilotCampaignReceipt(unittest.TestCase):

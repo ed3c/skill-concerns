@@ -35,5 +35,10 @@ def prior(path: Path) -> dict:
 
 
 def pin(committed: dict, key: str, fresh: str) -> str:
-    """`fresh` only while nothing is committed under `key`; then history wins."""
-    return committed.get(key) or fresh
+    """`fresh` only while nothing is committed under `key`; then history wins.
+
+    Presence, not truthiness: a committed value of `0`/`""`/`False` is still
+    history and must survive. Every anchor today is a non-empty sha256 hex, so
+    `or` couldn't misfire yet -- but the next caller need not be a digest.
+    """
+    return committed[key] if key in committed else fresh
