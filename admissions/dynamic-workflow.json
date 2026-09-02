@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/dynamic-workflow/domain/dispatch-runtime-topology.json",
-      "sha256": "027943caa45b70e292af796c9acaa558419f3a395b554f51f0fbebd2bab6f26d"
+      "sha256": "5169beb1f09e86a1059f4574f49b1b753a449891faa0c65282826875954ab06b"
     },
     {
       "path": "skills/dynamic-workflow/evals/cases.json",
@@ -164,7 +164,7 @@
       "sha256": "87e7bec58495c763435661359ea7b3b0069d76cf0fcda772815e5a420fea8547"
     }
   ],
-  "skill_tree_sha256": "8bebf481e9333e8893fa4f512ec7f56c7731a11ad0688651d84a9046e0a9bcc1",
+  "skill_tree_sha256": "fdfee8e3466a706b330a92ba1bb496a9feb403c48d672dc69161baaa54e8ed82",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

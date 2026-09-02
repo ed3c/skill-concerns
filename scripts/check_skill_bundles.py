@@ -99,6 +99,12 @@ HOST_OBSERVED_CARRIER = "carried"
 MARKDOWN_FENCE = re.compile(r"^\s*```")
 MARKDOWN_SECTION = re.compile(r"^##\s+(.+?)\s*$")
 
+# A path rooted at one operator's home directory (ed3c/skill-concerns#108).
+# `~/` and `<placeholder>/` are deliberately NOT matched: they are the portable
+# shape `dispatch-runtime-topology.json`'s own `root_glob` already uses, and a
+# rule that refused them would refuse the cure along with the defect.
+HOST_ABSOLUTE = re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+/")
+
 # pstack's birth triple, by shape. These are repository-level artifacts: one
 # feature map for the admission capability, one Doctor that refuses before it
 # drives, one prove-once receipt for the first live run. A per-skill copy of
@@ -580,6 +586,60 @@ def scan_birth_artifacts(root: Path) -> list[str]:
     return errors
 
 
+def scan_host_absolute_paths(
+    name: str, skill_root: Path, tests: list[str], eval_inventory: Any
+) -> list[str]:
+    """No bundle's OPERATING SURFACE may carry one operator's home directory.
+
+    ed3c/skill-concerns#76 cured one Skill and left the readback inside that
+    Skill's own test suite, which does not generalise: two instances survived
+    elsewhere and were found by a hand grep (ed3c/skill-concerns#108). This is
+    that readback, repository-wide, with no per-skill list to go stale.
+
+    The subject is the bundle's operating surface, and the three things it
+    excludes are excluded by CATEGORY with a reason, never by naming a skill:
+
+    - the bundle's declared `test_paths`, and the eval campaign directory: this
+      is where planted negatives and fixture inputs live, and a host literal
+      there is the INPUT to a control, not a binding the bundle resolves;
+    - `skill.json`, which is the manifest that DECLARES `/Users/neon/` as a
+      forbidden domain literal. Reading a ban as a violation of itself is
+      nonsense, and the manifest's own path fields are already refused for
+      being absolute at all by `_path_list` (`MANIFEST_PATH_ESCAPES_SKILL`).
+
+    No exemption shape ships with this, and that is deliberate. #108 named one
+    as possibly owed -- a field whose whole purpose is to record a host path --
+    and after both instances are cured no such field exists: the one that
+    looked like it (`dispatch-runtime-topology.json`'s `observed.where`) is now
+    the portable placeholder its neighbour `root_glob` already used, and the
+    one-time observation it recorded is carried by the typed `HOST_OBSERVED`
+    exit that already costs an observer and a carrier (ed3c/skill-concerns#91).
+    An exemption built before anything needs one is the free-exit class with a
+    head start.
+    """
+    excluded = {Path(relative).parts[0] for relative in tests}
+    if isinstance(eval_inventory, str) and eval_inventory:
+        excluded.add(Path(eval_inventory).parts[0])
+    errors: list[str] = []
+    for path in sorted(skill_root.rglob("*")):
+        relative = path.relative_to(skill_root)
+        if not path.is_file() or "__pycache__" in relative.parts:
+            continue
+        if relative.parts[0] in excluded or relative.as_posix() == "skill.json":
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for number, line in enumerate(text.splitlines(), start=1):
+            found = HOST_ABSOLUTE.search(line)
+            if found:
+                errors.append(
+                    f"HOST_ABSOLUTE_PATH:{name}:{relative.as_posix()}:{number}:{found.group(0)}"
+                )
+    return errors
+
+
 def _qualified_test_methods(skill_root: Path, tests: list[str]) -> set[tuple[str, str, str]]:
     """(module, class, method) for every test method declared under `tests`.
 
@@ -839,6 +899,9 @@ def check(root: Path = REPO_ROOT) -> list[str]:
             scan_validator_contract(
                 name, skill_root, execution, rows_by_skill.get(name)
             )
+        )
+        errors.extend(
+            scan_host_absolute_paths(name, skill_root, tests, eval_inventory)
         )
         errors.extend(scan_admission_stamp(name, root, skill_root))
         errors.extend(scan_receipt_producers(name, skill_root))

@@ -998,5 +998,66 @@ class NGrowth(unittest.TestCase):
         self.assertEqual(singletons, {}, f"single-call-site predicate kinds: {singletons}")
 
 
+class SourceLockProducer(unittest.TestCase):
+    """ed3c/skill-concerns#108: the producer's upstream root is an input.
+
+    It was a module constant naming one operator's home directory, so this
+    producer could run on exactly one machine and nothing said so. The cure is
+    only real if the missing input REFUSES rather than resolving to something,
+    so the planted arms remove the input and then supply a wrong one.
+    """
+
+    PRODUCER = SKILL_ROOT / "scripts" / "gen_source_lock.py"
+    LOCK = SKILL_ROOT.parents[1] / "intake" / "spatial-loop-grounded" / "source-lock.json"
+
+    def run_producer(self, *args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(self.PRODUCER), *args],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_the_producer_refuses_naming_the_input_it_was_not_given(self) -> None:
+        before = self.LOCK.read_bytes()
+        result = self.run_producer()
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("SOURCE_ROOT_UNRESOLVED:NOT_SUPPLIED", result.stderr)
+        self.assertIn("--source-root", result.stderr)
+        # A refusal that still wrote the lock would be the failure it claims to
+        # have prevented.
+        self.assertEqual(before, self.LOCK.read_bytes())
+
+    def test_a_source_root_that_is_not_a_checkout_is_its_own_refusal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = self.run_producer("--source-root", directory)
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("SOURCE_ROOT_UNRESOLVED:NOT_A_CHECKOUT", result.stderr)
+
+    def test_an_absent_source_root_is_a_different_refusal_from_a_bad_one(self) -> None:
+        result = self.run_producer("--source-root", "/no/such/tree/anywhere")
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("SOURCE_ROOT_UNRESOLVED:ABSENT", result.stderr)
+
+    def test_no_host_absolute_path_survives_in_this_bundles_operating_surface(self) -> None:
+        """The repository-wide sweep, read back against this bundle.
+
+        `scripts/check_skill_bundles.py` owns the sweep; this asserts the answer
+        for the Skill #108 named, from the gate's own output.
+        """
+        sys.path.insert(0, str(SKILL_ROOT.parents[1] / "scripts"))
+        import check_skill_bundles  # noqa: PLC0415
+
+        manifest = json.loads((SKILL_ROOT / "skill.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            [],
+            check_skill_bundles.scan_host_absolute_paths(
+                "spatial-loop-grounded",
+                SKILL_ROOT,
+                manifest["test_paths"],
+                manifest["eval_inventory"],
+            ),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

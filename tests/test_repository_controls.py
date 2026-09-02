@@ -573,6 +573,73 @@ class RepositoryControlTests(unittest.TestCase):
             check_skill_bundles.scan_birth_artifacts(root),
         )
 
+    def plant_host_path_bundle(self, root: Path, relative: str) -> None:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            'ROOT = "/Users/someoperator/checkouts/thing"\n', encoding="utf-8"
+        )
+
+    def test_a_host_absolute_path_in_a_bundles_operating_surface_fails(self) -> None:
+        """ed3c/skill-concerns#108: the readback that generalises past one Skill.
+
+        #76 cured `control-code-intel` and left the check inside that Skill's
+        own suite. Two instances survived elsewhere and were found by a hand
+        grep, which is the thing a gate is supposed to replace.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.plant_host_path_bundle(root, "scripts/gen_thing.py")
+            errors = check_skill_bundles.scan_host_absolute_paths(
+                "demo", root, ["tests/test_demo.py"], "evals/cases.json"
+            )
+        self.assertEqual(
+            ["HOST_ABSOLUTE_PATH:demo:scripts/gen_thing.py:1:/Users/someoperator/"],
+            errors,
+        )
+
+    def test_the_planted_negatives_a_bundle_ships_are_not_the_subject(self) -> None:
+        """Tests and eval fixtures are where a host literal is INPUT, not binding.
+
+        `control-noodle`'s contract suite feeds `/Users/neon/noodles/noodles.py`
+        to a negative control on purpose. Excluding those two categories is a
+        category boundary with a reason, not a per-skill waiver -- and the
+        manifest is excluded for the same kind of reason: `skill.json` is where
+        `/Users/neon/` is DECLARED as a forbidden literal.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in (
+                "tests/test_demo.py",
+                "evals/fixtures/planted/thing.json",
+                "skill.json",
+            ):
+                self.plant_host_path_bundle(root, relative)
+            self.assertEqual(
+                [],
+                check_skill_bundles.scan_host_absolute_paths(
+                    "demo", root, ["tests/test_demo.py"], "evals/cases.json"
+                ),
+            )
+
+    def test_the_portable_placeholder_shape_is_not_flagged(self) -> None:
+        """`~/` and `<placeholder>/` are the cure, so the rule may not refuse them."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "domain" / "topology.json"
+            path.parent.mkdir(parents=True)
+            path.write_text(
+                '{"root_glob": "~/.claude/projects/*/*/subagents/workflows/wf_*",\n'
+                ' "where": "~/.claude/projects/<project>/<session>/subagents"}\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                [],
+                check_skill_bundles.scan_host_absolute_paths(
+                    "demo", root, ["tests/test_demo.py"], "evals/cases.json"
+                ),
+            )
+
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))
 

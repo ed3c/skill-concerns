@@ -52,7 +52,8 @@
       ],
       "observed": {
         "when": "2026-09-01",
-        "where": "/Users/neon/.claude/projects/-Users-neon-noodles/d4332216-1347-4dc5-8057-7772de22e49c/subagents/workflows",
+        "where": "~/.claude/projects/<project>/<session>/subagents/workflows",
+        "where_note": "the SHAPE of the location, in the same placeholder form `root_glob` above uses, not the operator's literal path (ed3c/skill-concerns#108). The literal was a host-absolute path in tracked bytes and it was the field a reader would copy; what grounds the reading is the four `receipts` named below, each of which takes the HOST_OBSERVED exit and names this file as its carrier. The codex-noodle-session `observed` block carries no `where` at all, and that asymmetry was the tell.",
         "receipts": [
           "step-4-real-wave-observation",
           "step-4-real-wave-with-dead-lanes",
