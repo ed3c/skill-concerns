@@ -30,7 +30,7 @@ python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name>
 python3 scripts/shadow_driver.py --bundle <dir> --subject <station> --append-record
 python3 scripts/shadow_driver.py --add-class <class.json>
 python3 scripts/validate_red_team.py --selftest
-python3 scripts/gen_receipts.py
+python3 scripts/gen_red_team_receipts.py
 ```
 
 A bundle is one boundary's artifacts in four directories - `diffs/`,

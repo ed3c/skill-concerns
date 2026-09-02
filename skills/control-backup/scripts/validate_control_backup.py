@@ -55,7 +55,7 @@ def validate(root: Path) -> list[str]:
     l1 = need("domain/backup-topology.json")
     l2 = need("scripts/backup_driver.py")
     receipts_p = need("receipts.json")
-    producer = need("scripts/gen_receipts.py")
+    producer = need("scripts/gen_backup_receipts.py")
     need("SKILL.md")
     need("references/procedures.md")
 
@@ -106,7 +106,7 @@ def validate(root: Path) -> list[str]:
             text=True,
         )
         if checked.returncode != 0:
-            errors.append(checked.stdout.strip() or "gen_receipts.py --check refused")
+            errors.append(checked.stdout.strip() or "gen_backup_receipts.py --check refused")
 
     return errors
 

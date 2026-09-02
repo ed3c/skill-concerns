@@ -14,7 +14,7 @@
     "receipts.json"
   ],
   "execution_paths": [
-    "scripts/shadow_driver.py",
+    "scripts/precedent_driver.py",
     "scripts/validate_shadow_architect.py",
     "scripts/gen_shadow_receipts.py"
   ],
@@ -35,7 +35,7 @@
     "ed3c",
     "/Users/",
     "precedents.json",
-    "shadow_driver.py",
+    "precedent_driver.py",
     "wave-17"
   ],
   "shared_contracts": [

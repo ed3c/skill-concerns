@@ -28,7 +28,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import cure_authorization  # noqa: E402
 import gen_shadow_receipts  # noqa: E402
-import shadow_driver as driver  # noqa: E402
+import precedent_driver as driver  # noqa: E402
 import validate_shadow_architect as validator  # noqa: E402
 
 FIXTURES = SKILL_ROOT / "evals" / "fixtures"

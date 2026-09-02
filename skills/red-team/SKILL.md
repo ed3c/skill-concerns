@@ -186,7 +186,7 @@ python3 scripts/shadow_driver.py --bundle <dir> --class <class-id>              
 python3 scripts/shadow_driver.py --bundle <dir> --append-record                   # append one run record
 python3 scripts/shadow_driver.py --add-class <class.json>                         # BUILD: refuses an unadjudicated class
 python3 scripts/validate_red_team.py [--selftest]
-python3 scripts/gen_receipts.py                                                   # receipts.json's only author
+python3 scripts/gen_red_team_receipts.py                                                   # receipts.json's only author
 ```
 
 ## Non-claims

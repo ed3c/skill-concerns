@@ -60,7 +60,7 @@
       "id": "receipts-are-produced-not-written",
       "expected": "PASS",
       "note": "The committed receipts.json is exactly what its producer renders from the catalogue, twice.",
-      "test": "test_red_team.RedTeamEvals.test_gen_receipts_is_idempotent_and_authors_the_committed_bytes"
+      "test": "test_red_team.RedTeamEvals.test_gen_red_team_receipts_is_idempotent_and_authors_the_committed_bytes"
     },
     {
       "id": "adjudicated-class-folds-in",

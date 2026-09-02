@@ -17,7 +17,7 @@ from pathlib import Path
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
-import gen_receipts  # noqa: E402
+import gen_backup_receipts  # noqa: E402
 from validate_control_backup import validate  # noqa: E402
 
 
@@ -88,24 +88,24 @@ class ControlBackupEvals(unittest.TestCase):
     def test_the_committed_receipts_are_what_the_producer_makes(self) -> None:
         # The positive arm, through a real driver run: every stamped producer
         # is a claim some assertion replayed green moments ago.
-        results = gen_receipts.run_driver()
+        results = gen_backup_receipts.run_driver()
         self.assertEqual(
             (SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"),
-            gen_receipts.render(self.committed(), results),
+            gen_backup_receipts.render(self.committed(), results),
         )
 
     def test_a_receipt_naming_an_assertion_that_does_not_exist_is_refused(self) -> None:
-        results = gen_receipts.run_driver()
+        results = gen_backup_receipts.run_driver()
         results.pop("lock_takeover")
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(self.committed(), results)
+        with self.assertRaises(gen_backup_receipts.ReceiptRefused) as caught:
+            gen_backup_receipts.build(self.committed(), results)
         self.assertIn("RECEIPT_ASSERTION_ABSENT:single-writer-race", str(caught.exception))
 
     def test_a_receipt_whose_assertion_reds_is_refused(self) -> None:
-        results = gen_receipts.run_driver()
+        results = gen_backup_receipts.run_driver()
         results["lock_takeover"] = False
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(self.committed(), results)
+        with self.assertRaises(gen_backup_receipts.ReceiptRefused) as caught:
+            gen_backup_receipts.build(self.committed(), results)
         self.assertIn("RECEIPT_ASSERTION_RED:single-writer-race", str(caught.exception))
 
     def test_an_entry_claiming_the_driver_with_no_correspondence_is_refused(self) -> None:
@@ -113,9 +113,9 @@ class ControlBackupEvals(unittest.TestCase):
         # nothing replays. HOST_OBSERVED is the earned default, and this is the
         # refusal that keeps it from being an escape hatch in reverse.
         document = self.committed()
-        document["evidence"]["exfat-no-hardlink"]["producer"] = gen_receipts.DRIVER
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(document, gen_receipts.run_driver())
+        document["evidence"]["exfat-no-hardlink"]["producer"] = gen_backup_receipts.DRIVER
+        with self.assertRaises(gen_backup_receipts.ReceiptRefused) as caught:
+            gen_backup_receipts.build(document, gen_backup_receipts.run_driver())
         self.assertIn("RECEIPT_PRODUCER_UNEARNED:exfat-no-hardlink", str(caught.exception))
 
     def test_a_hand_edited_receipts_file_reds_the_validator(self) -> None:

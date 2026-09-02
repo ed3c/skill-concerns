@@ -20,7 +20,7 @@
   "execution_paths": [
     "scripts/shadow_driver.py",
     "scripts/validate_red_team.py",
-    "scripts/gen_receipts.py"
+    "scripts/gen_red_team_receipts.py"
   ],
   "test_paths": [
     "tests/test_red_team.py"

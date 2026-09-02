@@ -52,7 +52,7 @@
       "sha256": "acfaa087688280e70280b2516a13eb36cdca0c25515e9ccdb91546106982f819"
     },
     {
-      "path": "skills/control-backup/scripts/gen_receipts.py",
+      "path": "skills/control-backup/scripts/gen_backup_receipts.py",
       "sha256": "660b8a141ac1d7380b9065541884d68136ff3ea45618e3c57a6b841e05243df2"
     },
     {
@@ -61,7 +61,7 @@
     },
     {
       "path": "skills/control-backup/scripts/validate_control_backup.py",
-      "sha256": "c3eca9e32304e7d876838b8c6e19894e769256e7640c98a20ebcd84554c4b147"
+      "sha256": "fe3658f1fb48aaaf200aa05897bae881f73de0a13e54ad6579dfa177e78fb932"
     },
     {
       "path": "skills/control-backup/skill.json",
@@ -69,10 +69,10 @@
     },
     {
       "path": "skills/control-backup/tests/test_control_backup.py",
-      "sha256": "da77e8e3907d1c83417c35f66f2977f8c0d023b2f73357e7aa429e8b7789dede"
+      "sha256": "990bf08232df43450837276b7199a47abb304ba0dad1dfe564481bd7efe9f287"
     }
   ],
-  "skill_tree_sha256": "7d3e9aca9c2008defa9e3b556bc6e20716a79b7ea32306323e6ba5126b127c9f",
+  "skill_tree_sha256": "020d143039c2b94ba1ab48aa706f7ec8a920156d53aa5da9bcc7ef5095c9108c",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

@@ -52,7 +52,7 @@
       "sha256": "64d9dd6d8a549bed74e389e02e6af8b0071324bbb9b4f41097d0d2fc3d090b5e"
     },
     {
-      "path": "skills/control-code-intel/scripts/gen_receipts.py",
+      "path": "skills/control-code-intel/scripts/gen_code_intel_receipts.py",
       "sha256": "f02f4c37f475424f201753b8d5cd18e5a049e6a73d12f41c5a7220dba2ad6c39"
     },
     {
@@ -61,7 +61,7 @@
     },
     {
       "path": "skills/control-code-intel/scripts/validate_control_code_intel.py",
-      "sha256": "32208e0cfc3b588aff6bcaef6e7706a9d532ccfe24fc1dd4877dd9075a2cbe34"
+      "sha256": "7f439269ab3debecddd23adcd657e693ebf6a07405ff6dd9c9c810c8052fa73f"
     },
     {
       "path": "skills/control-code-intel/skill.json",
@@ -69,10 +69,10 @@
     },
     {
       "path": "skills/control-code-intel/tests/test_control_code_intel.py",
-      "sha256": "3f5fe7454b84ec8a93f64fea1ac4b627fa95edc3d85f8dd3f81517676adf078b"
+      "sha256": "2b0ebcb89a044386b72a69f84384be5a87a5f5f8206e24414f343c9915cb5203"
     }
   ],
-  "skill_tree_sha256": "b96142b5f8324e2bb160589f30b82ea5fc905367fc4e725ddef4a3ee2114dc2b",
+  "skill_tree_sha256": "22f7a8686eb439d4a3271a8daab92b1e35289c1044ae7d32223a7873cf016663",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

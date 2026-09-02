@@ -10,7 +10,7 @@ This is the third and final Agent document for this Skill. Do not search for ano
 2. [`SKILL.md`](SKILL.md) — clauses P1-P7, the ledger contract, the diagnostics.
 3. [`references/portable-architecture-policy.md`](references/portable-architecture-policy.md) — L0, one kernel per clause, domain-free.
 4. [`domain/precedents.json`](domain/precedents.json) — L1, the pinned precedents with provenance, detector, fixture and control.
-5. [`scripts/shadow_driver.py`](scripts/shadow_driver.py) — L2, the reader-only pass, the finding schema's emitter, and the BUILD fold-in.
+5. [`scripts/precedent_driver.py`](scripts/precedent_driver.py) — L2, the reader-only pass, the finding schema's emitter, and the BUILD fold-in.
 6. [`scripts/validate_shadow_architect.py`](scripts/validate_shadow_architect.py) — L2, the schemas, the ties, the reach scan.
 
 ## Stop laws

@@ -9,15 +9,15 @@
   "subject_files": [
     {
       "path": "skills/shadow-architect/AGENTS.md",
-      "sha256": "4394f21e4287fb98ca7b19851ef40e9ee4e27151a2dd0c35189a634267402d95"
+      "sha256": "92e7360a7dd337553f7c0df8c54df8f970b2828030908b6173130b326bfbc72f"
     },
     {
       "path": "skills/shadow-architect/README.md",
-      "sha256": "079ea493441ae949cbeccefc462c0e052b798fa3cf94a7944e531c2cecaf86d5"
+      "sha256": "81f9b05ef033686cad1d24ea78483510764884a26d2367a97deada908b5f8f9b"
     },
     {
       "path": "skills/shadow-architect/SKILL.md",
-      "sha256": "93d8ae75e0dacd3515e2856e01fe7ec1c8bc43e585cb4a54d488550a9b4a0f9e"
+      "sha256": "75631dd7af1622f5b1869744afed007eaafd7931020ce379031534e1265b3234"
     },
     {
       "path": "skills/shadow-architect/domain/precedents.json",
@@ -108,23 +108,23 @@
       "sha256": "21d4363018ffe26dffa10d7d3e4d222e320a4b51024bdfa4ea9daf03530f7030"
     },
     {
-      "path": "skills/shadow-architect/scripts/shadow_driver.py",
+      "path": "skills/shadow-architect/scripts/precedent_driver.py",
       "sha256": "042e1b732b2c4a59efe1d1e8e2ddc88ef1bdc443b7276e63adb943c77e520e98"
     },
     {
       "path": "skills/shadow-architect/scripts/validate_shadow_architect.py",
-      "sha256": "9f39355b2c21b6308938cd294fb411ae57c68b0a8c3269787485bada62a3a013"
+      "sha256": "cf89d44c51477ab9efb524559f824d62864678f2be5ef904220900f8fdba7f4e"
     },
     {
       "path": "skills/shadow-architect/skill.json",
-      "sha256": "1ca2bac488792befb1623737344d002dbc91db8aff15c34e06b0199638a7194b"
+      "sha256": "2a686d3d862d8e0e32548f8562aa75f86d3944766597e90fef5b850078aa0cf2"
     },
     {
       "path": "skills/shadow-architect/tests/test_shadow_architect.py",
-      "sha256": "970d851b906ff3c3f23e5fadd9a76d2dd81caa71fd74fd131ef0f5d28b39ee73"
+      "sha256": "7631b4ec5d0b85a566a7725a4b8c7ca3b1956e6658f36eebe4a5a4c0e3b79bf4"
     }
   ],
-  "skill_tree_sha256": "852bb65000ad7bd96311c5a9c1f2ecfe32193794d1ffe1ace5cf2b702b934e59",
+  "skill_tree_sha256": "ade72249c3e27d99529c214922c7d5870208a50bc8ed4ab72fab5594604805ab",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

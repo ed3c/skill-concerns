@@ -133,7 +133,7 @@ Concern layers:
 
 - L0 procedural — [`references/portable-architecture-policy.md`](references/portable-architecture-policy.md): one domain-free kernel per clause.
 - L1 domain knowledge — [`domain/precedents.json`](domain/precedents.json): the precedents, their provenance, their detectors, and the real judged diffs under [`evals/fixtures/waves/`](evals/fixtures/waves/).
-- L2 execution + assertions — [`scripts/shadow_driver.py`](scripts/shadow_driver.py) and [`scripts/validate_shadow_architect.py`](scripts/validate_shadow_architect.py), plus the planted campaign arm under [`evals/fixtures/planted/`](evals/fixtures/planted/).
+- L2 execution + assertions — [`scripts/precedent_driver.py`](scripts/precedent_driver.py) and [`scripts/validate_shadow_architect.py`](scripts/validate_shadow_architect.py), plus the planted campaign arm under [`evals/fixtures/planted/`](evals/fixtures/planted/).
 
 Arrival is tracked as a row in the repository's capability topology, not claimed
 here: the arrival vocabulary belongs to the bundle that owns it, and this one
@@ -142,9 +142,9 @@ document. The row rises to production arrival when a wave monitor's own findings
 cite these clauses by digest-pinned path.
 
 ```sh
-python3 skills/shadow-architect/scripts/shadow_driver.py --diff <path>              # SHADOW: reader-only
-python3 skills/shadow-architect/scripts/shadow_driver.py --diff <path> --render     # the issue-body block
-python3 skills/shadow-architect/scripts/shadow_driver.py --diff <path> --clause P3  # one precedent
+python3 skills/shadow-architect/scripts/precedent_driver.py --diff <path>              # SHADOW: reader-only
+python3 skills/shadow-architect/scripts/precedent_driver.py --diff <path> --render     # the issue-body block
+python3 skills/shadow-architect/scripts/precedent_driver.py --diff <path> --clause P3  # one precedent
 python3 skills/shadow-architect/scripts/validate_shadow_architect.py [--selftest]
 python3 skills/shadow-architect/scripts/gen_shadow_receipts.py                      # receipts.json's only author
 ```
