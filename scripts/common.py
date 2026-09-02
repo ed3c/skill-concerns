@@ -15,6 +15,24 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # different shapes of the same identity.
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+# The maintain loop's role vocabulary (ed3c/skill-concerns#62): the two halves,
+# the reader-only clause, and the three severities. One declaration, because
+# four readers (`check_skill_bundles` and three bundle validators) each carried
+# their own copy before ed3c/skill-concerns#112 collapsed them to this one.
+#
+# Lives HERE, above `skills/`, not inside a bundle: #112 verified by execution,
+# not argument, that a candidate's own bundle validator resolves the
+# candidate's own copy of this file under `check_receipt_provenance.py`, so
+# trusted code never lends this declaration to a graded tree. See #112 for the
+# probe and the trust argument in full.
+#
+# Not pinned by any bundle's `skill_tree_sha256` (this file sits above
+# `skills/`), so every importing bundle names `../../scripts/common.py` in its
+# `shared_contracts` -- that is what carries this declaration's digest into
+# the bundle's receipt.
+ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
+
 EVIDENCE_LEVELS = [
     "L0_SOURCE_FREEZE",
     "L1_STRUCTURAL",
@@ -23,6 +41,33 @@ EVIDENCE_LEVELS = [
     "L4_MATCHED_LIVE_RUNTIME",
     "L5_DELIVERY_AND_PRODUCTION",
 ]
+
+
+def roles_block(text: str) -> str | None:
+    """The paragraph opened by a `Roles:` line, or None when there is none.
+
+    Paragraph-scoped rather than whole-document: a document-wide token search
+    would be satisfied by `BUILD` in one section and `S1` in an unrelated one,
+    which is not a declaration of anything.
+
+    One implementation, four callers: this exact paragraph walk was written out
+    four times -- once in `check_skill_bundles` and once inside each of three
+    bundle validators' `check_roles` (ed3c/skill-concerns#112). The DIAGNOSTICS
+    stay with the callers, because a repository gate naming a skill and a
+    bundle validator naming its own document are two different messages; what is
+    shared is the reading, which is one mechanism.
+    """
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if "Roles:" not in line:
+            continue
+        block = [line]
+        for following in lines[index + 1 :]:
+            if not following.strip():
+                break
+            block.append(following)
+        return "\n".join(block)
+    return None
 
 
 def load_json(path: Path) -> Any:

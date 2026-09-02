@@ -685,18 +685,18 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "59e8f5f33be6e43e5c4ffa2cdea310ab26ce9d7141ffd90bed6d63c8a33350a7"
+      "sha256": "38047f6464347820d7e9c74cffb38866fc5a28f9b4d729c989e3263379af4c97"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
-      "sha256": "2a3ecf678497d45648062f5a0f33ee02612bed9cb11b70d9d66a55d744521146"
+      "sha256": "63616731560875faf1d0769edd8dcd57ad6b556c3768859cf8a36b7d1f080ca4"
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
       "sha256": "a5185b7e9f450b34d9e00497adbf7b649c4546f4e6821ccfdf86f74cf34d2186"
     }
   ],
-  "skill_tree_sha256": "7a461ef867b70599eeb24423f6985b6b1c0a7178f4fd12e05c5dba3051dd8307",
+  "skill_tree_sha256": "a9ca994ea89721fe22213de1e15f56fa55397bee63e579e0855a0ca4e3d4aad6",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -709,6 +709,10 @@
     {
       "path": "contracts/admission.schema.json",
       "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
+    {
+      "path": "scripts/common.py",
+      "sha256": "3efbd19d7177506f533d68dafec5dd9533b26e12ad2946cc2f67e68dbbbb5f59"
     }
   ],
   "controls": [

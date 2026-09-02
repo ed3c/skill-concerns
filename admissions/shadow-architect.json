@@ -113,18 +113,18 @@
     },
     {
       "path": "skills/shadow-architect/scripts/validate_shadow_architect.py",
-      "sha256": "9a98757455e4cad4968007ad4659f68b90c4ceed1a74c747dd8c4e58cfe1c604"
+      "sha256": "9f39355b2c21b6308938cd294fb411ae57c68b0a8c3269787485bada62a3a013"
     },
     {
       "path": "skills/shadow-architect/skill.json",
-      "sha256": "274a57fc6b675ce085e00a55bb6d57c509498d14bc71e62a960523f423e7d18b"
+      "sha256": "1ca2bac488792befb1623737344d002dbc91db8aff15c34e06b0199638a7194b"
     },
     {
       "path": "skills/shadow-architect/tests/test_shadow_architect.py",
       "sha256": "970d851b906ff3c3f23e5fadd9a76d2dd81caa71fd74fd131ef0f5d28b39ee73"
     }
   ],
-  "skill_tree_sha256": "3d2b3ea8e3ffa1ed9fcbca1bea632be00ad8afa0c30680afe99dc65310f1bc3d",
+  "skill_tree_sha256": "852bb65000ad7bd96311c5a9c1f2ecfe32193794d1ffe1ace5cf2b702b934e59",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -137,6 +137,10 @@
     {
       "path": "contracts/admission.schema.json",
       "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
+    {
+      "path": "scripts/common.py",
+      "sha256": "3efbd19d7177506f533d68dafec5dd9533b26e12ad2946cc2f67e68dbbbb5f59"
     }
   ],
   "controls": [

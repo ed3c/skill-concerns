@@ -43,12 +43,19 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
+# The content digest and the role vocabulary are declared once, above `skills/`
+# (ed3c/skill-concerns#112). This validator carried private copies of both while
+# already putting `scripts/` on its own path; that path is resolved from THIS
+# file, so under `check_receipt_provenance.py --root <candidate>` it lands in the
+# candidate tree, not the trusted one. `skill.json` names
+# `../../scripts/common.py` in `shared_contracts`, so the receipt binds the bytes
+# these names come from.
+from common import HEX64, ROLE_TOKENS, roles_block  # noqa: E402
+
 CLAUSE_RE = re.compile(r"^## (R\d+)\. ", re.M)
 KERNEL_RE = re.compile(r"^- (K\d+) ", re.M)
 REQUIRED_FIELDS = ("- Signal:", "- Action:", "- Why:", "- evidence:")
 BACKTICKED = re.compile(r"`([^`]+)`")
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
-ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 
 # SKILL.md's `## ` headings, in order. `scripts/check_skill_bundles.py` reads
 # this tuple out of these bytes (parsed, never imported) and compares it to the
@@ -1065,17 +1072,7 @@ def check_roles(skill_root: Path, errors: list[str]) -> None:
         if not path.is_file():
             errors.append(f"{relative} missing")
             continue
-        lines = path.read_text(encoding="utf-8").splitlines()
-        block = ""
-        for index, line in enumerate(lines):
-            if "Roles:" in line:
-                collected = [line]
-                for following in lines[index + 1 :]:
-                    if not following.strip():
-                        break
-                    collected.append(following)
-                block = "\n".join(collected)
-                break
+        block = roles_block(path.read_text(encoding="utf-8"))
         if not block:
             errors.append(f"{relative} has no Roles: declaration block")
             continue

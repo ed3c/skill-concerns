@@ -21,12 +21,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+# The content-digest identity is declared once (ed3c/skill-concerns#112).
+from common import HEX64  # noqa: E402
+
 PRODUCER = ROOT / "admissions" / "feature-map-engineering.json"
 TARGETS = {
     ROOT / "skills/control-noodle/domain/composition.json": "procedure_tree_sha256",
     ROOT / "skills/control-noodle/fixtures/valid/procedure-admission.json": "skill_tree_sha256",
 }
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def main() -> int:

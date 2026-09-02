@@ -640,6 +640,95 @@ class RepositoryControlTests(unittest.TestCase):
                 ),
             )
 
+    def plant_scripts_module(self, root: Path, relative: str, body: str) -> None:
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("import re\n\n" + body, encoding="utf-8")
+
+    def test_a_second_literal_of_a_shared_declaration_fails(self) -> None:
+        """ed3c/skill-concerns#112: the readback that replaces a hand grep.
+
+        Both planted forms are RENAMED, because that is how the surviving copy
+        survived: `HEX64_RE` was the same identity spelled under another name,
+        and a grep for `HEX64 = ` cannot see it.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            (root / "scripts" / "common.py").write_text(
+                'ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")\n',
+                encoding="utf-8",
+            )
+            self.plant_scripts_module(
+                root,
+                "skills/demo/scripts/validate_demo.py",
+                'HEX64_RE = re.compile(r"[0-9a-f]{64}")\n'
+                'MY_ROLES = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")\n',
+            )
+            errors = check_skill_bundles.scan_second_literals(root)
+        self.assertEqual(
+            [
+                "SHARED_IDENTITY_SECOND_LITERAL:skills/demo/scripts/validate_demo.py:"
+                "3:HEX64_RE:[0-9a-f]{64}",
+                "SHARED_IDENTITY_SECOND_LITERAL:skills/demo/scripts/validate_demo.py:"
+                "4:MY_ROLES:common.ROLE_TOKENS",
+            ],
+            errors,
+        )
+
+    def test_a_composite_shape_that_merely_contains_an_identity_is_not_a_copy(
+        self,
+    ) -> None:
+        """`^(?:commit:[0-9a-f]{40}|ledger:...)$` is a different claim.
+
+        Without this arm the rule would be a substring hunt, and the honest
+        composite patterns two validators own would have to be deleted to
+        satisfy a gate that never understood them.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.plant_scripts_module(
+                root,
+                "skills/demo/scripts/validate_demo.py",
+                'MONITOR = re.compile(r"^(?:commit:[0-9a-f]{40}|ledger:[a-z]+)$")\n'
+                'LEVELS = ["L0_SOURCE_FREEZE", "L1_STRUCTURAL"]\n',
+            )
+            self.assertEqual([], check_skill_bundles.scan_second_literals(root))
+
+    def test_the_declarations_home_is_not_its_own_second_literal(self) -> None:
+        self.assertEqual([], check_skill_bundles.scan_second_literals(ROOT))
+
+    def test_every_bundle_importing_the_shared_home_pins_its_bytes(self) -> None:
+        """A declaration moved above `skills/` leaves the receipt's digest.
+
+        `scripts/common.py` is in no bundle's `skill_tree_sha256`, so importing
+        from it without naming it in `shared_contracts` would move the shared
+        vocabulary out from under the receipt that is supposed to bind the
+        bundle. `admission_stamp.build_receipt` digests every `shared_contracts`
+        entry into `contract_files`, which is the pin.
+        """
+        entry = "../../scripts/common.py"
+        for skill_root in sorted((ROOT / "skills").glob("*/")):
+            scripts = skill_root / "scripts"
+            if not scripts.is_dir():
+                continue
+            imports_common = any(
+                any(
+                    isinstance(node, ast.ImportFrom) and node.module == "common"
+                    for node in ast.walk(
+                        ast.parse(path.read_text(encoding="utf-8"), filename=path.name)
+                    )
+                )
+                for path in sorted(scripts.glob("*.py"))
+            )
+            if not imports_common:
+                continue
+            manifest = json.loads(
+                (skill_root / "skill.json").read_text(encoding="utf-8")
+            )
+            with self.subTest(skill=skill_root.name):
+                self.assertIn(entry, manifest["shared_contracts"])
+
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))
 

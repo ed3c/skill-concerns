@@ -197,18 +197,18 @@
     },
     {
       "path": "skills/arrival-engineering/scripts/validate_arrival_engineering.py",
-      "sha256": "c0d1548a388dfcdca1cd5a090ce6b517b2a184b763237b3fa91d6a15f6d452d3"
+      "sha256": "de321a8ab4de34cb853c44e44f7ad61856434bcd1876b766b6dac6c23859b88b"
     },
     {
       "path": "skills/arrival-engineering/skill.json",
-      "sha256": "b55b222a9f6c61addfd166b36ec35a9dbaf6ff0968147fa8e657db88ae914016"
+      "sha256": "93bdb9edec7c60a229b20a1a2b188cd7080d1a97b75ead36ccee41c8150cdb59"
     },
     {
       "path": "skills/arrival-engineering/tests/test_arrival_engineering.py",
       "sha256": "113747186231cddc8738beb03b809b7bff005608e3e65003e6ba9b9f15818272"
     }
   ],
-  "skill_tree_sha256": "273fb890a79f2a6a03c22853d593df8897d659473df27bb1ec7298e5acad2601",
+  "skill_tree_sha256": "8a31b39d9c0454ec947a56b7603a3990311ba6df28021daf028500aee1758323",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -221,6 +221,10 @@
     {
       "path": "contracts/admission.schema.json",
       "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
+    {
+      "path": "scripts/common.py",
+      "sha256": "3efbd19d7177506f533d68dafec5dd9533b26e12ad2946cc2f67e68dbbbb5f59"
     }
   ],
   "controls": [

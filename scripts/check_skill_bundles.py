@@ -10,12 +10,15 @@ import re
 from typing import Any, Iterable
 
 from common import (
+    HEX40,
     HEX64,
     REPO_ROOT,
+    ROLE_TOKENS,
     digest_entries,
     load_json,
     print_result,
     regular_files,
+    roles_block,
     safe_repo_path,
     tree_digest,
 )
@@ -45,8 +48,11 @@ NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 # write during its own operation, so both halves, the reader-only clause, and
 # the severities must be on the page rather than assumed by the reader.
 # `\bSHADOW\b` deliberately does not match `MODULE_NAME_SHADOWED`.
+#
+# The vocabulary itself is `common.ROLE_TOKENS`, not a literal here: this file
+# and three bundle validators each carried an identical copy of it, and a copy
+# that quietly loses a token keeps passing (ed3c/skill-concerns#112).
 ROLE_CLAIM = re.compile(r"\b(?:BUILD|SHADOW)\b")
-ROLE_DECLARATION_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 ROLE_DOCUMENTS = ("SKILL.md", "README.md")
 
 # --------------------------------------------------------------------------
@@ -123,26 +129,6 @@ BIRTH_PROVE_ONCE = "ops/first-run-receipt.json"
 FEATURE_MAP_SHAPE = ("feature", "actor", "states", "transitions", "observables")
 
 
-def roles_block(text: str) -> str | None:
-    """The paragraph opened by a `Roles:` line, or None when there is none.
-
-    Paragraph-scoped rather than whole-document: a document-wide token search
-    would be satisfied by `BUILD` in one section and `S1` in an unrelated one,
-    which is not a declaration of anything.
-    """
-    lines = text.splitlines()
-    for index, line in enumerate(lines):
-        if "Roles:" not in line:
-            continue
-        block = [line]
-        for following in lines[index + 1 :]:
-            if not following.strip():
-                break
-            block.append(following)
-        return "\n".join(block)
-    return None
-
-
 def scan_role_declarations(
     name: str, skill_root: Path, documents: Iterable[str] = ROLE_DOCUMENTS
 ) -> list[str]:
@@ -159,7 +145,7 @@ def scan_role_declarations(
         if block is None:
             errors.append(f"SKILL_ROLES_DECLARATION_ABSENT:{name}:{relative}")
             continue
-        missing = [token for token in ROLE_DECLARATION_TOKENS if token not in block]
+        missing = [token for token in ROLE_TOKENS if token not in block]
         if missing:
             errors.append(
                 f"SKILL_ROLES_DECLARATION_INCOMPLETE:{name}:{relative}:{','.join(missing)}"
@@ -640,6 +626,149 @@ def scan_host_absolute_paths(
     return errors
 
 
+def _assigned_names(node: ast.stmt) -> list[str]:
+    targets = (
+        node.targets
+        if isinstance(node, ast.Assign)
+        else ([node.target] if isinstance(node, ast.AnnAssign) else [])
+    )
+    return [target.id for target in targets if isinstance(target, ast.Name)]
+
+
+IDENTITY_SHAPES = {
+    HEX40.pattern.removeprefix("^").removesuffix("$"),
+    HEX64.pattern.removeprefix("^").removesuffix("$"),
+}
+
+
+def _identity_pattern(node: ast.expr) -> str | None:
+    """The hex-identity regex `node` compiles, or None.
+
+    Matches the identity and nothing that merely CONTAINS it: once the anchors
+    are stripped the pattern must BE one of `IDENTITY_SHAPES`. That set is
+    DERIVED from `common.HEX40`/`common.HEX64`, not retyped -- a hand-typed
+    `"[0-9a-f]{40}"` here would itself be a second literal of the identity this
+    function polices, invisible to `scan_second_literals` because that scan
+    walks module-level assignments and this comparison used to live inside a
+    function body (the shape found and fixed while landing
+    ed3c/skill-concerns#112). A composite shape such as
+    `^(?:commit:[0-9a-f]{40}|ledger:...)$` is a different claim and is left
+    alone, which is the difference between policing one declaration and
+    running a substring hunt.
+    """
+    if not isinstance(node, ast.Call):
+        return None
+    func = node.func
+    if not (
+        isinstance(func, ast.Attribute)
+        and func.attr == "compile"
+        and isinstance(func.value, ast.Name)
+        and func.value.id == "re"
+    ):
+        return None
+    if not node.args or not isinstance(node.args[0], ast.Constant):
+        return None
+    pattern = node.args[0].value
+    if not isinstance(pattern, str):
+        return None
+    stripped = pattern.removeprefix("^").removesuffix("$")
+    return stripped if stripped in IDENTITY_SHAPES else None
+
+
+def _shared_sequences(common_path: Path) -> dict[str, list]:
+    """name -> value for every module-level list/tuple `common.py` declares.
+
+    Reuses `_assigned_names` and `ast.literal_eval` against `common.py`'s own
+    bytes rather than importing the module and hand-picking which attributes
+    count: the subject is whatever `common.py` actually declares, so a third
+    vocabulary constant is included the day it lands there, with no second
+    edit in this file to keep it covered.
+    """
+    try:
+        tree = ast.parse(common_path.read_text(encoding="utf-8"), filename=common_path.name)
+    except (OSError, SyntaxError, UnicodeDecodeError):
+        return {}
+    found: dict[str, list] = {}
+    for node in tree.body:
+        names = _assigned_names(node)
+        value = getattr(node, "value", None)
+        if not names or value is None:
+            continue
+        try:
+            literal = ast.literal_eval(value)
+        except (ValueError, TypeError, SyntaxError):
+            continue
+        if isinstance(literal, (list, tuple)):
+            found[names[0]] = list(literal)
+    return found
+
+
+def scan_second_literals(root: Path) -> list[str]:
+    """No executable file may re-declare something `scripts/common.py` owns.
+
+    ed3c/skill-concerns#112. `common.py` states the rule in its own words -- one
+    declaration per identity, "so two gates cannot come to accept different
+    shapes of the same identity" -- and the rule held above `skills/` while
+    being suspended inside it: four copies of the role vocabulary, three private
+    mirrors of the two hex identities, and one of those under a DIFFERENT NAME
+    (`HEX64_RE`), which is how a second literal survives a grep for the first. A
+    hand grep is what found them, and a hand grep is what this replaces.
+
+    Both the names and the values are PARSED from `common.py`'s own bytes
+    (`_shared_sequences`), never typed here as a list of subjects: a hand-typed
+    `{"ROLE_TOKENS": ..., "EVIDENCE_LEVELS": ...}` covers a value that drifts
+    but not a THIRD constant someone adds to `common.py` later, since nothing
+    would add its name to this dict -- a per-subject list inside a generic
+    gate is the same defect this scan exists to refuse in everyone else's file.
+    Parsing means a constant is covered on arrival with no second edit here.
+
+    The subject is the executable surface -- `scripts/` and each bundle's
+    `scripts/` -- and not tests, fixtures or domain records. Those are where
+    `skills/shadow-architect`'s P3 campaign keeps its planted `HEX40` literal
+    and the precedent that quotes it: a detector's subject matter is not a
+    declaration, and a gate that could not tell the difference would refuse the
+    fixture that proves the rule.
+    """
+    home = "scripts/common.py"
+    shared = _shared_sequences(root / home)
+    errors: list[str] = []
+    directories = [root / "scripts", *sorted((root / "skills").glob("*/scripts"))]
+    for directory in directories:
+        for path in sorted(directory.glob("*.py")):
+            relative = path.relative_to(root).as_posix()
+            if relative == home:
+                continue
+            try:
+                tree = ast.parse(path.read_text(encoding="utf-8"), filename=path.name)
+            except (OSError, SyntaxError, UnicodeDecodeError):
+                continue
+            for node in tree.body:
+                names = _assigned_names(node)
+                value = getattr(node, "value", None)
+                if not names or value is None:
+                    continue
+                pattern = _identity_pattern(value)
+                if pattern is not None:
+                    errors.append(
+                        f"SHARED_IDENTITY_SECOND_LITERAL:{relative}:{node.lineno}:"
+                        f"{names[0]}:{pattern}"
+                    )
+                    continue
+                try:
+                    literal = ast.literal_eval(value)
+                except (ValueError, TypeError, SyntaxError):
+                    continue
+                if not isinstance(literal, (list, tuple)):
+                    continue
+                for owner, owned in shared.items():
+                    if list(literal) == owned:
+                        errors.append(
+                            f"SHARED_IDENTITY_SECOND_LITERAL:{relative}:{node.lineno}:"
+                            f"{names[0]}:common.{owner}"
+                        )
+    return errors
+
+
 def _qualified_test_methods(skill_root: Path, tests: list[str]) -> set[tuple[str, str, str]]:
     """(module, class, method) for every test method declared under `tests`.
 
@@ -757,6 +886,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
         rows_by_skill = runner_rows(runner)
 
     errors.extend(scan_birth_artifacts(root))
+    errors.extend(scan_second_literals(root))
 
     for row in rows:
         if not isinstance(row, dict):
