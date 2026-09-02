@@ -22,7 +22,7 @@
         "experiment": "blind-observer",
         "recipe": [
           "gh api repos/ed3c/skill-concerns/issues/72/events --jq '[.[]|select(.event==\"edited\")]|length'",
-          "gh api graphql -f query='{repository(owner:\"ed3c\",name:\"skill-concerns\"){issue(number:72){userContentEdits(first:20){totalCount}}}}'"
+          "gh api graphql -f query='{repository(owner:\"ed3c\",name:\"skill-concerns\"){issue(number:72){userContentEdits(first:20){totalCount nodes{editedAt editor{login}}}}}}'"
         ],
         "expected": "the two probes disagree: REST reports 0, GraphQL reports a non-zero totalCount",
         "both_directions": "positive: the same call site on an issue whose body was edited must report the edit; negative: on an issue with no body edit it must report zero"

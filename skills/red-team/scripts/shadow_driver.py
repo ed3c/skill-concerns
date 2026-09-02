@@ -92,10 +92,39 @@ DIAGNOSTICS = (
 DEFAULT_SUBJECT = "wave-boundary"
 
 # The probe surfaces that structurally cannot carry the answer they are cited
-# for (ed3c/skill-concerns#83). A claim of absence resting on one of these is
-# ABSENT, never NEGATIVE.
-BLIND_PROBES = {
-    "rest-events-edited": re.compile(r"issues/\d+/(?:events|timeline)"),
+# for (ed3c/skill-concerns#83), each DISPOSED rather than merely labelled: the
+# blind surface, what it cannot see, the sighted surface that can, and that
+# surface's own ceiling. A claim of absence resting on a blind one is ABSENT,
+# never NEGATIVE.
+#
+# Naming the replacement is the disposition. A refusal that says only what is
+# wrong leaves the next report to re-derive the substitute, and re-deriving it
+# is how this probe reached every lane in the first place -- `land_pr.py`
+# rewrites the referenced issue's body on every land, so every landed PR
+# carries an automation body edit the REST feed reports as zero.
+#
+# The sighted surface is not free of ceilings and its ceiling is carried here
+# rather than assumed, because it is the same absence-read-as-negative shape
+# one level down (ed3c/skill-concerns#102).
+BLIND_PROBES: dict[str, dict[str, Any]] = {
+    "rest-events-edited": {
+        "pattern": re.compile(r"issues/\d+/(?:events|timeline)"),
+        "cannot": (
+            "carry a body revision at all: `edited` in that payload is a COMMENT event"
+        ),
+        "instead": (
+            "gh api graphql -f query='{repository(owner:\"OWNER\",name:\"REPO\")"
+            "{issue(number:N){userContentEdits(first:20)"
+            "{totalCount nodes{editedAt editor{login}}}}}}'"
+        ),
+        "ceiling": (
+            "totalCount counts the ORIGINAL revision once any edit exists, so the "
+            "first edit moves it 0 -> 2 and every later edit by one: subtract one "
+            "when non-zero, and read 0 as ABSENT rather than as NEGATIVE "
+            "(ed3c/skill-concerns#102). Read the editor logins in the same query - "
+            "counted alone, an automation edit and a hand edit are the same number"
+        ),
+    },
 }
 ABSENCE_CLAIM = re.compile(
     r"(?i)\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit", re.M
@@ -199,8 +228,8 @@ def experiment_blind_observer(bundle: Path) -> list[dict[str, Any]]:
             claim = ABSENCE_CLAIM.search(text)
             if not claim:
                 continue
-            for probe, pattern in BLIND_PROBES.items():
-                match = pattern.search(text)
+            for probe, blind in BLIND_PROBES.items():
+                match = blind["pattern"].search(text)
                 if not match:
                     continue
                 hits.append(
@@ -209,7 +238,8 @@ def experiment_blind_observer(bundle: Path) -> list[dict[str, Any]]:
                         path,
                         "an absence claim rests on an observer that has demonstrated both directions",
                         f"the claim {claim.group(0)!r} rests on {probe} ({match.group(0)}), "
-                        "a surface that cannot carry a body revision at all",
+                        f"a surface that cannot {blind['cannot']}. Read it instead with "
+                        f"{blind['instead']} -- {blind['ceiling']}",
                     )
                 )
     return hits
