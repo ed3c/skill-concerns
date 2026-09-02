@@ -394,7 +394,7 @@ def check_diagnostic_tie(text: str, errors: list[str]) -> None:
         errors.append(f"Diagnostics section names a diagnostic the driver cannot emit: {extra}")
 
 
-def check_catalogue(catalogue: dict, errors: list[str]) -> None:
+def check_catalogue(catalogue: dict, repo_root: Path, errors: list[str]) -> None:
     entries = catalogue.get("classes")
     if not isinstance(entries, list) or not entries:
         errors.append("catalogue carries no classes")
@@ -454,6 +454,56 @@ def check_catalogue(catalogue: dict, errors: list[str]) -> None:
                 f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: no stock-sweep reference, so "
                 "whether the existing instances were dispositioned is archaeology"
             )
+        # A cure that covers ONE instance cannot go in `gate_ref`: that field is
+        # the lifecycle switch for the whole class, and an active row naming one
+        # reds two branches up. So it goes in `covered_instance` - and it is
+        # RESOLVED here against the carrier's own bytes rather than described in
+        # prose, the same way `check_method_claims` resolves a claim's refs.
+        # Renaming the function or any of the diagnostics reds against a file
+        # this row never touched; a paragraph naming them re-reads as nothing.
+        covered = entry.get("covered_instance")
+        if covered is None:
+            continue
+        if not isinstance(covered, dict):
+            errors.append(f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: covered_instance is not a record")
+            continue
+        if not str(entry.get("status_why") or "").strip():
+            errors.append(
+                f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: a covered instance is named and "
+                "status_why does not say why the class is still sampled"
+            )
+        carrier_ref = str(covered.get("carrier") or "")
+        carrier = repo_root / carrier_ref
+        if not carrier_ref or not carrier.is_file():
+            errors.append(
+                f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: covered_instance carrier "
+                f"{carrier_ref!r} is not a file in this tree"
+            )
+            continue
+        text = carrier.read_text(encoding="utf-8")
+        symbol = str(covered.get("symbol") or "")
+        # `def {symbol}(`, not `def {symbol}`: the open paren is what makes a
+        # rename red. Without it `scan_host_observation` still matches
+        # `scan_host_observation_renamed` and the tie passes over the rename it
+        # exists to catch - measured, not reasoned about.
+        if not symbol or f"def {symbol}(" not in text:
+            errors.append(
+                f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: covered_instance names "
+                f"{symbol!r}, which {carrier_ref} does not define"
+            )
+        diagnostics = covered.get("diagnostics")
+        if not isinstance(diagnostics, list) or not diagnostics:
+            errors.append(
+                f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: covered_instance names no "
+                "diagnostic, so it records a symbol that refuses nothing"
+            )
+            continue
+        for diagnostic in diagnostics:
+            if str(diagnostic) not in text:
+                errors.append(
+                    f"CATALOGUE_ENTRY_UNGROUNDED:{class_id}: covered_instance names "
+                    f"{diagnostic!r}, which {carrier_ref} cannot emit"
+                )
 
 
 def check_observation_topology(skill_root: Path, errors: list[str]) -> dict[str, Any]:
@@ -1071,7 +1121,7 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     check_kernel(skill_root, bodies, errors)
     check_experiment_tie(catalogue, errors)
     check_diagnostic_tie(text, errors)
-    check_catalogue(catalogue, errors)
+    check_catalogue(catalogue, repo_root, errors)
     check_method_claims(catalogue, repo_root, errors)
     targets = check_observation_topology(skill_root, errors)
     ledger = check_ledger(skill_root, targets, errors)
@@ -1207,6 +1257,48 @@ def selftest() -> int:
             "no stock-sweep reference",
         )
 
+        def rename_covered_diagnostic(copy: Path) -> None:
+            edit_catalogue(
+                copy,
+                lambda body: body["classes"][1]["covered_instance"]["diagnostics"]
+                .__setitem__(0, "RECEIPT_HOST_OBSERVED_RENAMED"),
+            )
+
+        mutate(
+            "covered_instance_naming_a_diagnostic_the_carrier_cannot_emit_reds",
+            rename_covered_diagnostic,
+            "which scripts/check_skill_bundles.py cannot emit",
+        )
+
+        def truncate_covered_symbol(copy: Path) -> None:
+            # A PREFIX of the real name, on purpose. The first cut of this tie
+            # asked `f"def {symbol}" in text`, which a prefix satisfies, so the
+            # arm the tie exists for - a rename - passed. The carrier-side
+            # control caught it; this arm is that control, committed.
+            edit_catalogue(
+                copy,
+                lambda body: body["classes"][1]["covered_instance"].__setitem__(
+                    "symbol", "scan_host_observ"
+                ),
+            )
+
+        mutate(
+            "covered_instance_naming_a_prefix_of_a_real_definition_reds",
+            truncate_covered_symbol,
+            "which scripts/check_skill_bundles.py does not define",
+        )
+
+        def silent_covered_instance(copy: Path) -> None:
+            edit_catalogue(
+                copy, lambda body: body["classes"][1].__setitem__("status_why", "")
+            )
+
+        mutate(
+            "covered_instance_without_a_status_argument_reds",
+            silent_covered_instance,
+            "status_why does not say why the class is still sampled",
+        )
+
         def edit_json(copy: Path, relative: str, change) -> None:
             path = copy / relative
             body = json.loads(path.read_text(encoding="utf-8"))
@@ -1284,7 +1376,29 @@ def selftest() -> int:
 
         def station_outgrew_its_row(copy: Path) -> None:
             def change(body):
-                record = dict(body["records"][-1])
+                # The subject to plant against is chosen by IDENTITY, never by
+                # position. `records[-1]` is whichever station ran last in an
+                # append-only ledger, so the first record appended for a station
+                # with no arrival row turned this arm into a silent no-op:
+                # `check_station_arrival` skips untracked stations, so the
+                # planted record reported nothing and the control still passed.
+                topology = json.loads(
+                    (copy / "domain" / "observation-topology.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                tracked = {
+                    row.get("id")
+                    for row in topology.get("targets") or []
+                    if row.get("arrival_row")
+                }
+                record = dict(
+                    next(
+                        item
+                        for item in body["records"]
+                        if item.get("subject") in tracked
+                    )
+                )
                 record["run_id"] = "2026-12-01T00:00:00+00:00"
                 record["boundary"] = "generation-close"
                 body["records"].append(record)
