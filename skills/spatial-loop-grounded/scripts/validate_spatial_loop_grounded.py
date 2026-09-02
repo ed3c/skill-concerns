@@ -36,6 +36,18 @@ LEDGER_ENTRY_KEYS = (
 )
 GENESIS = "0" * 64
 
+# The interpretation-time obligations a wave's interpreter must physically
+# encounter. `evals/behavioral.json` has named a `protocol` path since the
+# pilot, and nothing resolved it: the wave-14 lane filed a finding into that
+# path while no such file existed - a NO-HOME wearing a path. Every campaign
+# spec now names it too, because the spec is what an interpreter holds, and
+# these anchors are read out of the resolved document, so a caveat deleted from
+# the protocol reds here (ed3c/skill-concerns#79).
+PROTOCOL_ANCHORS = (
+    "caveat: typo-fragile-allow-list-scoring",
+    "caveat: wave-1-shaped-criteria-template-bias",
+)
+
 # --- clause fixtures --------------------------------------------------------
 # A clause whose only evidence is its own prose has never been evaluated. The
 # behavioral campaigns need a live judge and stay outside hermetic run_all;
@@ -174,8 +186,55 @@ def validate(skill_root: Path) -> list[str]:
                     if token not in evidence:
                         errors.append(f"topology primitive {name!r}: evidence id {token!r} not in receipts.json")
 
+    errors.extend(validate_protocol(skill_root))
     errors.extend(validate_clause_fixtures(skill_root, clause_ids))
     errors.extend(validate_campaigns(skill_root, clause_ids))
+    return errors
+
+
+def validate_protocol(skill_root: Path) -> list[str]:
+    """The protocol document exists, carries its caveats, and is reachable from
+    every campaign spec.
+
+    Two halves, both load-bearing. Resolving the path is what stops a finding
+    from being filed into a name; requiring every campaign spec to name it is
+    what puts it in front of the person interpreting a wave, who reads the spec
+    and has no reason to open the inventory.
+    """
+    errors: list[str] = []
+    repo_root = skill_root.parents[1]
+    behavioral = skill_root / "evals" / "behavioral.json"
+    sources: list[tuple[str, Path]] = []
+    if behavioral.is_file():
+        sources.append(("evals/behavioral.json", behavioral))
+    campaigns = skill_root / "evals" / "behavioral-campaigns"
+    sources.extend(
+        (f"{spec.parent.name}/spec.json", spec)
+        for spec in sorted(campaigns.glob("*/spec.json"))
+    )
+    if not sources:
+        return ["no campaign spec or inventory to carry the protocol reference"]
+
+    resolved: set[str] = set()
+    for label, path in sources:
+        declared = json.loads(path.read_text(encoding="utf-8")).get("protocol")
+        if not isinstance(declared, str) or not declared.strip():
+            errors.append(f"{label} declares no protocol document")
+            continue
+        document = repo_root / declared
+        if not document.is_file():
+            errors.append(
+                f"{label} names protocol {declared!r}, which does not exist - "
+                "a filed finding with no file is a NO-HOME wearing a path"
+            )
+            continue
+        if declared in resolved:
+            continue
+        resolved.add(declared)
+        text = document.read_text(encoding="utf-8")
+        for anchor in PROTOCOL_ANCHORS:
+            if anchor not in text:
+                errors.append(f"{declared} lost the interpretation-time obligation {anchor!r}")
     return errors
 
 

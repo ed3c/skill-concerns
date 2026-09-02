@@ -40,9 +40,19 @@ def rewrite_json(path: Path, mutate) -> None:
 
 
 def mutated_copy() -> tuple[tempfile.TemporaryDirectory, Path]:
+    """A throwaway skill tree to hollow, with the repository shape the
+    validator resolves against.
+
+    `validate_protocol` resolves each spec's declared protocol path from the
+    repository root, which it derives from the skill root's own depth - so the
+    copy is laid out at that same depth with a `docs/` beside it. A flat copy
+    would send every mutation below through a missing-document error, and the
+    assertions - all `any(...)` - would stop distinguishing the defect they
+    planted from the shape of the fixture."""
     temp = tempfile.TemporaryDirectory(prefix="slg-eval-")
-    root = Path(temp.name) / "skill"
+    root = Path(temp.name) / "skills" / SKILL_ROOT.name
     shutil.copytree(SKILL_ROOT, root, ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(SKILL_ROOT.parents[1] / "docs", Path(temp.name) / "docs")
     return temp, root
 
 
@@ -148,6 +158,41 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         self.assertIn("skills-shared", text)
         path.write_text(text.replace("skills-shared", "elsewhere"), encoding="utf-8")
         self.assertTrue(any("provenance" in e for e in validate(root)), validate(root))
+
+    # --- the protocol document a wave interpreter physically encounters ---
+
+    def test_hollow_protocol_reference_unresolvable_fails(self) -> None:
+        """The wave-14 lane filed a finding into `docs/behavioral-eval-protocol.md`
+        while no such file existed - a NO-HOME wearing a path. Nothing resolved
+        the reference, so nothing noticed. This does."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(
+            root / "evals" / "behavioral-campaigns" / "ab-wave2" / "spec.json",
+            lambda d: d.__setitem__("protocol", "docs/does-not-exist.md"),
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("does not exist" in e and "NO-HOME" in e for e in errors), errors
+        )
+
+    def test_hollow_protocol_caveat_dropped_fails(self) -> None:
+        """The caveats are the reason the document exists; a document that keeps
+        its path and loses them is the same NO-HOME with extra steps."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        protocol = root.parents[1] / "docs" / "behavioral-eval-protocol.md"
+        text = protocol.read_text(encoding="utf-8")
+        self.assertIn("caveat: typo-fragile-allow-list-scoring", text)
+        protocol.write_text(
+            text.replace("caveat: typo-fragile-allow-list-scoring", "some other heading"),
+            encoding="utf-8",
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("typo-fragile-allow-list-scoring" in e and "lost" in e for e in errors),
+            errors,
+        )
 
     # --- clause fixtures: C7's written exit is judged, not narrated ---
 

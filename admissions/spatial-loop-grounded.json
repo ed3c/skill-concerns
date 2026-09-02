@@ -9,7 +9,7 @@
   "subject_files": [
     {
       "path": "skills/spatial-loop-grounded/AGENTS.md",
-      "sha256": "ab6673c5ad5103cdbe2bea5a1a6ec2255faf7bee65336544c1edec2e947da3a0"
+      "sha256": "2a21a79c83607936131a6977370bcc8315a5ec73af8b282ab81b768c4af26926"
     },
     {
       "path": "skills/spatial-loop-grounded/README.md",
@@ -493,7 +493,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/spec.json",
-      "sha256": "859d507e2df4dbd6d7adf01f4eb22b7c0981374af3f49a38b23355f1144f8e80"
+      "sha256": "b931eea16cd605d717b2cd3765918429bac6bfac92858cea2836c920e6731168"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/assignment.json",
@@ -553,7 +553,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab-wave2/spec.json",
-      "sha256": "db0ecf7531c578fb3b5818ca9e87561ddca512a419598c68960371ef422eb7fa"
+      "sha256": "eddacb7d5159e2cd04e81c4b930e35c29dcc16f65bc3fbfd7bc281285d99c1bc"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
@@ -609,7 +609,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "cdf7823f6398aba22fa1c9a47e735667503253b1345303a4ea5ccb1eb7cb754b"
+      "sha256": "abe9a19bbce114b80ca599a4310eea0634cc9acc0de4db52ec33d851a8ff81ae"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-events-probe/claim.json",
@@ -681,7 +681,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "9012f9a98240a538bf87b719a697c13215b38d323ef4e9b698e38a9b2983c6e8"
+      "sha256": "59e8f5f33be6e43e5c4ffa2cdea310ab26ce9d7141ffd90bed6d63c8a33350a7"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -689,10 +689,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "d425d9c139f99d9c4c4741828000b92e6c5b39654bb1b7fe7675536c016ba679"
+      "sha256": "c2c92d6a17f358c219af8f6b35d3529f368ea8c83b408f1e6421af965426e285"
     }
   ],
-  "skill_tree_sha256": "1473f70894751342262da1913e6f65473db06944b7326644887e2bf334fa43a4",
+  "skill_tree_sha256": "9441930100ff11745a0937acf208233c57aa9eaecaa944fecc59ce0cfbc52a0e",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -826,6 +826,14 @@
     },
     {
       "id": "c12-demonstration-flag-drift",
+      "state": "PASS"
+    },
+    {
+      "id": "protocol-reference-unresolvable",
+      "state": "PASS"
+    },
+    {
+      "id": "protocol-caveat-dropped",
       "state": "PASS"
     },
     {

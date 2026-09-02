@@ -1,6 +1,8 @@
 {
   "schema_version": 1,
   "campaign": "2026-09-02-ab-n-growth",
+  "protocol": "docs/behavioral-eval-protocol.md",
+  "read_before_interpreting": "the two interpretation-time caveats in that document are not optional reading for this wave: 'caveat: typo-fragile-allow-list-scoring' is answered before these runs are scored, and 'caveat: wave-1-shaped-criteria-template-bias' is answered when these actuals are compared against the assumptions frozen here. validate_spatial_loop_grounded.py resolves this path and reds if either anchor leaves the document.",
   "status": "STAGED - no actors have run; there are no runs/, no judgments.json and no receipt, and this spec must not be cited as a result",
   "question": "does the admitted spatial-loop-grounded clause set change actor behavior at twice the n, on chores whose baits are harder than wave 1's?",
   "why": "the 2026-09-01 wave returned a null result at three chores per arm, and a null at n=3 is as consistent with 'no effect' as with 'not enough chores'. It also produced +33 lines of standing protocol doctrine off that one data point (ed3c/skill-concerns#52). This is the second data point: six chores per arm, twelve runs, the three wave-1 chores re-run byte-identical plus three harder ones.",

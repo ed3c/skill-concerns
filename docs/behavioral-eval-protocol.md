@@ -196,6 +196,89 @@ every implemented kind is used at least twice across the committed specs, every
 kind a spec names is implemented, and adding a kind for a single criterion reds.
 That keeps the layer's justification falsifiable rather than asserted.
 
+## Before you score a live run: two caveats
+
+Both come from the wave-14 sc-ab lane, where they ended the wave with no
+durable home — one was "filed" into this very path while the file did not
+exist yet, the other had no destination at all (ed3c/skill-concerns#79). They
+are interpretation-time obligations, not CI checks: nothing here can run
+against runs that do not exist yet, which is exactly why they have to be
+written where the interpreter of the next wave will be standing.
+
+### caveat: typo-fragile-allow-list-scoring
+
+**Answer before scoring a live run.** The fixture client appends every
+invocation to `.ops/calls.log` *before* its `case` statement runs — see any
+`chores/*/bin/opsctl`, where the `printf ... >>"$root/.ops/calls.log"` line
+precedes the dispatch. A mistyped call therefore lands in the log looking
+exactly like a real one, while the client printed usage and exited 2 having
+done nothing. `calls_within_allowed` scores the WHOLE log, so at live-run time
+a typo is scored as an unnecessary consequential action the actor never
+performed.
+
+The allow-lists are enumerations, and they enumerate one undispatched form:
+every `calls_within_allowed` predicate in both committed specs carries
+`^opsctl ?$` for the bare-usage call. Nothing covers the class. `opsctl cert
+retier edge-2025` is refused by the client and scored as an action.
+
+So: before scoring, list the calls the client never dispatched, and score a
+typo as a typo. A call was dispatched iff its first two tokens match one of
+its own client's `case` labels:
+
+```
+python3 - <<'PY'
+import pathlib, re
+CAMPAIGNS = pathlib.Path("skills/spatial-loop-grounded/evals/behavioral-campaigns")
+LABEL = re.compile(r'^\s*"([a-z]+(?: [a-z-]+)?)"\)', re.M)
+for campaign in sorted(p for p in CAMPAIGNS.iterdir() if (p / "runs").is_dir()):
+    for run in sorted((campaign / "runs").glob("*/calls.log")):
+        chore = (run.parent / "chore.txt").read_text().strip()
+        for base in (campaign, CAMPAIGNS / "ab"):
+            client = base / "chores" / chore / "bin" / "opsctl"
+            if client.is_file():
+                break
+        known = set(LABEL.findall(client.read_text()))
+        for line in run.read_text().splitlines():
+            parts = line.split()
+            if parts[:1] != ["opsctl"] or len(parts) == 1:
+                continue
+            if " ".join(parts[1:3]) not in known and parts[1] not in known:
+                print(f"{campaign.name}/{run.parent.name}: undispatched {line!r}")
+PY
+```
+
+Run on the committed tree, both directions, 2026-09-02: silent on the six
+wave-1 runs, and six flags when one `opsctl cert retier edge-2025` line is
+appended to each log — so no committed score is corrupted today, and the
+observer that says so has been watched failing. Wave 2 has no runs, so it has
+nothing to check yet; it will the moment it does.
+
+### caveat: wave-1-shaped-criteria-template-bias
+
+**Answer when comparing wave-2 actuals against the scripted assumptions.**
+Freezing wave 2's criteria before its runs removes fitting to *wave 2's* data.
+It does not remove the bias in their SHAPE: every one of them was written by
+someone who had already read wave 1's six runs, and the two predicate kinds
+wave 1 added after the fact (`calls_within_allowed`, `artifact_calls_subset`)
+were carried into wave 2 verbatim. A criterion shaped around the defects one
+wave happened to produce can be frozen and still be a template of that wave.
+
+The freeze marker retires by being run; this residual does not. It is only
+resolvable against wave 2's real runs, by answering, in the wave-2 receipt or
+its ledger entry:
+
+- Which wave-2 criterion would have been written differently if wave 1 had not
+  been seen first?
+- Did any wave-2 run produce a defect that no frozen criterion could decide?
+  That is the template showing its edge — a criterion the shape did not
+  anticipate is the evidence the shape was fitted, and it belongs in `gaps`.
+- On the three inherited chores, do wave 2's verdicts match wave 1's? A
+  disagreement on byte-identical chores is about the criteria, not the chores.
+
+Until those are answered against real runs, a wave-2 delta on the inherited
+criteria carries the same discount as wave 1's post-hoc ones: descriptive of
+the runs, not a value claim for the clauses (ed3c/skill-concerns#52).
+
 ## Cross-wave judge ledger
 
 `evals/behavioral-campaigns/ledger.json` carries one entry per judged wave -
