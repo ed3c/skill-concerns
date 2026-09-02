@@ -17,15 +17,15 @@
     },
     {
       "path": "skills/control-code-intel/SKILL.md",
-      "sha256": "0ae474216898ded38c25db407bc059b1d0dc69e453bae78f89593536244d3c71"
+      "sha256": "f324d574fe757be9b8bee814444c89824cc1904d6254e522d96c2817994da988"
     },
     {
       "path": "skills/control-code-intel/domain/code-intel-topology.json",
-      "sha256": "943cf7354edc537bd719d1831307154818b5d091b53b49980f1474429c5f7454"
+      "sha256": "b0ada41497a008196b36dbd0b1203dbe3116b0be74580998ea75a21614780dc7"
     },
     {
       "path": "skills/control-code-intel/evals/cases.json",
-      "sha256": "8eff5e66a6834707f54aae05579b1d8acd0070a4ee8b4c0cb5aaed9e0499ae53"
+      "sha256": "7275f24cb0b7faddfd67f2e44255ef85255ca9f8035e5fc67b190816c43e0d5c"
     },
     {
       "path": "skills/control-code-intel/receipts.json",
@@ -45,7 +45,7 @@
     },
     {
       "path": "skills/control-code-intel/scripts/code_intel_driver.py",
-      "sha256": "a36cd4e3ca3978f543f80fa76b93a222a4ff48b05353aa209eb2cac231756c41"
+      "sha256": "fb4bcd177336526c87f2c5cfaf2ab8da43c93813daba42fac4c5e708286aec5b"
     },
     {
       "path": "skills/control-code-intel/scripts/gen_admission.py",
@@ -57,18 +57,18 @@
     },
     {
       "path": "skills/control-code-intel/scripts/validate_control_code_intel.py",
-      "sha256": "2336aae9443ee4494d13352958b0f18d70b651d828ccae4e7a0276e041800169"
+      "sha256": "51c96b92814c1ad90ebf41cf313bd35b38aac11a3a32357e9883d32591b746b2"
     },
     {
       "path": "skills/control-code-intel/skill.json",
-      "sha256": "d90d7bb4629c4bae9c59200616a3d28769f34dd762de5cbce219a04efd1cd5d6"
+      "sha256": "f19d0ff0be54266b2ca6ae3ba642bd42aea1b8f2108f3dae86b4756823f2e669"
     },
     {
       "path": "skills/control-code-intel/tests/test_control_code_intel.py",
-      "sha256": "39a25d12f0ebb708b74386a4bdd6eb002aa51703abc8047171981b65ed78a7db"
+      "sha256": "2218c76c228698eb20aa74b516a8f84c20fbbb864716440f08fa622b67df09d2"
     }
   ],
-  "skill_tree_sha256": "b797e4ce43efc045809035072f0b5126c7111502523dc801ce4dfb482b140a3a",
+  "skill_tree_sha256": "1994af97793f1acec586c274c23335beb6e70391cdd3355a43b20cf90fac1ccc",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -154,6 +154,30 @@
     },
     {
       "id": "driver-negative-control-defused",
+      "state": "PASS"
+    },
+    {
+      "id": "preflight-passes-on-a-provisioned-path",
+      "state": "PASS"
+    },
+    {
+      "id": "declared-tool-absent-from-path",
+      "state": "PASS"
+    },
+    {
+      "id": "absence-is-not-a-negative-result",
+      "state": "PASS"
+    },
+    {
+      "id": "tool-without-a-presence-declaration",
+      "state": "PASS"
+    },
+    {
+      "id": "ambient-without-a-prerequisite",
+      "state": "PASS"
+    },
+    {
+      "id": "host-absolute-path-in-tracked-bytes",
       "state": "PASS"
     }
   ],

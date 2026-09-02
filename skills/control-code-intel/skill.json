@@ -32,7 +32,8 @@
   ],
   "forbidden_domain_literals": [
     "localhost:5432",
-    "/Users/neon/",
+    "~/",
+    "$HOME",
     "nomic-embed-text"
   ],
   "shared_contracts": [
