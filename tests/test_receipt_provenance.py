@@ -22,9 +22,21 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import admission_stamp  # noqa: E402
 import check_admissions  # noqa: E402
 import check_receipt_provenance  # noqa: E402
 from common import digest_entries, regular_files, sha256_file, tree_digest  # noqa: E402
+
+GRADED_BY = check_receipt_provenance.GRADED_BY
+
+
+def scratch_copy(case: unittest.TestCase) -> Path:
+    temp = tempfile.TemporaryDirectory(prefix="receipt-provenance-")
+    case.addCleanup(temp.cleanup)
+    root = Path(temp.name) / "repo"
+    shutil.copytree(ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+    # Both gates take an already-resolved root from their own `main()`.
+    return root.resolve()
 
 FORGED_SKILL = "control-backup"
 FORGED_CASE_ID = "openrsync-admitted"
@@ -43,14 +55,7 @@ FORGED_ASSERTION = '''    def test_openrsync_admitted_fails(self) -> None:
 
 class ReceiptProvenanceTests(unittest.TestCase):
     def scratch_copy(self) -> Path:
-        temp = tempfile.TemporaryDirectory(prefix="receipt-provenance-")
-        self.addCleanup(temp.cleanup)
-        root = Path(temp.name) / "repo"
-        shutil.copytree(
-            ROOT, root, ignore=shutil.ignore_patterns(".git", "__pycache__")
-        )
-        # Both gates take an already-resolved root from their own `main()`.
-        return root.resolve()
+        return scratch_copy(self)
 
     def forge(self, root: Path) -> None:
         """Delete an assertion, then repair the receipt the way a forger must.
@@ -154,6 +159,83 @@ class ReceiptProvenanceTests(unittest.TestCase):
             [f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:controls"],
             check_receipt_provenance.check(root, only={FORGED_SKILL}),
         )
+
+
+class GradedByWideningTests(unittest.TestCase):
+    """ed3c/skill-concerns#81, landing one of two: the argv trace is accepted.
+
+    A receipt says which controls were measured and not which argv measured
+    them, so a bundle graded through its permanent `run_all.SKILL_CHECKS` row
+    and the same bundle graded through a `policy/bootstrap-admissions.json`
+    entry produce byte-identical receipts. Emitting the field cannot land in
+    the same pull request that teaches the gate to accept it: this gate runs
+    from the default branch against the candidate, so the emitting change
+    would be graded by a comparison that still demands the old bytes.
+
+    Three arms, because fewer would not separate WIDENED from WAIVED: a
+    receipt without the field still reproduces, a receipt naming the argv this
+    execution selected reproduces, and a receipt naming any other argv is
+    refused by name.
+    """
+
+    def write(self, root: Path, skill: str, trace) -> None:
+        path = root / "admissions" / f"{skill}.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt[GRADED_BY] = trace
+        path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+
+    def test_a_receipt_naming_the_executed_argv_still_reproduces(self) -> None:
+        root = scratch_copy(self)
+        self.write(
+            root,
+            FORGED_SKILL,
+            [list(argv) for argv in admission_stamp.declared_checks(FORGED_SKILL, root)],
+        )
+        self.assertEqual([], check_receipt_provenance.check(root, only={FORGED_SKILL}))
+        # And no second gate has to move first: the digest gate never enumerated
+        # a receipt's keys, so landing two needs exactly this one widening.
+        self.assertEqual([], check_admissions.check(root))
+
+    def test_a_trace_naming_other_argv_is_refused_by_name(self) -> None:
+        # The planted control the issue asks for: a receipt whose `graded_by`
+        # does not match the argv the gate actually executed goes red.
+        root = scratch_copy(self)
+        self.write(root, FORGED_SKILL, [["scripts/run_all.py"]])
+        self.assertEqual(
+            [f"RECEIPT_GRADED_BY_MISMATCH:{FORGED_SKILL}"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+
+    def test_a_trace_is_not_a_licence_to_drift_elsewhere(self) -> None:
+        """Widening one field must not widen the reproduction around it."""
+        root = scratch_copy(self)
+        path = root / "admissions" / f"{FORGED_SKILL}.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt[GRADED_BY] = [
+            list(argv) for argv in admission_stamp.declared_checks(FORGED_SKILL, root)
+        ]
+        receipt["controls"].append({"id": FORGED_CASE_ID, "state": "PASS"})
+        path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(
+            [f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:controls"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+
+    def test_landing_one_moved_no_receipt_data(self) -> None:
+        """The property that lets the trusted gate grade this change at all.
+
+        It is also the reader landing two needs: the field is all-or-nothing
+        across the committed set, because a half-migrated set would leave it
+        permanently optional -- a widening nobody ever narrows.
+        """
+        receipts = sorted((ROOT / "admissions").glob("*.json"))
+        self.assertTrue(receipts)
+        carrying = [
+            path.name
+            for path in receipts
+            if GRADED_BY in json.loads(path.read_text(encoding="utf-8"))
+        ]
+        self.assertIn(len(carrying), (0, len(receipts)), carrying)
 
 
 if __name__ == "__main__":
