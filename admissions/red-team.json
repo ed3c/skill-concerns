@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "4756869d25a3a9a4789df79b16168d41d8bfc9ee3507c95935dacbe760a57850"
+      "sha256": "63e2e1f8965ad8f90a7b685e2f6ed30060376955f3c0eac9a331966d6d6054d3"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "cbc53d86c76a27e06f2c97a90aa61bc715dd43aa5039e57a785068db46e29153"
+      "sha256": "568a721abcaea8c3300253fff6b88b00c71b343b3e0e6ddc7a76383d05cdf34e"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -125,7 +125,7 @@
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "5ed5bd840eb4e1d9a27cc39e5fdd422cdec302c944c38f741f1b1bac6e6df33b"
+      "sha256": "0cbe74855d9fef2768624f347ef33e1a289a8f3d8a0086efb2f81e4b697325b7"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -133,10 +133,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "25aa56cd04224e0e382283ac75f4f19fcf3d65d49bd1c91bb3da0846b5b5b8d8"
+      "sha256": "885dd4dd0192b92328bee517f7d98d3b9d64b780595124f6b6b6a6328f18fd2d"
     }
   ],
-  "skill_tree_sha256": "d417be0be0bd1caa5270366f0eca331a0b6659f0d8ef0508cb218df239d0376d",
+  "skill_tree_sha256": "f74ce62fa556e07a49eb438cda5ea3999a6ac029f18171aed2815c549bb26eef",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -301,7 +301,7 @@
       "state": "PASS"
     },
     {
-      "id": "absent-neighbour-exit-re-resolves",
+      "id": "named-neighbour-absent-from-the-tree-refused",
       "state": "PASS"
     },
     {

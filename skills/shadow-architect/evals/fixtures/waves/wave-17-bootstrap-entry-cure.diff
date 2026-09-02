@@ -1,0 +1,113 @@
+commit f0cf0803d5981111f60e439afaa6c04bdb3a2492
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 18:57:41 2026 +0800
+
+    fix(admissions): drop the entry fields nothing resolves, close the prefix
+    
+    Wave-17 monitor review of b72-bootstrap raised three defects in the entry
+    shape. All three are the same class -- a check whose text claims more than
+    its mechanism does.
+    
+    `authorized_head` and `refs` were validated with their own diagnostics and
+    never read by anything: a grep of the branch finds each field only inside
+    its own validation. A documented pin no process resolves is the exact
+    failure this repository admits skills to detect, so both are deleted rather
+    than demoted to comments. The digest and the argv are what `bootstrap_checks`
+    resolves; the landing commit is where the reviewed head and the issue live,
+    and `git log` is what reads them back.
+    
+    `skills/<skill>/../../scripts/anything.py` satisfied the prefix test that was
+    supposed to bind an entry to its own Skill's tree. A prefix is only a binding
+    when a path cannot lie about where it points, so no argv part may be absolute
+    or carry a spelling `normpath` would change. Drilled both ways against the
+    pre-fix module: `03f4764` returns no errors for that argv, this commit returns
+    `BOOTSTRAP_ENTRY_ARGV_UNNORMALIZED:dynamic-workflow:...`.
+    
+    The control that reads the live allowlist asserted the whole of
+    `check_admissions.check(ROOT)`, so any unrelated admission defect anywhere in
+    the repository would have reddened a control that owns one mechanism.
+    `run_all.py` runs `check_admissions.py` whole already; these controls now read
+    only their own `BOOTSTRAP_` diagnostics, in the live tree and in every planted
+    copy.
+    
+    Refs ed3c/skill-concerns#72
+
+diff --git a/policy/bootstrap-admissions.json b/policy/bootstrap-admissions.json
+index be0041b..302ec69 100644
+--- a/policy/bootstrap-admissions.json
++++ b/policy/bootstrap-admissions.json
+@@ -3,8 +3,6 @@
+   "entries": [
+     {
+       "skill": "dynamic-workflow",
+-      "refs": "ed3c/skill-concerns#59",
+-      "authorized_head": "80951179b202d2f44d21a76f0efbdd676fa1410e",
+       "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
+       "checks": [
+         ["skills/dynamic-workflow/scripts/validate_dynamic_workflow.py"],
+diff --git a/scripts/admission_stamp.py b/scripts/admission_stamp.py
+index 13d79d0..0d2e8c2 100644
+--- a/scripts/admission_stamp.py
++++ b/scripts/admission_stamp.py
+@@ -43,12 +43,11 @@ from __future__ import annotations
+ import json
+ import os
+ from pathlib import Path
+-import re
++import posixpath
+ import subprocess
+ import sys
+ 
+ from common import (
+-    HEX40,
+     HEX64,
+     REPO_ROOT,
+     digest_entries,
+@@ -90,8 +89,13 @@ REFUSAL = "ADMISSION_STAMP_REFUSED"
+ # `BOOTSTRAP_ENTRY_STALE` on any entry whose skill directory exists in the same
+ # tree, so the commit that lands the skill must also delete its entry and no
+ # authorization can outlive the admission it was written for.
++#
++# An entry carries only fields some process resolves: the digest, and the argv.
++# `authorized_head` and `refs` were validated here too and nothing ever read
++# either -- a documented pin no process resolves is the failure mode this
++# repository admits skills to detect, so they are gone rather than commented.
++# The commit that adds an entry is its provenance; `git log` resolves that.
+ BOOTSTRAP = REPO_ROOT / "policy" / "bootstrap-admissions.json"
+-REFS = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[0-9]+$")
+ 
+ # Mandatory control id -> the unittest id whose execution measures it, in the
+ # order `check_admissions` expects the rows.
+@@ -191,10 +195,6 @@ def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
+         entries[skill] = row
+         if not HEX64.fullmatch(str(row.get("skill_tree_sha256"))):
+             errors.append(f"BOOTSTRAP_ENTRY_DIGEST_INVALID:{skill}")
+-        if not HEX40.fullmatch(str(row.get("authorized_head"))):
+-            errors.append(f"BOOTSTRAP_ENTRY_HEAD_INVALID:{skill}")
+-        if not REFS.fullmatch(str(row.get("refs"))):
+-            errors.append(f"BOOTSTRAP_ENTRY_REFS_INVALID:{skill}")
+         checks = row.get("checks")
+         if not isinstance(checks, list) or not checks:
+             errors.append(f"BOOTSTRAP_ENTRY_CHECKS_EMPTY:{skill}")
+@@ -206,6 +206,21 @@ def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
+                 or any(not isinstance(part, str) or not part for part in argv)
+             ):
+                 errors.append(f"BOOTSTRAP_ENTRY_ARGV_INVALID:{skill}")
++                continue
++            # A prefix is only a binding when a path cannot lie about where it
++            # points: `skills/<skill>/../../scripts/anything.py` satisfies the
++            # test below while naming something else entirely. No part may be
++            # absolute or carry a spelling `normpath` would change, so the
++            # prefix and the resolved target are the same claim.
++            unnormalized = [
++                part
++                for part in argv
++                if part.startswith("/") or posixpath.normpath(part) != part
++            ]
++            if unnormalized:
++                errors.append(
++                    f"BOOTSTRAP_ENTRY_ARGV_UNNORMALIZED:{skill}:{unnormalized[0]}"
++                )
+             # An entry may authorize running the incoming Skill's own checks and
+             # nothing else. Argv that never names that Skill's tree is an
+             # authorization for some other execution wearing this Skill's name.

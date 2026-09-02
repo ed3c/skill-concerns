@@ -1,0 +1,51 @@
+commit 0000000000000000000000000000000000000001
+Author: planted <planted@example.invalid>
+Date:   Mon Jan 1 00:00:00 2001 +0000
+
+    planted: the smallest atom that satisfies its issue
+
+    Synthetic. Carries an artifact of every kind the over-designed fixture
+    carries - a policy document, a repository checker, a test - so that a
+    silent pass is a judgement about the shapes rather than about the file
+    types the pass happened to see.
+
+diff --git a/policy/limits.json b/policy/limits.json
+index 1111111..7777777 100644
+--- a/policy/limits.json
++++ b/policy/limits.json
+@@ -1,4 +1,4 @@
+ {
+   "schema_version": 1,
+-  "budget": 12
++  "budget": 14
+ }
+diff --git a/scripts/check_limits.py b/scripts/check_limits.py
+index 3333333..8888888 100644
+--- a/scripts/check_limits.py
++++ b/scripts/check_limits.py
+@@ -1,6 +1,10 @@
+ import re
+
+-def check(document):
++def check(document, limits):
++    """Refuse a limits document that omits a declared limit.
++
++    The limit set is the caller's; a second literal of it here would drift.
++    """
+     errors = []
++    for name in sorted(limits):
++        if document.get(name) is None:
++            errors.append(f"LIMIT_ABSENT:{name}")
+     return errors
+diff --git a/tests/test_limits.py b/tests/test_limits.py
+index 9999999..aaaaaaa 100644
+--- a/tests/test_limits.py
++++ b/tests/test_limits.py
+@@ -4,3 +4,7 @@ from check_limits import check
+ class LimitTests(unittest.TestCase):
+     def test_a_present_limit_passes(self):
+         self.assertEqual([], check({"budget": 14}, {"budget": 1}))
++
++    def test_an_absent_limit_is_named(self):
++        planted = check({}, {"budget": 1})
++        self.assertEqual(["LIMIT_ABSENT:budget"], planted)

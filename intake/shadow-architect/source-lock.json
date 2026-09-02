@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "skill": "shadow-architect",
+  "source_kind": "owner-design-brief",
+  "repository": null,
+  "commit": null,
+  "source_path": "intake/shadow-architect/SOURCE_PROPOSAL.md",
+  "locked_files": [
+    {
+      "path": "intake/shadow-architect/SOURCE_PROPOSAL.md",
+      "sha256": "b3e8a18c8687b5118b890e6f8d953e4a8ff9faa0b74c1e736778ebe99ee5d807"
+    }
+  ],
+  "method_references": [
+    {
+      "repository": "cursor/plugins",
+      "path": "pstack/skills/create-verification-skill/SKILL.md",
+      "commit": "b9ddc83c32972210b8a94d389130713e8eed346e",
+      "blob_sha": "f869e26122991252373d5b8f6357e5b9ff195a00"
+    },
+    {
+      "repository": "cursor/plugins",
+      "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+      "commit": "b9ddc83c32972210b8a94d389130713e8eed346e",
+      "blob_sha": "a2680b91fead45a0b4963d8c367a854956bea59d"
+    }
+  ]
+}

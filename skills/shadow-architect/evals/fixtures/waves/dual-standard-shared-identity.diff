@@ -1,0 +1,38 @@
+commit b7827d58fb85e5dc2cccaa9f09114e42992e9dcc
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 19:22:59 2026 +0800
+
+    fix(gate): drop private HEX64 mirror, regenerate control-noodle's tree-digest pins
+    
+    - check_skill_bundles.py declared a private HEX64 regex identical to the one
+      scripts/common.py landed with issue #72 (ed3c/skill-concerns#82): import
+      the shared one instead of a second literal of the same identity shape.
+    - control-noodle's two hand-typed copies of feature-map-engineering's tree
+      digest (composition.json, procedure-admission.json) now have a real
+      producer, skills/control-noodle/scripts/gen_procedure_pin.py, which reads
+      admissions/feature-map-engineering.json (the actual producer output) and
+      writes both mirrors from it -- closing the C5 hand-edit gap the previous
+      lane report only filed as a dispatcher note.
+    
+    Refs ed3c/skill-concerns#74
+
+diff --git a/scripts/check_skill_bundles.py b/scripts/check_skill_bundles.py
+index 67372cd..06ab4f4 100644
+--- a/scripts/check_skill_bundles.py
++++ b/scripts/check_skill_bundles.py
+@@ -10,6 +10,7 @@ import re
+ from typing import Any, Iterable
+ 
+ from common import (
++    HEX64,
+     REPO_ROOT,
+     digest_entries,
+     load_json,
+@@ -95,7 +96,6 @@ BIRTH_DOCTOR = "scripts/admission_stamp.py"
+ BIRTH_DOCTOR_SHAPE = ("class StampRefused", "REFUSAL")
+ BIRTH_PROVE_ONCE = "ops/first-run-receipt.json"
+ FEATURE_MAP_SHAPE = ("feature", "actor", "states", "transitions", "observables")
+-HEX64 = re.compile(r"^[0-9a-f]{64}$")
+ 
+ 
+ def roles_block(text: str) -> str | None:

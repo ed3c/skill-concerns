@@ -1,0 +1,48 @@
+commit 36074870085de88f70a136fccc4ae2c8d1557148
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 05:13:50 2026 +0800
+
+    fix(admissions): name the true producer, restore dropped contract pins
+    
+    authoring_command was a hardcoded "python3 scripts/run_all.py" -- a
+    command that never calls gen_admission.py, so it could not have
+    produced the receipt bytes it appears in. Emit and check the real
+    producer, skills/<skill>/scripts/gen_admission.py, per skill.
+    
+    build_receipt() derives contract_files solely from skill.json's own
+    shared_contracts. Four skill.json files never declared
+    admission.schema.json and source-lock.schema.json there -- pins the
+    old, hand-authored receipts carried out-of-band -- so the automated
+    stamper silently dropped them, and check_admissions.py's
+    listed-entries-only comparison can't see a removal. Add the two schema
+    paths to feature-map-engineering, control-backup, control-code-intel,
+    and spatial-loop-grounded's shared_contracts, matching control-noodle's
+    already-complete list.
+    
+    skill.json is itself inside a Skill's subject_files, so widening
+    shared_contracts moved feature-map-engineering's skill_tree_sha256;
+    re-pin it in control-noodle's domain/composition.json and its
+    fixtures/valid/procedure-admission.json fixture (fail-closed, not a
+    new problem: control-noodle's validator refuses on the stale pin
+    either way).
+    
+    Also scope admission_stamp.py's docstring: the refusal is structural
+    for the stamp() path only, not a guarantee about how the file at
+    admissions/<skill>.json got there -- filed ed3c/skill-concerns#42 for
+    closing that gap at the CI trust boundary.
+    
+    Regenerated all five admissions/*.json through the guarded stamper.
+
+diff --git a/scripts/check_admissions.py b/scripts/check_admissions.py
+index ab4c76f..c99d6c6 100644
+--- a/scripts/check_admissions.py
++++ b/scripts/check_admissions.py
+@@ -288,7 +288,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
+             for level in sorted(required_higher - set(not_claimed)):
+                 errors.append(f"HIGHER_LAYER_NOT_EXPLICIT:{name}:{level}")
+ 
+-        if admission.get("authoring_command") != "python3 scripts/run_all.py":
++        if admission.get("authoring_command") != f"python3 skills/{name}/scripts/gen_admission.py":
+             errors.append(f"AUTHORING_COMMAND_INVALID:{name}")
+         if admission.get("hosted_evidence") not in {
+             "READ_FROM_GITHUB",

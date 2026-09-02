@@ -429,14 +429,24 @@ class RedTeamEvals(unittest.TestCase):
             )
         )
 
-    def test_the_absent_neighbour_exit_re_resolves_when_the_absence_ends(self) -> None:
-        """The exit expires by landed state, not by anyone remembering it."""
+    def test_a_named_neighbour_absent_from_the_tree_fails(self) -> None:
+        """A boundary term is verified against bytes, or it is a claim.
+
+        This assertion is the successor of the absent-neighbour exit, which
+        expired when `shadow-architect` landed (ed3c/skill-concerns#75): the
+        exit fired by landed state, not by anyone remembering it, and it was
+        removed rather than left standing. What remains falsifiable is the
+        arm that outlives it -- every named neighbour must resolve to bytes in
+        the tree being validated, and one that does not is reported as absent
+        rather than read as agreement.
+        """
         fake_repo = self.scratch / "repo"
-        for name in (*validator.NEIGHBOURS, validator.ABSENT_NEIGHBOUR):
+        for name in list(validator.NEIGHBOURS)[:-1]:
             (fake_repo / "skills" / name).mkdir(parents=True)
+        missing = list(validator.NEIGHBOURS)[-1]
         self.assertTrue(
             any(
-                "has landed in this tree" in error
+                f"neighbour {missing} named but absent from this tree" in error
                 for error in validator.validate(SKILL_ROOT, fake_repo)
             )
         )

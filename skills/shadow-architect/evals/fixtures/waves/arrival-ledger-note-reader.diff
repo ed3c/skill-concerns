@@ -1,0 +1,121 @@
+commit 2e59255a580b291b54a294bfce722564416d16bc
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 20:35:29 2026 +0800
+
+    fix(arrival): make the ledger's prose speak the column's own vocabulary
+    
+    Three row notes in `domain/capability-topology.json` landed still reasoning in
+    the numbering the same atom had just retired: "the binding's own arrival is L0",
+    "L1, not L2, and the difference is byte-derived", "so this stays L1". Every
+    `arrival` value moved mechanically with the rename; the free text did not,
+    because nothing read it.
+    
+    That is clause A4's own shape -- a documented claim whose subject no longer
+    carries it -- inside the ledger that names A4, so the cure is a reader rather
+    than a careful pass. `check_topology` now reds any row note containing an
+    `L<digit>` token, scoped to row notes: SKILL.md and README.md name the retired
+    numbering deliberately, explaining why it is gone.
+    
+    Falsified against the bytes that actually landed, not against a synthetic
+    mutation: the three notes from `main@de51956` restored into this tree produce
+    
+        topology row 'noodles-checkout-ceremony-binding' note still names the retired numbering ['L0']
+        topology row 'sc-context-closure-engineering-checks' note still names the retired numbering ['L1', 'L2']
+        topology row 'arrival-engineering-island-audit' note still names the retired numbering ['L1']
+    
+    so the gate catches exactly the escape it was written for. It also has its own
+    planted hollowing in the validator selftest and its own case in `evals/cases.json`.
+    
+    The cce row's note now carries the second, stronger derivation as well: it is
+    EXERCISED not because a cadence receipt's `checks=15` was reasoned about once,
+    but because the row carries no `run`-kind receipt and the arrival column must
+    equal what its receipts support.
+    
+    Receipt re-stamped through `gen_admission.py` over the changed tree. All four
+    validators from `origin/main` run with `--root` against this candidate: PASS.
+    
+    Refs ed3c/skill-concerns#73
+
+diff --git a/skills/arrival-engineering/domain/capability-topology.json b/skills/arrival-engineering/domain/capability-topology.json
+index a55f183..3838ff5 100644
+--- a/skills/arrival-engineering/domain/capability-topology.json
++++ b/skills/arrival-engineering/domain/capability-topology.json
+@@ -79,7 +79,7 @@
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#294"}
+       ],
+-      "note": "the amendment that converted the planned island above into a traversed exit. Adjudicated, not yet exercised here: the binding's own arrival is L0 until a run receipt names it."
++      "note": "the amendment that converted the planned island above into a traversed exit. Adjudicated, not yet exercised here: the binding's own arrival stays DECLARED until a run receipt names it."
+     },
+     {
+       "id": "noodles-where-is-x-slice",
+@@ -226,7 +226,7 @@
+         {"kind": "exercise", "ref": "admissions/context-closure-engineering.json"},
+         {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+       ],
+-      "note": "L1, not L2, and the difference is byte-derived: the cadence receipt records checks=15 (three repository gates plus the twelve argv of the five bundles that existed at 2026-09-01T05:09:02Z), while this bundle's admission landed at 2026-09-01T06:16Z. Its row has never run in a production sweep. Recording it L2 alongside its siblings would be the A3 finding this ledger exists to catch."
++      "note": "EXERCISED, not PRODUCTION, and the difference is byte-derived twice over: the cadence receipt records checks=15 (three repository gates plus the twelve argv of the five bundles that existed at 2026-09-01T05:09:02Z) while this bundle's admission landed at 2026-09-01T06:16Z, and this row carries no run-kind receipt, which is what the arrival tie reads. Recording it PRODUCTION alongside its siblings would be the A3 finding this ledger exists to catch; the tie reds either way now, since the column must equal what the receipts support."
+     },
+     {
+       "id": "arrival-engineering-island-audit",
+@@ -241,7 +241,7 @@
+         {"kind": "exercise", "ref": "skills/arrival-engineering/evals/cases.json"},
+         {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+       ],
+-      "note": "exercised against planted fixtures and negative controls; no production SHADOW pass over live read-only clones has produced a run receipt yet, so this stays L1."
++      "note": "exercised against planted fixtures and negative controls; no production SHADOW pass over live read-only clones has produced a run receipt yet, so this stays EXERCISED."
+     },
+     {
+       "id": "arrival-engineering-topology",
+diff --git a/skills/arrival-engineering/scripts/validate_arrival_engineering.py b/skills/arrival-engineering/scripts/validate_arrival_engineering.py
+index 88e2944..803e4f5 100644
+--- a/skills/arrival-engineering/scripts/validate_arrival_engineering.py
++++ b/skills/arrival-engineering/scripts/validate_arrival_engineering.py
+@@ -45,6 +45,9 @@ ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
+ CLOSURE_OWNER = "../context-closure-engineering/references/portable-context-closure-policy.md"
+ POINTED_LAWS = {"LAW-TRACE-GAP", "LAW-NO-PROMOTION"}
+ RUN_SHAPED = ("chore.txt", "calls.log", "terminal-state.txt", "actor-final-message.txt")
++# The numbering this axis used to carry. Scoped to topology row notes: SKILL.md
++# and README.md name it deliberately, explaining why it is gone.
++RETIRED_LEVEL_RE = re.compile(r"\bL[0-9]\b")
+ 
+ # SKILL.md's `## ` headings, in order. Read out of these bytes by
+ # `scripts/check_skill_bundles.py` (parsed, never imported) and compared to the
+@@ -248,6 +251,18 @@ def check_topology(topology: dict, repo_root: Path, errors: list[str]) -> None:
+         if mismatch is not None:
+             diagnostic, detail, _ = mismatch
+             errors.append(f"{diagnostic}:{row_id}: {detail}")
++        # A row's prose must speak the vocabulary the row's own column speaks.
++        # Renaming the axis moved every `arrival` value mechanically and left
++        # three notes still reasoning in `L1, not L2` -- true sentences about a
++        # numbering this bundle had just stopped owning, which is the A4 shape
++        # (a documented claim whose subject no longer carries it) inside the
++        # ledger that names A4. Numbers are cheap to grep; memory is not.
++        stale = RETIRED_LEVEL_RE.findall(str(row.get("note") or ""))
++        if stale:
++            errors.append(
++                f"topology row {row_id!r} note still names the retired numbering "
++                f"{sorted(set(stale))} - arrival levels are {LEVELS}"
++            )
+ 
+ 
+ def check_receipts_are_produced(skill_root: Path, topology: dict, errors: list[str]) -> None:
+@@ -476,6 +491,18 @@ def selftest() -> int:
+ 
+         mutate("claim_below_arrival_reds", underclaim, "CLAIM_BELOW_ARRIVAL")
+ 
++        def stale_numbering_in_a_note(copy: Path) -> None:
++            path = copy / "domain" / "capability-topology.json"
++            body = json.loads(path.read_text(encoding="utf-8"))
++            body["rows"][0]["note"] = "L1, not L2, and the difference is byte-derived."
++            path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
++
++        mutate(
++            "retired_numbering_in_a_row_note_reds",
++            stale_numbering_in_a_note,
++            "still names the retired numbering",
++        )
++
+         def strip_receipts(copy: Path) -> None:
+             path = copy / "domain" / "capability-topology.json"
+             body = json.loads(path.read_text(encoding="utf-8"))

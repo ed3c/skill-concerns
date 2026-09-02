@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "subject": "shadow-architect: the wave monitor's architecture angle as pinned bytes",
+  "cases": [
+    {
+      "id": "shadow-architect-ties-positive",
+      "expected": "PASS",
+      "note": "Every tie in the live bundle holds: clauses to kernel, clauses to ledger, provenance to fixture bytes, prose to diagnostics, receipts to producer.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_live_bundle_passes_every_tie"
+    },
+    {
+      "id": "validator-selftest",
+      "expected": "PASS",
+      "note": "The planted-mutation suite, run whole. Every hollowing and schema control in the validator selftest reds exactly one tie, bounded on both sides by the positive arm and the residue arm. This case is where those mutations live: they are not re-authored as separate assertions, which would be one execution counted twice with two places to keep in step.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_validator_selftest_passes"
+    },
+    {
+      "id": "historical-wave-dry-run",
+      "expected": "PASS",
+      "note": "The acceptance run: a reader-only pass over the real wave-17 judged diff reproduces the two findings that wave's monitor record names, quoting the bytes it quoted, from the pinned ledger and the driver alone.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_the_historical_wave_diff_reproduces_the_known_findings"
+    },
+    {
+      "id": "every-clause-has-seen-itself-fire",
+      "expected": "PASS",
+      "note": "Both directions over the whole ledger: every clause fires on the real judged diff that earned it and stays silent on the real diff that cured it.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_every_clause_fires_on_its_fixture_and_is_silent_on_its_control"
+    },
+    {
+      "id": "provenance-binds-its-own-fixture",
+      "expected": "PASS",
+      "note": "Each clause's subject commit is named by its fixture's own bytes, so the fixture is provably that commit's diff rather than a diff someone labelled.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_every_provenance_binds_the_commit_its_fixture_carries"
+    },
+    {
+      "id": "planted-over-designed-arm-flagged",
+      "expected": "PASS",
+      "note": "The planted over-designed diff raises exactly the clauses the answer key names - no more, so a false positive reds it too.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_the_planted_over_designed_arm_raises_exactly_the_key"
+    },
+    {
+      "id": "planted-clean-arm-passed",
+      "expected": "PASS",
+      "note": "The planted negative control: a clean diff carrying an artifact of every kind the over-designed one carries raises nothing, which is the honest steady state.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_the_planted_clean_arm_raises_nothing"
+    },
+    {
+      "id": "campaign-blind-to-the-answer-key",
+      "expected": "PASS",
+      "note": "Blindness is structural: no script in the bundle names the key, and the pass takes one diff path and opens that path only.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_the_campaign_is_blind_by_construction"
+    },
+    {
+      "id": "receipts-are-produced-not-written",
+      "expected": "PASS",
+      "note": "The committed receipts.json is exactly what its producer renders from the ledger, twice.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_gen_shadow_receipts_is_idempotent_and_authors_the_committed_bytes"
+    },
+    {
+      "id": "adjudicated-precedent-folds-in",
+      "expected": "PASS",
+      "note": "The positive arm of the BUILD refusal: a precedent naming its adjudication and its receipt enters the ledger, and the fold-in is pure.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_an_adjudicated_precedent_folds_in"
+    },
+    {
+      "id": "severity-is-derived-not-set",
+      "expected": "PASS",
+      "note": "Both arms of the severity rule in one measurement: one clause in one file is a warning, the same clause in two files is a review.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_a_severity_rises_when_one_shape_repeats_across_files"
+    },
+    {
+      "id": "adjudicated-but-ungrounded-precedent-refused",
+      "expected": "FAIL",
+      "note": "Authorization and grounding are different refusals: a properly adjudicated clause with no wave receipt and no monitor quote is still refused.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_an_adjudicated_precedent_with_no_receipt_is_still_refused"
+    },
+    {
+      "id": "subject-mutated-mid-pass",
+      "expected": "FAIL",
+      "note": "A pass whose subject digest moved refuses its own report rather than publishing findings read off bytes something mutated underneath it.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_a_subject_that_moved_during_the_pass_refuses_its_own_report"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "expected": "FAIL",
+      "note": "Detection and acquittal both read added lines only. A diff whose unchanged context merely mentions the normalising call does not exculpate the prefix test it adds.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_unchanged_context_cannot_acquit_an_added_shape"
+    },
+    {
+      "id": "acquittal-does-not-cross-files",
+      "expected": "FAIL",
+      "note": "One file's acquittal literal does not clear a second file's shape. Pooled over the whole diff, a single incantation anywhere - including this bundle's own precedents.json, which spells every acquittal verbatim and lands in the same commit - would silence the clause across every file the diff touches.",
+      "test": "test_shadow_architect.ShadowArchitectEvals.test_one_files_acquittal_does_not_clear_another_file"
+    }
+  ]
+}

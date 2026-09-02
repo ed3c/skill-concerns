@@ -1,0 +1,230 @@
+commit aaf05089cd7b6e738068561d25e586f938b9b47f
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 16:30:40 2026 +0800
+
+    reconcile(maintain): close the SKILL_CHECKS-absence gap, drop the docstring's own restated copy
+    
+    wave-14 monitor findings on ed3c/skill-concerns#62:
+    
+    - build_pass() used run_all.SKILL_CHECKS.get(skill, ()) to gather proof, so a
+      skill entirely absent from SKILL_CHECKS produced the identical report shape
+      (proof=[], zero proof_findings) as a skill whose declared row ran green.
+      Absence now blocks with a distinct diagnostic (BUILD_SKILL_UNCHECKED)
+      instead of reading as vacuously proven. New planted negative in --selftest
+      covers it end to end (19/19 PASS); the two pre-existing demo-subject
+      positive-control passes now register a real check.py from their first
+      commit instead of accidentally relying on the same absence-as-proof gap.
+    
+    - The module docstring restated AGENTS.md's three sc#59 adjudications in
+      full prose with no mechanical reader of its own - exactly the "restated
+      copy is the drift the split exists to prevent" anti-pattern AGENTS.md
+      itself names. Replaced with a pointer; AGENTS.md stays the source and
+      tests/test_maintain_skills.py::test_maintain_docs_carry_the_sc59_adjudications
+      is unchanged (it already only reads AGENTS.md).
+    
+    - Tightened the "writes may land only under skills/<skill>/" edit-scope
+      claim (module docstring + AGENTS.md) to name its actual boundary: a
+      git-status diff scoped to this checkout, blind to writes at an absolute
+      path outside it, and blind to a concurrent actor holding the same
+      checkout. Filed as ed3c/skill-concerns#66 (not fixed here - a real fix is
+      a larger redesign than this reconcile pass should carry into freshly
+      landed, selftest-passing code).
+    
+    python3 scripts/maintain_skills.py --selftest -> 19/19 PASS
+    python3 scripts/run_all.py -> skill-concerns: PASS
+    
+    Refs ed3c/skill-concerns#62
+
+diff --git a/scripts/maintain_skills.py b/scripts/maintain_skills.py
+index a8c3b81..38a994b 100644
+--- a/scripts/maintain_skills.py
++++ b/scripts/maintain_skills.py
+@@ -44,10 +44,14 @@ not apply them anywhere a reader would mistake for a landing:
+   branch          it creates `maintain/<skill>-<stamp>` and returns the
+                   checkout to the base branch before it exits; the base head
+                   sha is read before and after and must be unchanged.
+-  edit scope      writes may land only under `skills/<skill>/`. The guard is
+-                  `git status --porcelain -uall` after every producer, not a
+-                  promise: one out-of-scope path refuses the whole producer,
+-                  restores the tree, and blocks the pass.
++  edit scope      writes may land only under `skills/<skill>/` within this
++                  checkout. The guard is `git status --porcelain -uall`
++                  after every producer, not a promise: one out-of-scope path
++                  git can see refuses the whole producer, restores the tree,
++                  and blocks the pass. A producer that writes to an absolute
++                  path outside this checkout entirely is outside what a
++                  git-status diff can see - a known gap, not covered by this
++                  guard (filed: ed3c/skill-concerns#66).
+   producers       corrections regenerate through the subject Skill's own
+                   `scripts/gen_*.py`, never by hand (spatial-loop-grounded C5).
+                   `REPOSITORY_PRODUCERS` are excluded because their output is a
+@@ -55,31 +59,27 @@ not apply them anywhere a reader would mistake for a landing:
+                   not the Skill's own directory.
+   proven          the subject's own `run_all.SKILL_CHECKS` row runs against
+                   the proposal before it becomes a commit; a red row blocks
+-                  the pass rather than shipping bytes nobody re-ran. That row
+-                  and no more: `check_admissions.py` reds by construction here
+-                  (the receipt pins the bytes BUILD just moved) and the
+-                  re-stamp is a landing act, not a proposing one.
++                  the pass rather than shipping bytes nobody re-ran. A skill
++                  with no row at all is blocked too (`BUILD_SKILL_UNCHECKED`)
++                  rather than reading as vacuously proven. That row and no
++                  more: `check_admissions.py` reds by construction here (the
++                  receipt pins the bytes BUILD just moved) and the re-stamp
++                  is a landing act, not a proposing one.
+   three outcomes  clean (nothing to propose), changed (a proven proposal sits
+                   on the branch), blocked (a refusal; nothing ships).
+ 
+-Adjudications carried here as bytes rather than left on ed3c/skill-concerns#59
+------------------------------------------------------------------------------
++Adjudications carried as bytes (ed3c/skill-concerns#59) - AGENTS.md is the source
++----------------------------------------------------------------------------------
+ 
+-Runtime/ceremony boundary: a supervising reader owns RUNTIME liveness of the
+-sessions it watches; CEREMONY correctness (receipt verbatim discipline, marker
+-transitions, handoff) stays with the skill that owns that ceremony. One skill,
+-one concern; a restated copy is the drift the split exists to prevent.
+-
+-Filing-not-reflex coupling: an observation-time finding never auto-invokes this
+-pass. Findings are FILED at a strict destination with an owner, and the daily
+-cadence consumes them on its own schedule. An auto-maintain path would let a
+-reader rewrite its own lens until a finding disappears - self-laundering, the
+-write path the reader-only contract forbids.
+-
+-Trigger-not-apply exception: when a driver's own selftest goes red mid-
+-observation, the observation report auto-degrades to lens-suspect and one
+-maintain pass is SCHEDULED. Trigger automation keeps every gate; application
+-automation removes them, and only the first is admitted.
++The runtime/ceremony boundary, filing-not-reflex coupling, and trigger-not-
++apply exception rulings live in AGENTS.md ("Adjudications carried here as
++bytes"), not here. AGENTS.md's own rule for this kind of split is "POINT at
++it, never restate it; a restated copy is the drift the split exists to
++prevent" - this module obeys that rule about itself: this pass's behavior
++(no auto-invoke, no auto-apply, filed findings) is the enforcement of those
++three rulings, not a second copy of their prose.
++tests/test_maintain_skills.py::test_maintain_docs_carry_the_sc59_adjudications
++is the mechanical reader, and it reads AGENTS.md.
+ 
+ Re-running `run_all.SKILL_CHECKS` and the repository gates duplicates argv CI
+ already runs on every commit - by design, that half is a pure function of
+@@ -830,9 +830,27 @@ def build_pass(root: Path, skill: str) -> dict[str, Any]:
+         # (gen_admission.py -> admissions/) is a repository artifact outside
+         # BUILD's edit scope on purpose. Re-stamping belongs to the landing
+         # ceremony, not to a pass that may only propose.
+-        proof, proof_findings = drive_checks(
+-            root, [(f"skill:{skill}", list(argv)) for argv in run_all.SKILL_CHECKS.get(skill, ())]
+-        )
++        #
++        # `.get(skill, ())` used to give "no row exists" and "the row ran
++        # green" the identical shape in this report (both `proof: []`, zero
++        # proof_findings). A skill absent from SKILL_CHECKS entirely proves
++        # nothing, so absence is its own refusal rather than a silent
++        # pass-through to a commit.
++        if skill in run_all.SKILL_CHECKS:
++            proof, proof_findings = drive_checks(
++                root,
++                [(f"skill:{skill}", list(argv)) for argv in run_all.SKILL_CHECKS[skill]],
++            )
++        else:
++            proof, proof_findings = [], [
++                finding(
++                    root,
++                    "BUILD_SKILL_UNCHECKED",
++                    skill,
++                    f"{skill} has no row in run_all.SKILL_CHECKS; there is no check to prove this proposal against",
++                    "add a SKILL_CHECKS row for this skill before BUILD may propose corrections for it",
++                )
++            ]
+         report["proof"] = proof
+         if proof_findings:
+             report["refusals"].extend(proof_findings)
+@@ -1061,11 +1079,24 @@ def selftest() -> int:
+             "    '{\"regenerated\": true}\\n', encoding='utf-8')\n",
+             encoding="utf-8",
+         )
++        # check.py ships from the first commit so every build_pass call below
++        # (positive, escape, regression) proves against the same static row -
++        # SKILL_CHECKS is registered once and torn down once, in the finally.
++        (build_root / "skills" / "demo-subject" / "check.py").write_text(
++            "import json, sys\n"
++            "from pathlib import Path\n"
++            "body = json.loads((Path(__file__).parent / 'evidence.json').read_text())\n"
++            "if body.get('regenerated') is not True:\n"
++            "    print('EVIDENCE_REGRESSED:skills/demo-subject/evidence.json')\n"
++            "    sys.exit(1)\n",
++            encoding="utf-8",
++        )
+         _git(build_root, "init", "-q", "-b", "main")
+         _git(build_root, "add", "-A")
+         _git(build_root, "commit", "-q", "-m", "fixture", identity=True)
+         base_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+ 
++        run_all.SKILL_CHECKS["demo-subject"] = (("skills/demo-subject/check.py",),)
+         proposal = build_pass(build_root, "demo-subject")
+         on_branch = _git(
+             build_root, "show", f"{proposal['branch']}:skills/demo-subject/evidence.json"
+@@ -1125,26 +1156,13 @@ def selftest() -> int:
+             "    '{\"regenerated\": \"regressed\"}\\n', encoding='utf-8')\n",
+             encoding="utf-8",
+         )
+-        (build_root / "skills" / "demo-subject" / "check.py").write_text(
+-            "import json, sys\n"
+-            "from pathlib import Path\n"
+-            "body = json.loads((Path(__file__).parent / 'evidence.json').read_text())\n"
+-            "if body.get('regenerated') is not True:\n"
+-            "    print('EVIDENCE_REGRESSED:skills/demo-subject/evidence.json')\n"
+-            "    sys.exit(1)\n",
+-            encoding="utf-8",
+-        )
+         (build_root / "skills" / "demo-subject" / "evidence.json").write_text(
+             '{"regenerated": true}\n', encoding="utf-8"
+         )
+         _git(build_root, "add", "-A")
+         _git(build_root, "commit", "-q", "-m", "plant the regression", identity=True)
+         regressed_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
+-        run_all.SKILL_CHECKS["demo-subject"] = (("skills/demo-subject/check.py",),)
+-        try:
+-            unproven = build_pass(build_root, "demo-subject")
+-        finally:
+-            del run_all.SKILL_CHECKS["demo-subject"]
++        unproven = build_pass(build_root, "demo-subject")
+         record(
+             "planted_unproven_correction_is_refused",
+             unproven["outcome"] == "blocked"
+@@ -1156,6 +1174,36 @@ def selftest() -> int:
+             f"outcome={unproven['outcome']} "
+             f"refusals={[f['diagnostic'] for f in unproven['refusals']]}",
+         )
++        del run_all.SKILL_CHECKS["demo-subject"]
++
++        # Planted negative: a skill with proposable bytes but no row in
++        # SKILL_CHECKS at all - never registered, not registered-empty. This
++        # is the exact case ed3c/skill-concerns#62's monitor named: absence
++        # must not read the same as "the row ran green".
++        (build_root / "skills" / "unchecked-subject" / "scripts").mkdir(parents=True)
++        (build_root / "skills" / "unchecked-subject" / "scripts" / "gen_thing.py").write_text(
++            "from pathlib import Path\n"
++            "root = Path(__file__).resolve().parents[3]\n"
++            "(root / 'skills' / 'unchecked-subject' / 'thing.json').write_text(\n"
++            "    '{}\\n', encoding='utf-8')\n",
++            encoding="utf-8",
++        )
++        _git(build_root, "add", "-A")
++        _git(build_root, "commit", "-q", "-m", "add an unregistered skill", identity=True)
++        unregistered_head = _git(build_root, "rev-parse", "HEAD")["stdout"].strip()
++        assert "unchecked-subject" not in run_all.SKILL_CHECKS
++        unregistered = build_pass(build_root, "unchecked-subject")
++        record(
++            "planted_unregistered_skill_is_refused_not_silently_proven",
++            unregistered["outcome"] == "blocked"
++            and "BUILD_SKILL_UNCHECKED"
++            in [f["diagnostic"] for f in unregistered["refusals"]]
++            and unregistered["branch"] is None
++            and not worktree_changes(build_root)
++            and _git(build_root, "rev-parse", "HEAD")["stdout"].strip() == unregistered_head,
++            f"outcome={unregistered['outcome']} "
++            f"refusals={[f['diagnostic'] for f in unregistered['refusals']]}",
++        )
+         record(
+             "build_excludes_producers_that_write_repository_artifacts",
+             all(

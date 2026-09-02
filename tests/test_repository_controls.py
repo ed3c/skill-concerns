@@ -849,6 +849,7 @@ class CureAuthorizationTests(unittest.TestCase):
                 "scripts/maintain_skills.py",
                 "skills/arrival-engineering/scripts/audit_islands.py",
                 "skills/red-team/scripts/shadow_driver.py",
+                "skills/shadow-architect/scripts/shadow_driver.py",
             ],
             callers,
         )
