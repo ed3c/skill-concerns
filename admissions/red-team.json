@@ -133,7 +133,7 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "9319ffef29bafc5c782581429e04af16a515a0d914f237d4bc117b360912f82a"
+      "sha256": "932b11bfe7048fc2a1b960cac37ecb9d4282c1230ce8f040b194a5aec7e74910"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
@@ -148,7 +148,7 @@
       "sha256": "bb56d422f76e942f0b108c171875fa0fdccd0c5978a031dba42d0cffd53abdac"
     }
   ],
-  "skill_tree_sha256": "f809d9939f32e59508fd8276b766f6a3dc525d7d596c9062d73486995df9a904",
+  "skill_tree_sha256": "9ca9bce2bc264ac9370dd73bc897038216ebd6d914605ab779ef6c43270f469e",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

@@ -138,11 +138,17 @@ BLIND_PROBES: dict[str, dict[str, Any]] = {
         ),
     },
 }
-# Deliberately NOT widened to `totalCount=0 -> ABSENT`, the phrasing lanes now
-# write. That sentence is the sighted surface read correctly and typed as the
-# third state; matching it would manufacture a hit out of the exact discipline
-# ed3c/skill-concerns#83 and #102 asked for, which is the instrument scoring
-# its own cure.
+# Still only `body edit`, and NOT yet the `totalCount=0 -> ABSENT` phrasing
+# lanes actually write. That widening is ed3c/skill-concerns#129's other half
+# and is left to it, not declined: with the `sighted` acquittal above in place
+# it would be SAFE, because a report that types the third state names the
+# GraphQL surface in the same breath and is acquitted before the claim is even
+# read. Recording that explicitly because the obvious objection -- "matching
+# ABSENT would fire on the exact discipline #83 asked for" -- was true only
+# while the acquittal did not exist, and a reason that stops holding is worse
+# than no reason. What #129 also asks for and is NOT satisfiable from inside
+# this repository is its last clause: replaying the four wave-21 lane reports
+# through the fixed detector. Those reports never entered the tree.
 ABSENCE_CLAIM = re.compile(
     r"(?i)\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit", re.M
 )
