@@ -841,7 +841,7 @@ def check_forbidden_surface(path: Path, errors: list[str]) -> None:
             )
 
 
-def check_method_claims(catalogue: dict, errors: list[str]) -> None:
+def check_method_claims(catalogue: dict, repo_root: Path, errors: list[str]) -> None:
     """A method claim is grounded the same way a cure is, or it is not evidence.
 
     `method_claims` are the catalogue's non-detector grounds - the operator
@@ -854,6 +854,14 @@ def check_method_claims(catalogue: dict, errors: list[str]) -> None:
     `scripts/cure_authorization.py`, so it is called rather than re-spelled -
     an unauthorized method claim reds with the same diagnostic an unauthorized
     cure does.
+
+    One tie is owned here rather than there, because it is about grounding
+    rather than about the authorization's shape: the adjudication issue an
+    operator ref names must also be one of the claim's own `refs`. That is what
+    makes "existence-checked" true offline - `gen_receipts` projects `refs` into
+    `receipts.json`, and `scripts/maintain_skills.py` re-resolves every ref it
+    finds there at the provider, so an adjudication issue that stopped existing
+    comes back from a sweep that already runs.
     """
     import cure_authorization  # noqa: PLC0415
 
@@ -869,15 +877,29 @@ def check_method_claims(catalogue: dict, errors: list[str]) -> None:
             continue
         if not str(entry.get("claim") or "").strip():
             errors.append(f"CATALOGUE_ENTRY_UNGROUNDED:{claim_id}: no claim")
-        if not entry.get("refs"):
+        refs = entry.get("refs")
+        if not refs:
             errors.append(
                 f"CATALOGUE_ENTRY_UNGROUNDED:{claim_id}: no provider ref, so the cadence "
                 "sweep has nothing to re-resolve"
             )
-        for problem in cure_authorization.authorization_errors(entry.get("authorization")):
+        authorization = entry.get("authorization")
+        for problem in cure_authorization.authorization_errors(
+            authorization, tree=repo_root
+        ):
             errors.append(
                 f"{cure_authorization.DIAGNOSTIC}:{claim_id}: {problem}; a method claim "
-                "is evidence only once it names who adjudicated it"
+                "is evidence only once it names who adjudicated it and what artifact "
+                "carries the adjudication"
+            )
+        issue = ((authorization or {}).get("adjudication") or {}).get("issue") if isinstance(
+            authorization, dict
+        ) else None
+        if issue and issue not in (refs or []):
+            errors.append(
+                f"{cure_authorization.DIAGNOSTIC}:{claim_id}: the adjudication issue "
+                f"{issue} is not among the claim's refs, so the cadence sweep never "
+                "re-resolves the artifact this claim rests on"
             )
 
 
@@ -1060,7 +1082,7 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     check_experiment_tie(catalogue, errors)
     check_diagnostic_tie(text, errors)
     check_catalogue(catalogue, errors)
-    check_method_claims(catalogue, errors)
+    check_method_claims(catalogue, repo_root, errors)
     targets = check_observation_topology(skill_root, errors)
     ledger = check_ledger(skill_root, targets, errors)
     check_station_arrival(repo_root, targets, ledger, errors)
@@ -1283,6 +1305,24 @@ def selftest() -> int:
             "station_that_outgrew_its_arrival_row_reds",
             station_outgrew_its_row,
             "STATION_ARRIVAL_UNTIED",
+        )
+
+        def garbage_operator_ref(copy: Path) -> None:
+            import cure_authorization  # noqa: PLC0415
+
+            def change(body):
+                for claim in body["method_claims"].values():
+                    claim["authorization"] = {
+                        "kind": "operator-adjudication",
+                        "ref": cure_authorization.VIBES_REF,
+                    }
+
+            edit_catalogue(copy, change)
+
+        mutate(
+            "method_claim_with_a_well_formed_ref_resolving_to_nothing_reds",
+            garbage_operator_ref,
+            "names no adjudication artifact",
         )
 
         def plant_a_mutating_call(copy: Path) -> None:

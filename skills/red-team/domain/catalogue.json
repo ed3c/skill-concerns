@@ -149,7 +149,7 @@
         "both_directions": "positive: the unauthorized ratchet diff is reported; negative: the same diff naming its adjudication is not"
       },
       "status": "gated",
-      "gate_ref": "scripts/cure_authorization.py (ed3c/skill-concerns#93): both BUILD carriers refuse an unauthorized enforcement shape with BUILD_CURE_UNAUTHORIZED. Declared ceiling: the gate mechanically refuses the UNNAMED form only; whether the named issue's body really carries the discriminating measurement stays the reviewer's read at landing, because authorization_errors is shape-only. The class leaves sampling against the unnamed form, not against a wrongly-named one.",
+      "gate_ref": "scripts/cure_authorization.py (ed3c/skill-concerns#93, tightened by ed3c/skill-concerns#103): every BUILD carrier refuses an unauthorized enforcement shape with BUILD_CURE_UNAUTHORIZED, and an operator adjudication must now RESOLVE - a pinned subject that exists in the tree and that its own ref repeats, plus either an issue whose body holds the adjudication or an inline record with an expiry or a re-resolution cadence. What is still not judged is the QUALITY of the adjudication the artifact carries: that is a structural ceiling with a sensor and a trigger rather than a sentence. CEILING:rubber-stamp-authorization",
       "stock_sweep_ref": "ed3c/skill-concerns#93 binds the rule from landing forward and explicitly claims no retroactive audit; the stock is therefore the empty set by adjudication, recorded here rather than assumed"
     }
   ],
@@ -162,7 +162,11 @@
       ],
       "authorization": {
         "kind": "operator-adjudication",
-        "ref": "operator:2026-09-01:the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle (ed3c/skill-concerns#94)"
+        "ref": "operator:2026-09-01:skills/red-team/domain/catalogue.json - the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle",
+        "subject": "skills/red-team/domain/catalogue.json",
+        "adjudication": {
+          "issue": "ed3c/skill-concerns#94"
+        }
       }
     },
     "zero-injection-boundary": {
@@ -173,7 +177,11 @@
       ],
       "authorization": {
         "kind": "operator-adjudication",
-        "ref": "operator:2026-09-01:the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher (ed3c/skill-concerns#94)"
+        "ref": "operator:2026-09-01:skills/red-team/domain/observation-topology.json - the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher",
+        "subject": "skills/red-team/domain/observation-topology.json",
+        "adjudication": {
+          "issue": "ed3c/skill-concerns#94"
+        }
       }
     }
   }

@@ -227,8 +227,20 @@
     {
       "id": "landed-escalation-must-name-where-refused",
       "expected": "FAIL",
-      "note": "A row whose status says the escalation landed while escalation.landed names no provider ref reds; a status is a claim about a filed tightening, and the ref is what makes it a readback.",
-      "test": "test_red_team.RedTeamEvals.test_a_register_row_landing_a_tightening_names_where_it_landed"
+      "note": "Both directions of the fired status: a row saying the escalation landed while escalation.landed names no provider ref reds, and a landed ref on a row still marked OPEN reds the other way. A status is a claim about a filed tightening, and the ref is what makes it a readback.",
+      "test": "test_red_team.RedTeamEvals.test_a_register_status_and_its_landed_ref_move_together"
+    },
+    {
+      "id": "method-claims-resolve-to-a-real-artifact",
+      "expected": "PASS",
+      "note": "Both live method_claims rows name a pinned subject that exists and that their own ref repeats, plus an adjudication issue that is also one of the claim's refs; the wave-19 judge's exact garbage ref is refused on the same call.",
+      "test": "test_red_team.RedTeamEvals.test_the_two_method_claims_resolve_to_a_real_adjudication_artifact"
+    },
+    {
+      "id": "adjudication-issue-outside-the-refs-refused",
+      "expected": "FAIL",
+      "note": "An adjudication issue that is not among the claim's refs reds: existence-checked means the cadence sweep re-resolves the artifact, not that the ref parses.",
+      "test": "test_red_team.RedTeamEvals.test_an_adjudication_issue_outside_the_claims_refs_reds"
     },
     {
       "id": "flat-curve-leaves-through-the-exit-code",

@@ -27,11 +27,32 @@ prevent. That asymmetry is the reason the scan is deliberately blunt.
 SHADOW detections never authorize. A detection is the beginning of an
 adjudication, not a license to cure, so `shadow-detection` is refused by name
 rather than falling through the unknown-kind branch as if someone had typo'd.
+
+An `operator:` ref used to be `any date plus any non-empty text`
+(ed3c/skill-concerns#103). The wave-19 judge ran three garbage refs through it
+on landed main and all three passed, including
+`operator:2026-09-01:the vibes were good`: the gate refused ABSENCE and refused
+shadow-detection by name, then admitted every well-formed string forever - no
+expiry, no pinned subject, no re-resolver. By this repository's own definition
+that is a typed exit with no expiry, no pinned subject and no refusal, which is
+the free-exit class, inside the instrument that names it. So an operator
+authorization now RESOLVES rather than parses: it names a pinned subject that
+exists in the tree and that its own ref repeats, and it carries either an issue
+whose body holds the adjudication - a provider ref the cadence sweep
+re-resolves - or an inline record with an expiry or a re-resolution cadence. A
+ref that is well-formed and resolves to nothing is refused, and an expired
+inline record is refused AS EXPIRED, which is a different state from malformed.
+
+What is still not judged here is the QUALITY of the adjudication the artifact
+holds. That gap is registered with a sensor and a trigger in
+`skills/red-team/domain/residual-sensor-register.json`, not left as a sentence.
 """
 
 from __future__ import annotations
 
 import re
+from datetime import date
+from pathlib import Path
 from typing import Any, NamedTuple
 
 
@@ -58,14 +79,21 @@ SHAPES: dict[str, re.Pattern[str]] = {
 }
 
 # What an authorization may claim, and what a ref for that claim must look like.
+# The ref form is the LABEL. For an operator adjudication it is necessary and
+# nowhere near sufficient: `operator_errors` is what makes the label resolve.
 PROVIDER_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+$")
 OPERATOR_REF = re.compile(r"^operator:\d{4}-\d{2}-\d{2}:\S.*$")
+ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+OPERATOR_KIND = "operator-adjudication"
 EVIDENCE_KINDS: dict[str, re.Pattern[str]] = {
     "discriminating-measurement": PROVIDER_REF,
     "falsification": PROVIDER_REF,
-    "operator-adjudication": OPERATOR_REF,
+    OPERATOR_KIND: OPERATOR_REF,
 }
 SHADOW_KIND = "shadow-detection"
+# The judge's exact garbage ref, kept here so every carrier's planted control
+# measures the same bytes instead of a paraphrase of them.
+VIBES_REF = "operator:2026-09-01:the vibes were good"
 
 # The canonical refused case from the trigger chain, kept here so both carriers'
 # planted controls measure the same bytes instead of two paraphrases of them.
@@ -98,13 +126,103 @@ def shapes_in(text: str) -> list[str]:
     return [name for name, pattern in SHAPES.items() if pattern.search(text or "")]
 
 
-def authorization_errors(authorization: Any) -> list[str]:
+def operator_errors(
+    authorization: dict, tree: Path | None, today: date
+) -> list[str]:
+    """Everything that stops an operator ref from RESOLVING, or an empty list.
+
+    Two states this deliberately keeps apart, because a caller acts on them
+    differently: malformed (the record never named an artifact) and expired
+    (it named one and the clock ran out). An exit whose absence and whose
+    lapse look the same in the bytes is the shape ed3c/skill-concerns#103 filed.
+    """
+    errors: list[str] = []
+    subject = authorization.get("subject")
+    if not isinstance(subject, str) or not subject.strip():
+        # Reported, never returned early: a ref like the judge's
+        # `operator:2026-09-01:the vibes were good` is missing the subject AND
+        # the artifact, and a diagnostic that named only the first would send
+        # the next author back for a second round on the same record.
+        errors.append(
+            "operator adjudication names no pinned subject; an operator ref "
+            "without one is a date and a sentence, and any sentence satisfies it"
+        )
+    else:
+        if subject not in str(authorization.get("ref") or ""):
+            errors.append(
+                f"operator ref does not name its own pinned subject {subject!r}, so the "
+                "sentence and the field are free to drift apart"
+            )
+        target = subject.split("#", 1)[0]
+        if tree is None:
+            errors.append(
+                f"operator adjudication pins subject {target!r} and no tree was given to "
+                "resolve it against; absence of a tree is refused rather than skipped"
+            )
+        elif not (tree / target).exists():
+            errors.append(
+                f"operator adjudication pins subject {target!r}, which does not exist in "
+                "the tree; a pinned subject that resolves to nothing pins nothing"
+            )
+    adjudication = authorization.get("adjudication")
+    if not isinstance(adjudication, dict) or not adjudication:
+        return errors + [
+            "operator adjudication names no adjudication artifact: carry "
+            "adjudication.issue as a provider ref whose body holds it, or an inline "
+            "adjudication.record with an expiry or a re-resolution cadence"
+        ]
+    issue = adjudication.get("issue")
+    record = adjudication.get("record")
+    if issue and record:
+        errors.append(
+            "operator adjudication carries both an issue and an inline record; "
+            "exactly one artifact is the adjudication"
+        )
+    elif issue:
+        if not isinstance(issue, str) or not PROVIDER_REF.fullmatch(issue):
+            errors.append(
+                f"operator adjudication issue {issue!r} does not carry the provider "
+                f"form {PROVIDER_REF.pattern}, so nothing can re-resolve it"
+            )
+    elif isinstance(record, str) and record.strip():
+        expires = adjudication.get("expires")
+        cadence = adjudication.get("re_resolve")
+        if not expires and not (isinstance(cadence, str) and cadence.strip()):
+            errors.append(
+                "inline operator adjudication carries neither an expiry nor a "
+                "re-resolution cadence, which is the free exit this rule closes"
+            )
+        elif expires is not None:
+            if not isinstance(expires, str) or not ISO_DATE.fullmatch(expires):
+                errors.append(
+                    f"inline operator adjudication expiry {expires!r} is not an "
+                    "ISO-8601 date"
+                )
+            elif date.fromisoformat(expires) < today:
+                errors.append(
+                    f"inline operator adjudication expired on {expires}; it is not "
+                    "malformed, it lapsed, and a lapsed adjudication authorizes nothing"
+                )
+    else:
+        errors.append(
+            "operator adjudication names no adjudication artifact: carry "
+            "adjudication.issue as a provider ref whose body holds it, or an inline "
+            "adjudication.record with an expiry or a re-resolution cadence"
+        )
+    return errors
+
+
+def authorization_errors(
+    authorization: Any, *, tree: Path | None = None, today: date | None = None
+) -> list[str]:
     """Everything wrong with an authorization record, or an empty list.
 
-    Shape only. Whether the named issue's body really carries the measurement
-    is the reviewer's read at landing time; what is mechanical here is that a
-    proposal cannot proceed while pointing at nothing, at a SHADOW detection,
-    or at a ref whose form contradicts the evidence it claims.
+    Provider-ref kinds stay shape-only: whether the named issue's body really
+    carries the measurement is the reviewer's read at landing time, and the
+    cadence sweep is what re-resolves the ref itself. The operator kind is not
+    shape-only any more - it must resolve (`operator_errors`), because a form
+    that admits every well-formed sentence forever is the free-exit class this
+    repository catalogues.
     """
     if not isinstance(authorization, dict):
         return [f"cure-authorization is not a record: {authorization!r}"]
@@ -125,11 +243,20 @@ def authorization_errors(authorization: Any) -> list[str]:
             f"cure-authorization ref {ref!r} does not carry the {kind} form "
             f"{EVIDENCE_KINDS[kind].pattern}"
         ]
+    if kind == OPERATOR_KIND:
+        return operator_errors(authorization, tree, today or date.today())
     return []
 
 
 def parse(value: str) -> dict[str, str]:
-    """`kind=ref` from a command line into an authorization record."""
+    """`kind=ref` from a command line into an authorization record.
+
+    Provider-ref kinds are typeable. An operator adjudication is not, and that
+    is deliberate: it needs a pinned subject and a resolvable artifact, so it
+    arrives as a record in the proposal rather than as a sentence on a command
+    line. A bare `operator-adjudication=...` from here is refused by
+    `operator_errors` naming exactly what is missing.
+    """
     kind, separator, ref = (value or "").partition("=")
     if not separator:
         raise ValueError(f"{DIAGNOSTIC}:cure-authorization must be <kind>=<ref>: {value!r}")
@@ -142,12 +269,18 @@ def refuse(
     authorization: Any,
     *,
     always: bool = False,
+    tree: Path | None = None,
+    today: date | None = None,
 ) -> Refusal | None:
     """The single decision every BUILD carrier makes before it may write.
 
     `always=True` is for a carrier whose whole subject IS an enforcement shape -
     a catalogue class, a clause candidate - where scanning its text for the
     five shape words would only re-derive a fact already known from the verb.
+
+    `tree` is what an operator adjudication's pinned subject resolves against.
+    Every carrier has one and passes it; a carrier that does not is refused
+    rather than silently graded on the weaker, shape-only reading.
     """
     shapes = shapes_in(proposal_text)
     if not shapes and not always:
@@ -160,9 +293,15 @@ def refuse(
             f"introduces or alters {named} with no cure-authorization; {RULE}",
             ACTION,
         )
-    errors = authorization_errors(authorization)
+    errors = authorization_errors(authorization, tree=tree, today=today)
     if errors:
+        # Every error, not the first: an operator record can be missing its
+        # pinned subject AND its artifact at once, and a refusal that named one
+        # of them would send the author back for a second round on one record.
         return Refusal(
-            DIAGNOSTIC, subject, f"{errors[0]}; the shapes at stake are {named}", ACTION
+            DIAGNOSTIC,
+            subject,
+            f"{'; '.join(errors)}; the shapes at stake are {named}",
+            ACTION,
         )
     return None

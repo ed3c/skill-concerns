@@ -877,7 +877,10 @@ def build_pass(
         # than proven and shipped. `refuse()` is the shared decision every
         # BUILD carrier in this repository makes; there is no copy of it here.
         cure = cure_authorization.refuse(
-            f"skills/{skill}", proposal_additions(root, scope), authorization
+            f"skills/{skill}",
+            proposal_additions(root, scope),
+            authorization,
+            tree=root,
         )
         if cure is not None:
             report["refusals"].append(
@@ -1413,10 +1416,11 @@ def main(argv: list[str] | None = None) -> int:
         dest="cure_authorization",
         metavar="KIND=REF",
         help="BUILD mode: the adjudication that authorizes an enforcement-shape "
-        "cure, e.g. discriminating-measurement=ed3c/skill-concerns#93 or "
-        "operator-adjudication=operator:2026-09-01:<subject>. Without it a "
+        "cure, e.g. discriminating-measurement=ed3c/skill-concerns#93. Without it a "
         "proposal that introduces or alters a gate, ratchet, threshold, "
-        "refusal or escape-hatch condition is refused.",
+        "refusal or escape-hatch condition is refused. An operator adjudication "
+        "is not typeable here (ed3c/skill-concerns#103): it needs a pinned subject "
+        "and a resolvable artifact, so it arrives as a record in the proposal.",
     )
     parser.add_argument("--selftest", action="store_true")
     args = parser.parse_args(argv)

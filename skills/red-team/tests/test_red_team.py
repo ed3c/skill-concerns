@@ -665,16 +665,100 @@ class RedTeamEvals(unittest.TestCase):
                     )
                 )
 
-    def test_a_register_row_landing_a_tightening_names_where_it_landed(self) -> None:
-        """A status claiming the escalation landed carries the ref that proves it."""
-        copy = self.copy()
-        path = copy / "domain" / "residual-sensor-register.json"
+    def test_a_register_status_and_its_landed_ref_move_together(self) -> None:
+        """Both directions of the status the rubber-stamp row now carries.
+
+        The row says the sensor fired and the escalation landed; stripping the
+        ref that says WHERE it landed leaves a status nobody can read back, and
+        a landed ref on a row still marked OPEN is the same drift the other way.
+        """
+        rows = domain("residual-sensor-register.json")["rows"]
+        fired = next(row for row in rows if row["id"] == "rubber-stamp-authorization")
+        self.assertEqual("SENSOR_FIRED_ESCALATION_LANDED", fired["status"])
+        self.assertEqual("ed3c/skill-concerns#103", fired["escalation"]["landed"])
+
+        stripped = self.copy()
+        path = stripped / "domain" / "residual-sensor-register.json"
         body = json.loads(path.read_text(encoding="utf-8"))
-        body["rows"][0]["status"] = "SENSOR_FIRED_ESCALATION_LANDED"
+        body["rows"][0]["escalation"].pop("landed")
         path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
         self.assertTrue(
             any(
                 "is not a provider ref that says where" in error
+                for error in validator.validate(stripped, REPO_ROOT)
+            )
+        )
+
+        stale = self.copy()
+        path = stale / "domain" / "residual-sensor-register.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        open_row = next(row for row in body["rows"] if row["status"] == "OPEN")
+        open_row["escalation"]["landed"] = "ed3c/skill-concerns#103"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "while the row is still OPEN" in error
+                for error in validator.validate(stale, REPO_ROOT)
+            )
+        )
+
+    def test_the_two_method_claims_resolve_to_a_real_adjudication_artifact(self) -> None:
+        """The in-atom disposition of both live rows, read back.
+
+        Each names a pinned subject that exists and that its own ref repeats,
+        and an adjudication issue that is also one of the claim's refs - so the
+        cadence sweep that already re-resolves receipts refs is what keeps the
+        artifact existing. The judge's garbage ref is refused on the same call.
+        """
+        claims = catalogue()["method_claims"]
+        self.assertEqual(2, len(claims))
+        for claim_id, claim in sorted(claims.items()):
+            with self.subTest(claim=claim_id):
+                authorization = claim["authorization"]
+                subject = authorization["subject"]
+                self.assertIn(subject, authorization["ref"])
+                self.assertTrue((REPO_ROOT / subject).exists())
+                issue = authorization["adjudication"]["issue"]
+                self.assertIn(issue, claim["refs"])
+                self.assertEqual(
+                    [],
+                    cure_authorization.authorization_errors(
+                        authorization, tree=REPO_ROOT
+                    ),
+                )
+
+        errors: list[str] = []
+        vibes = {
+            "method_claims": {
+                "planted": {
+                    "claim": "the vibes were good",
+                    "refs": ["ed3c/skill-concerns#94"],
+                    "authorization": {
+                        "kind": "operator-adjudication",
+                        "ref": cure_authorization.VIBES_REF,
+                    },
+                }
+            }
+        }
+        validator.check_method_claims(vibes, REPO_ROOT, errors)
+        self.assertTrue(any("names no adjudication artifact" in error for error in errors))
+
+    def test_an_adjudication_issue_outside_the_claims_refs_reds(self) -> None:
+        """Existence-checked means a reader re-resolves it, not that it parses.
+
+        `gen_receipts` projects a claim's refs into receipts.json and the
+        maintain cadence re-resolves every ref it finds there. An adjudication
+        issue that is not among those refs is an artifact nothing re-reads.
+        """
+        copy = self.copy()
+        path = copy / "domain" / "catalogue.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        for claim in body["method_claims"].values():
+            claim["authorization"]["adjudication"]["issue"] = "ed3c/skill-concerns#1"
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "is not among the claim's refs" in error
                 for error in validator.validate(copy, REPO_ROOT)
             )
         )

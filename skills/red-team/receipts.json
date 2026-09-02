@@ -60,7 +60,11 @@
       "claim": "the adversarial method this skill pins - rewrite-all-to-the-exit experiments, planted-direction replay, producer re-runs in throwaway clones, pristine-main controls, the GraphQL second-arrival probe - produced the strongest findings of the last five waves while living only in dispatcher prompt text and scratchpad notes.",
       "authorization": {
         "kind": "operator-adjudication",
-        "ref": "operator:2026-09-01:the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle (ed3c/skill-concerns#94)"
+        "ref": "operator:2026-09-01:skills/red-team/domain/catalogue.json - the wave judge's adversarial method is adjudicated worth pinning as bytes and admitted as this bundle",
+        "subject": "skills/red-team/domain/catalogue.json",
+        "adjudication": {
+          "issue": "ed3c/skill-concerns#94"
+        }
       }
     },
     "zero-injection-boundary": {
@@ -71,7 +75,11 @@
       "claim": "operator design adjudication, 2026-09-01: the monitor never injects into a working agent or its subject; real-time is legal in exactly one direction, an escalation signal to the dispatcher, and irreversible-class dangers stay owned by the architecture layer.",
       "authorization": {
         "kind": "operator-adjudication",
-        "ref": "operator:2026-09-01:the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher (ed3c/skill-concerns#94)"
+        "ref": "operator:2026-09-01:skills/red-team/domain/observation-topology.json - the monitor never injects into a worker or a subject; the only real-time channel is one escalation signal to the dispatcher",
+        "subject": "skills/red-team/domain/observation-topology.json",
+        "adjudication": {
+          "issue": "ed3c/skill-concerns#94"
+        }
       }
     }
   }
