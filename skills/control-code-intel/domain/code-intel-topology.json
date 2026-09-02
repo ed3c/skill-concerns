@@ -2,15 +2,29 @@
   "schema_version": 1,
   "layer": "L1 self-contained contract",
   "converged_from": "ed3c/noodles#13 code-intelligence v1",
+  "environment_contract": {
+    "why": "ed3c/skill-concerns#76: this stack was consumed as ambient - present on the authoring host, declared nowhere. The defect being cured is UNDECLARED ambient, not ambient itself: a tool this bundle cannot pin is still declared, with what the skill requires of it and what makes it present.",
+    "kinds": {
+      "path": "an executable this bundle can look up itself: `probe` is the command name, resolved with shutil.which by scripts/code_intel_driver.py --preflight, which fails closed naming the tool",
+      "ambient": "a host service or a foreign repository's probe this bundle does not own and deliberately does not pin: `prerequisite` states what makes it present and who would check it. Declared, never silently assumed"
+    },
+    "checked_by": "scripts/code_intel_driver.py --preflight (live path) and scripts/validate_control_code_intel.py (declaration shape)",
+    "absent_is_not_a_negative_result": "a missing tool exits 3 with TOOL_ABSENT:<tool>; a query that legitimately returns nothing is an assertion going red at exit 1. The two never share a representation"
+  },
   "tools": {
     "grepai": {
       "role": "semantic retrieval",
       "authority": "P-class candidate (ranked, must be confirmed, never truth)",
       "interfaces": ["mcp: grepai mcp-serve", "cli: grepai search --json"],
       "pin": "grepai 0.30.0",
+      "presence": {
+        "kind": "path",
+        "probe": "grepai",
+        "requires": "a CLI that answers `grepai search Q --workspace <name> --json` with ranked candidates from an already-indexed store"
+      },
       "backends": {
         "gob": {"scope": "single repository", "infra": "none", "state_file": ".grepai/index.gob"},
-        "postgres+pgvector": {"scope": "multi repository (workspace)", "infra": "postgres + pgvector matching the pg major", "tables": ["documents", "chunks"]}
+        "postgres+pgvector": {"scope": "multi repository (workspace)", "infra": "postgres + pgvector matching the pg major", "tables": ["documents", "chunks"], "infra_prerequisite": "ambient by declaration: provider-owned Postgres with a `vector` extension matching the running major, read back with `psql -d grepai -c \"SELECT extversion FROM pg_extension WHERE extname='vector'\"`. Store init fails closed without it, so this is a prerequisite of the workspace backend rather than of the grepai binary, and ed3c/skill-concerns#76 explicitly does not pin it"}
       },
       "embedder": "ollama nomic-embed-text (768 dim)",
       "states": ["uninitialized", "initialized", "indexing", "indexed", "stale (source moved past last_index_time)"]
@@ -20,6 +34,12 @@
       "authority": "L-class for structure (LSP-backed exact symbols), P-class for edit intent",
       "interfaces": ["mcp: serena start-mcp-server --context {claude-code|codex}"],
       "pin": "serena-agent 1.7.0",
+      "presence": {
+        "kind": "ambient",
+        "probe": "serena",
+        "requires": "LSP-backed exact symbol navigation over an activated project",
+        "prerequisite": "registered as an MCP server in the host agent and reporting Connected (`claude mcp get serena`); the agent session owns the process, so this bundle neither starts nor pins it"
+      },
       "cross_repo": "dynamic via activate_project (zero extra cost)",
       "operations": ["find_symbol", "find_referencing_symbols", "replace_symbol_body", "activate_project"]
     },
@@ -27,18 +47,35 @@
       "role": "structural byte-range readback",
       "authority": "L-class (byte ranges cross-checked against the language AST)",
       "interfaces": ["noodles structural probe"],
-      "evidence": "definition byte ranges verified against CPython ast for python candidates"
+      "evidence": "definition byte ranges verified against CPython ast for python candidates",
+      "presence": {
+        "kind": "ambient",
+        "probe": "noodles structural probe",
+        "requires": "byte ranges for a definition, cross-checkable against the language AST",
+        "prerequisite": "the noodles repository's landed structural adapter on this host; it is a foreign repository's mechanism, so this bundle declares the dependency and does not vendor or pin it"
+      }
     },
     "scip": {
       "role": "exact-commit index validation",
       "authority": "L-class (reproducible at an exact commit)",
       "interfaces": ["noodles scip probe"],
-      "pin": "scip-python at an exact commit"
+      "pin": "scip-python at an exact commit",
+      "presence": {
+        "kind": "ambient",
+        "probe": "noodles scip probe",
+        "requires": "an index reproducible at an exact commit, so a claim can be re-derived rather than remembered",
+        "prerequisite": "the noodles runtime's scip-python pin on this host; the pin is that repository's to hold, and this bundle reads it rather than restating it"
+      }
     },
     "sqlite": {
       "role": "exact-subject evidence ledger",
       "authority": "R-class readback (a stored row is served only when subject + adapter + source digest + recorded path + recorded byte range all survive a direct re-read of current source bytes)",
-      "interfaces": ["noodles evidence ledger"]
+      "interfaces": ["noodles evidence ledger"],
+      "presence": {
+        "kind": "path",
+        "probe": "sqlite3",
+        "requires": "a client for the exact-subject evidence ledger, enough to re-read a stored row and its recorded digest"
+      }
     }
   },
   "not_admitted": {

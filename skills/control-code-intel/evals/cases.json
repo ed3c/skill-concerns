@@ -6,8 +6,14 @@
     {"id": "missing-layer-file", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_missing_layer_file_fails"},
     {"id": "unbacked-receipt-removed", "control": "evidence-promotion", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_unbacked_receipt_removed_fails"},
     {"id": "lancedb-admitted", "control": "boundary", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_lancedb_admitted_fails"},
-    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_driver_negative_control_defused_fails"}
+    {"id": "driver-negative-control-defused", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_driver_negative_control_defused_fails"},
+    {"id": "preflight-passes-on-a-provisioned-path", "control": "positive", "expected": "PASS", "test": "test_control_code_intel.ControlCodeIntelEvals.test_preflight_passes_when_every_declared_tool_is_on_path"},
+    {"id": "declared-tool-absent-from-path", "control": "environment", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_preflight_refuses_naming_the_tool_absent_from_a_real_path"},
+    {"id": "absence-is-not-a-negative-result", "control": "environment", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_tool_absence_and_a_red_assertion_are_different_states"},
+    {"id": "tool-without-a-presence-declaration", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_a_tool_consuming_the_environment_without_a_declaration_fails"},
+    {"id": "ambient-without-a-prerequisite", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_an_ambient_declaration_without_a_prerequisite_fails"},
+    {"id": "host-absolute-path-in-tracked-bytes", "control": "boundary", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_no_tracked_file_carries_a_host_absolute_path"}
   ],
   "runner": "python3 -m unittest discover -s skills/control-code-intel/tests",
-  "hillclimb": "edits may add tools+receipts; weakening the three-layer structure, admitting an unbacked tool, or defusing a driver negative control fails closed"
+  "hillclimb": "edits may add tools+receipts; weakening the three-layer structure, admitting an unbacked tool, defusing a driver negative control, or consuming a stack tool without a presence declaration fails closed"
 }

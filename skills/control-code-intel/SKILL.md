@@ -61,6 +61,34 @@ force a full reindex after a backend switch, run scoped and cross-repo searches.
 Read the affected procedure from source; the map is maintained memory, not
 permission to skip a physical readback.
 
+## Environment contract
+
+This stack is other people's software: a CLI, two MCP servers, a foreign
+repository's probes, a provider-owned database. None of it is vendored here and
+most of it should not be pinned here. What is refused is consuming it
+*silently* — the defect is undeclared ambient, not ambient.
+
+Every admitted tool therefore carries a `presence` declaration in
+[`domain/code-intel-topology.json`](domain/code-intel-topology.json) naming what
+this Skill requires of it and what makes it present, in one of two kinds:
+
+- **`path`** — a binary this bundle resolves itself (`grepai`, `sqlite3`).
+- **`ambient`** — a host service or foreign probe it does not own (Serena's MCP
+  registration, the noodles structural and SCIP probes, the Postgres+pgvector
+  workspace store). These name a `prerequisite` instead of a pin, per
+  ed3c/skill-concerns#76's non-claims.
+
+Before any live use, run
+[`scripts/code_intel_driver.py`](scripts/code_intel_driver.py) `--preflight`. It
+resolves the `path` declarations and **fails closed at exit 3 naming the tool**
+that is gone. That exit is the whole point: a missing tool and a query that
+legitimately returned nothing must never look alike, so `TOOL_ABSENT` (exit 3)
+and a red assertion (exit 1) are different states, and no live path may proceed
+past a refusal by treating absence as an empty result. The declaration shape is
+re-read by [`scripts/validate_control_code_intel.py`](scripts/validate_control_code_intel.py),
+so a tool added without one reds; whether a tool is present *on your host* is a
+question only the preflight can answer, on that host.
+
 ## Hard constraints
 
 - Do not report an MCP as usable on "connected" alone: connected is the wire, a

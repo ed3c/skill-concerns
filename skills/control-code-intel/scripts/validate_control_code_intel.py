@@ -23,11 +23,52 @@ SKILL_MD_CLAUSES = (
     "Decision boundary",
     "Backends and their boundary",
     "Best-path procedures",
+    "Environment contract",
     "Hard constraints",
     "Knowledge placement",
 )
 
 ADMITTED = {"grepai", "serena", "tree-sitter", "scip", "sqlite"}
+
+# ed3c/skill-concerns#76: every admitted tool declares what this skill requires
+# of it and what makes it present. `path` is a binary this bundle resolves
+# itself; `ambient` is a host service or foreign probe it deliberately does not
+# pin and therefore must name a prerequisite. A tool with neither is the
+# undeclared-ambient defect, so the shape is read here rather than trusted.
+PRESENCE_KINDS = {"path", "ambient"}
+PRESENCE_REQUIRED = {"path": ("probe", "requires"), "ambient": ("probe", "requires", "prerequisite")}
+
+
+def check_environment_contract(topo: dict) -> list[str]:
+    """The stack's environment declaration, read rather than assumed.
+
+    Shape only, and deliberately: whether `grepai` is on this host is a
+    question for `code_intel_driver.py --preflight` on the machine that will
+    use it, not for a hermetic gate that would then red on every CI runner.
+    What is decidable from bytes is that each admitted tool SAYS what it needs
+    and what makes it present.
+    """
+    errors: list[str] = []
+    contract = topo.get("environment_contract")
+    if not isinstance(contract, dict) or not contract.get("checked_by"):
+        errors.append("L1 declares no environment_contract naming what checks presence")
+    tools = topo.get("tools", {})
+    for name in sorted(ADMITTED):
+        tool = tools.get(name)
+        if not isinstance(tool, dict):
+            continue  # the missing-tool error is already raised by validate()
+        presence = tool.get("presence")
+        if not isinstance(presence, dict):
+            errors.append(f"tool {name!r} consumes the environment with no presence declaration")
+            continue
+        kind = presence.get("kind")
+        if kind not in PRESENCE_KINDS:
+            errors.append(f"tool {name!r} presence kind {kind!r} is not one of {sorted(PRESENCE_KINDS)}")
+            continue
+        for field in PRESENCE_REQUIRED[kind]:
+            if not presence.get(field):
+                errors.append(f"tool {name!r} {kind} presence declaration lacks {field!r}")
+    return errors
 
 
 def validate(root: Path) -> list[str]:
@@ -62,6 +103,7 @@ def validate(root: Path) -> list[str]:
             errors.append("L1 must record LanceDB as not_admitted with its drop receipt")
         elif not na["lancedb"].get("receipt"):
             errors.append("LanceDB not_admitted entry lacks a drop receipt")
+        errors.extend(check_environment_contract(topo))
 
     receipts = {}
     if receipts_p:
