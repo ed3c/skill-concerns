@@ -49,6 +49,13 @@ NOT part of hermetic `run_all`: `ab_campaign.py --campaign <dir> stage` →
 run the actors → `collect` → `judge-inputs` → judge → `score` → `receipt` →
 `gen_ledger.py`. Run this when a wave is being run, never as a checklist tick.
 
+Before scoring those runs, read the two interpretation-time caveats in the
+protocol every campaign spec names (`protocol` in `spec.json`,
+`docs/behavioral-eval-protocol.md`): the call log records mistyped calls the
+client never dispatched, and criteria frozen before wave 2 were still shaped
+after wave 1. The validator resolves that path and reds if either caveat
+leaves the document, so the reference is a reader and not a citation.
+
 **This step retires when** two waves have run and the second one's judged
 criteria — the ones frozen in its spec before its actors ran — return the same
 answer as the first. Until then a single n=3 null result is the only campaign

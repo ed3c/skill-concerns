@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "campaign": "2026-09-01-ab-control-arm",
+  "protocol": "docs/behavioral-eval-protocol.md",
   "question": "does the admitted spatial-loop-grounded clause set change actor behavior in disguised chores, measured against the SAME actor with no manual at all?",
   "why": "every prior campaign was single-armed: a green proved the actor+skill pair works, never that the skill contributed. The without-skill arm is the control that makes the value claim falsifiable (ed3c/skill-concerns#45).",
   "producer": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
