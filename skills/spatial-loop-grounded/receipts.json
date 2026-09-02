@@ -75,6 +75,10 @@
       "refs": ["ed3c/noodles#243", "ed3c/noodles#244"],
       "claim": "a monitored dispatch run was misdiagnosed as crashed from artifact/process absence while still running; manual PRs raced its land agents; lease + patch-id dedup converged and the monitor-improved commits landed on top of the manual rebase"
     },
+    "blind-observer-instances": {
+      "refs": ["ed3c/noodles#313", "ed3c/skill-concerns#83", "ed3c/skill-concerns#92"],
+      "claim": "two observers structurally unable to observe the thing whose absence they were cited for: a residue clause checked with a status form that cannot see ignored paths, reproduced on a pristine default-branch clone so it is not any candidate's; and an issue-body edit probe on the REST events feed returning 0 for a body the GraphQL userContentEdits surface shows edited twice, one of those edits written by the landing machine itself on every land"
+    },
     "exit-residue": {
       "refs": ["host:~/.noodles-ops/backups/backup-noodles.log", "host:launchctl-list:com.neon.noodles-backup"],
       "claim": "the launcher listed exit 1 for the nightly backup job while the job's log ended with the full-success line and both snapshot layers read back complete (local daily + external replicate); the residue came from an earlier superseded attempt - a second, non-repository environment"

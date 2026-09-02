@@ -9,15 +9,15 @@
   "subject_files": [
     {
       "path": "skills/spatial-loop-grounded/AGENTS.md",
-      "sha256": "71fd6157ff7d6555443897b17dac796d41dc1ef1f615c521e54b5d392c1db2fd"
+      "sha256": "ab6673c5ad5103cdbe2bea5a1a6ec2255faf7bee65336544c1edec2e947da3a0"
     },
     {
       "path": "skills/spatial-loop-grounded/README.md",
-      "sha256": "6ab19c27f2e4ad6a912f1288e25848176845117de215d8418ca80b042b9ff6f5"
+      "sha256": "84c7277f8f1241b3f4601360336eafc827427355055c6fbb9adae5d2b73a6191"
     },
     {
       "path": "skills/spatial-loop-grounded/SKILL.md",
-      "sha256": "481ff32f67c1de0dbc795eaada0fd69257c8e58335f429dcb88b53ecea8d7ebd"
+      "sha256": "10761c995021a293c505050a352f184d0938256399f549d29a0ac6d5025babdc"
     },
     {
       "path": "skills/spatial-loop-grounded/domain/machine-topology.json",
@@ -609,7 +609,19 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "9d600ef1884c50799d119c5ab73a72beaff2dcfee5028100f60d0e3566f4a325"
+      "sha256": "cdf7823f6398aba22fa1c9a47e735667503253b1345303a4ea5ccb1eb7cb754b"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-events-probe/claim.json",
+      "sha256": "3fbc427417bb6abce3ef1306c3b90ea3aef968f312ca34d1f0c3aeeafc74e8fd"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-residue-claim/claim.json",
+      "sha256": "1583fdfc94ae63a972d9bf0a4ca313314d764178fee5f1689f3d61a7734aadb7"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-demonstrated-observer/claim.json",
+      "sha256": "0a1a31aad4b2efd79808866548211315b4b5fb25c7f09bbda06994cd25a05796"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c7-gate-widened-by-a-free-exit/changed-files.txt",
@@ -629,19 +641,19 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/index.json",
-      "sha256": "90aa580e91e97565bbb6ac3180b041bcbfdf843cbe6cffcf456b2ae80bdad936"
+      "sha256": "d6267dbc5e6d3143fee25b00595f0acd0a5a14c2b7f3e8e375a35aa08edff984"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
-      "sha256": "4166527341c8ed19dac0f0d7b381d62414452d55274c2386ef2a31aff58903aa"
+      "sha256": "b6d84c0f8705a080a1d5d53d6fa052570f9ddc61e9dabb27880bdfd11a7b06f3"
     },
     {
       "path": "skills/spatial-loop-grounded/references/portable-supervision-kernel.md",
-      "sha256": "2dc875ed9e22271e3c77c17f76a29b49a239ccc2a251ca6c34a5ef2939a4c2ab"
+      "sha256": "70cd15b8c14959bc012354a4799c1094cabe8289f974e10a0e3ee90858ec55e1"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
-      "sha256": "c4416b49334032c4f55fefee2e0a9378b89fee50b2784d948094651f905c1b10"
+      "sha256": "70e1c63bb3efbcbc0605a6dad063101b600d5248385199e88cc0cebc84e721f6"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -669,7 +681,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "8c79f7b9b04e57031772244f6635ef9a314acca38b1712471ac16e55e7e0c543"
+      "sha256": "9012f9a98240a538bf87b719a697c13215b38d323ef4e9b698e38a9b2983c6e8"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -677,10 +689,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "860e3af14e5c107284163a6fe93663f09748537ad63dc98f93e90210d793801d"
+      "sha256": "d425d9c139f99d9c4c4741828000b92e6c5b39654bb1b7fe7675536c016ba679"
     }
   ],
-  "skill_tree_sha256": "adb8ce59e8435d6f9b1aa40cd45be8c529d83e0a9091e3841d4c11899e4d5be6",
+  "skill_tree_sha256": "1473f70894751342262da1913e6f65473db06944b7326644887e2bf334fa43a4",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -806,6 +818,14 @@
     },
     {
       "id": "c7-negative-fixture-softened",
+      "state": "PASS"
+    },
+    {
+      "id": "c12-undemonstrated-silence-accepted",
+      "state": "PASS"
+    },
+    {
+      "id": "c12-demonstration-flag-drift",
       "state": "PASS"
     },
     {

@@ -7,7 +7,7 @@ This is the third and final Agent document for this Skill. Do not search for ano
 ## Local read order
 
 1. [`README.md`](README.md) — provenance, receipt chain, hillclimb rule.
-2. [`SKILL.md`](SKILL.md) — the eight grounded clauses in trigger form.
+2. [`SKILL.md`](SKILL.md) — the grounded clauses in trigger form (count-tied to `references/portable-supervision-kernel.md`, so read the count off the file rather than off this line).
 3. [`receipts.json`](receipts.json) — the exact provider receipts every clause binds to.
 4. [`skill.json`](skill.json) — declared paths and executable route.
 5. Read scripts, tests, and eval cases only when changing behavior.

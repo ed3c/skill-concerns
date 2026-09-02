@@ -215,6 +215,64 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
             errors,
         )
 
+    # --- C12: an observer's silence is evidence only after both directions ---
+
+    def c12_claim(self, root: Path, fixture: str) -> Path:
+        return root / self.C7_FIXTURES / fixture / "claim.json"
+
+    def test_c12_live_instances_are_violating_and_the_demonstrated_one_is_not(self) -> None:
+        """Both blind fixtures reproduce a real observer that returned nothing
+        while being structurally unable to return anything else, and both must
+        fail on the demonstration discriminators rather than on some incidental
+        field. The demonstrated observer differs from the first one by a single
+        flag, which is the whole point: the claim, the call site and the
+        statement are the same shape, and only the demonstration separates
+        evidence from silence."""
+        from validate_spatial_loop_grounded import judge_c12  # noqa: PLC0415
+
+        for fixture in ("c12-blind-residue-claim", "c12-blind-events-probe"):
+            failed = judge_c12(SKILL_ROOT / self.C7_FIXTURES / fixture)
+            self.assertIn("clean-subject-not-demonstrated-green", failed, fixture)
+            self.assertIn("planted-violation-not-demonstrated-red", failed, fixture)
+        self.assertEqual(
+            judge_c12(SKILL_ROOT / self.C7_FIXTURES / "c12-demonstrated-observer"), []
+        )
+
+    def test_hollow_c12_undemonstrated_silence_accepted_fails(self) -> None:
+        """The blind-fixture arm, planted into the fixture the clause certifies:
+        strip the demonstration off the compliant claim and its silence is the
+        live defect again."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(
+            self.c12_claim(root, "c12-demonstrated-observer"),
+            lambda d: d["observer"].__setitem__(
+                "demonstration", {"clean_subject": None, "planted_violation": None}
+            ),
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("clean-subject-not-demonstrated-green" in e for e in errors), errors
+        )
+
+    def test_hollow_c12_demonstration_flag_drift_fails(self) -> None:
+        """A demonstration run with different flags licenses that other access
+        path, never this one - the residue observer's whole defect was one flag,
+        and a judge that let the demonstration drift off the claimed argv would
+        certify exactly the form the clause exists to refuse."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(
+            self.c12_claim(root, "c12-demonstrated-observer"),
+            lambda d: d["observer"]["demonstration"].__setitem__(
+                "argv", ["git", "status", "--porcelain", "--untracked-files=all"]
+            ),
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("demonstrated-with-different-flags" in e for e in errors), errors
+        )
+
     # --- campaign machinery: the judge keeps a case it must refuse, and waves land append-only ---
 
     def test_hollow_negative_control_dropped_fails(self) -> None:

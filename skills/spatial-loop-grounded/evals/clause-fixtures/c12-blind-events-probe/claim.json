@@ -1,0 +1,15 @@
+{
+  "state": "NEGATIVE",
+  "statement": "provider-body edit count: 0. No body edit by this lane and none by automation",
+  "observer": {
+    "call_site": "lane report, body-digest ledger, second-arrival probe",
+    "argv": ["gh", "api", "repos/OWNER/REPO/issues/N/events", "--jq", "[.[]|select(.event==\"edited\")]|length"],
+    "demonstration": {
+      "clean_subject": null,
+      "planted_violation": null,
+      "call_site": null,
+      "argv": null
+    }
+  },
+  "what_actually_happened": "`edited` in the REST events payload is a COMMENT event; a body revision is exposed only through the GraphQL userContentEdits connection. The same issue that returns 0 here returns totalCount 2 there, one of the two written by the landing machine, which rewrites the referenced issue's body on every land. So this probe returns 0 for every issue in the repository, edited or not."
+}
