@@ -37,7 +37,7 @@
     },
     {
       "path": "skills/red-team/domain/run-ledger.json",
-      "sha256": "0632768836ee99e7277da3d94f2c9da4a340b059d48264b1bfe3589ebb974f22"
+      "sha256": "95baad7cb7514df6e203c9b67371f7fcbbfa9d86fbcb9f23f747f9ad5b7cc7d3"
     },
     {
       "path": "skills/red-team/evals/cases.json",
@@ -148,7 +148,7 @@
       "sha256": "6ee7758b21380723e2186cfe33e917e909330916306fd0a108f9ed7254083b4a"
     }
   ],
-  "skill_tree_sha256": "469612e30b6620c9e0b456aee1d87cb50e9f32546a9b75a7d792dba379fd15ee",
+  "skill_tree_sha256": "6dab824efaed6cdd120746dc1dd13f239097624b930852098da98b05a9412da6",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
