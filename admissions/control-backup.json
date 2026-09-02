@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/control-backup/receipts.json",
-      "sha256": "3cf260516ac2fab87360dff343faf9ea99f2937a7ea3d7fe4ff2f685216a7ab1"
+      "sha256": "99af86d08819a1b9fde2137dc5749c5f8588fbbd8bf638682afe4453e218341c"
     },
     {
       "path": "skills/control-backup/references/README.md",
@@ -72,7 +72,7 @@
       "sha256": "da77e8e3907d1c83417c35f66f2977f8c0d023b2f73357e7aa429e8b7789dede"
     }
   ],
-  "skill_tree_sha256": "1a33166fed3d1c986159e10e1f05abd54a1ece26cd2f3b8e88333d603238edd4",
+  "skill_tree_sha256": "7d3e9aca9c2008defa9e3b556bc6e20716a79b7ea32306323e6ba5126b127c9f",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

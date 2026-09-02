@@ -75,7 +75,26 @@ CLAUSE_CONTRACT = "SKILL_MD_CLAUSES"
 # The explicit exit a receipts entry takes when its evidence is a one-time host
 # observation nothing in this repository replays. An honest declaration, never a
 # waiver: it keeps "no producer" distinguishable from "producer ran green".
+#
+# ed3c/skill-concerns#91: for one wave the exit was also FREE. The gate was
+# physical about EXISTENCE (`RECEIPT_PRODUCER_ABSENT` fires for a missing
+# script) and vacuous about GROUND, so rewriting every script-producer in a
+# receipts file to this string and re-stamping through the Skill's own producer
+# left both sweeps green. A typed exit with no obligation is a waiver wearing a
+# type, so the exit now costs a NAMED OBSERVER: the entry must say what observed
+# it, and name a file in its own bundle that carries the observation and cites
+# this receipt key. Existence of the carrier is not enough - a pointer at any
+# file that happens to be there would be the same vacuity one level up, so the
+# carrier's bytes must name the key.
+#
+# Not an expiry and not a ceiling, the other two shapes #91 admits. An expiry
+# reds a green tree on a calendar rather than on a change, and a per-skill count
+# ceiling refuses the Nth entry for being Nth while saying nothing about any of
+# them - neither one is something a single ENTRY can satisfy, and #91 requires
+# every existing entry to gain its obligation or be retired.
 HOST_OBSERVED = "HOST_OBSERVED"
+HOST_OBSERVED_OBSERVER = "observer"
+HOST_OBSERVED_CARRIER = "carried"
 
 MARKDOWN_FENCE = re.compile(r"^\s*```")
 MARKDOWN_SECTION = re.compile(r"^##\s+(.+?)\s*$")
@@ -389,6 +408,43 @@ def scan_campaign(
     return errors
 
 
+def scan_host_observation(
+    name: str, skill_root: Path, key: str, entry: dict[str, Any]
+) -> list[str]:
+    """What the `HOST_OBSERVED` exit costs: a named observer and a carrier.
+
+    - `observer`: what made the observation. Not the claim and not the `how`
+      narrative - the instrument or surface, so a reader knows whether to trust
+      it and what to re-run if they want it again.
+    - `carried`: a path inside this Skill whose bytes carry the observation and
+      NAME THIS RECEIPT KEY. The citation is the whole obligation: without it
+      the field is satisfied by pointing at any file in the bundle, which is the
+      same free exit one level down.
+
+    What this cannot do is check the observation happened. It checks that the
+    entry says who saw it and that the bundle actually carries what was seen -
+    the difference between an ungrounded claim and an unreplayable one.
+    """
+    errors: list[str] = []
+    observer = entry.get(HOST_OBSERVED_OBSERVER)
+    if not isinstance(observer, str) or not observer.strip():
+        errors.append(f"RECEIPT_HOST_OBSERVED_UNATTRIBUTED:{name}:{key}")
+    carried = entry.get(HOST_OBSERVED_CARRIER)
+    if not isinstance(carried, str) or not carried.strip():
+        errors.append(f"RECEIPT_HOST_OBSERVED_UNCARRIED:{name}:{key}")
+        return errors
+    candidate = Path(carried)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        errors.append(f"RECEIPT_HOST_OBSERVED_CARRIER_ESCAPES_SKILL:{name}:{key}:{carried}")
+        return errors
+    path = skill_root / candidate
+    if not path.is_file():
+        errors.append(f"RECEIPT_HOST_OBSERVED_CARRIER_ABSENT:{name}:{key}:{carried}")
+    elif key not in path.read_text(encoding="utf-8"):
+        errors.append(f"RECEIPT_HOST_OBSERVED_UNCITED:{name}:{key}:{carried}")
+    return errors
+
+
 def scan_receipt_producers(name: str, skill_root: Path) -> list[str]:
     """Every receipts entry names its ground, and a named producer exists.
 
@@ -402,7 +458,9 @@ def scan_receipt_producers(name: str, skill_root: Path) -> list[str]:
     - `producer: "HOST_OBSERVED"`: the explicit exit for a one-time host
       observation with no repository producer at all. It is a declaration, not a
       pass: absence and a replayed claim must not look alike in the bytes, and
-      before this an ungrounded entry looked exactly like a grounded one.
+      before this an ungrounded entry looked exactly like a grounded one. Since
+      ed3c/skill-concerns#91 it also costs an obligation - see
+      `scan_host_observation` - because a typed exit that is free is a waiver.
     """
     path = skill_root / "receipts.json"
     if not path.is_file():
@@ -423,6 +481,7 @@ def scan_receipt_producers(name: str, skill_root: Path) -> list[str]:
         producer = entry.get("producer")
         refs = entry.get("refs")
         if producer == HOST_OBSERVED:
+            errors.extend(scan_host_observation(name, skill_root, key, entry))
             continue
         if isinstance(producer, str) and producer:
             candidate = Path(producer)

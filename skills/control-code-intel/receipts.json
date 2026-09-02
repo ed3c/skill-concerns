@@ -6,12 +6,16 @@
     "grepai-mcp-connected": {
       "producer": "HOST_OBSERVED",
       "claim": "grepai installed as an MCP server in Claude Code, \u2714 Connected",
-      "how": "claude mcp add grepai; claude mcp get grepai -> Connected"
+      "how": "claude mcp add grepai; claude mcp get grepai -> Connected",
+      "observer": "claude mcp add grepai followed by claude mcp get grepai reporting Connected",
+      "carried": "references/procedures.md"
     },
     "serena-mcp-connected": {
       "producer": "HOST_OBSERVED",
       "claim": "serena installed as MCP in Claude Code (--context claude-code) and Codex (--context codex), \u2714 Connected",
-      "how": "claude mcp add serena; ~/.codex/config.toml [mcp_servers.serena]"
+      "how": "claude mcp add serena; ~/.codex/config.toml [mcp_servers.serena]",
+      "observer": "claude mcp add serena and the Codex config mcp_servers block, each reporting Connected",
+      "carried": "references/procedures.md"
     },
     "connected-not-usable": {
       "producer": "scripts/code_intel_driver.py",
@@ -21,7 +25,9 @@
     "pgvector-built-pg16": {
       "producer": "HOST_OBSERVED",
       "claim": "pgvector 0.8.0 built from source against postgresql@16 and CREATE EXTENSION vector succeeded (0.8.0)",
-      "how": "make PG_CONFIG=.../postgresql@16/bin/pg_config; make install; psql -d grepai -c 'CREATE EXTENSION vector'"
+      "how": "make PG_CONFIG=.../postgresql@16/bin/pg_config; make install; psql -d grepai -c 'CREATE EXTENSION vector'",
+      "observer": "a source build against the running Postgres major's pg_config, then CREATE EXTENSION vector returning 0.8.0",
+      "carried": "references/procedures.md"
     },
     "cross-repo-verified": {
       "producer": "scripts/code_intel_driver.py",
@@ -56,12 +62,16 @@
     "status-not-workspace-aware": {
       "producer": "HOST_OBSERVED",
       "claim": "grepai_index_status read the per-project context and reported 0 files while the workspace store held 1056 chunks and served scored results",
-      "how": "grepai_index_status -> total_files 0; same-moment workspace search returned hits; SELECT count(*) FROM chunks -> 1056"
+      "how": "grepai_index_status -> total_files 0; same-moment workspace search returned hits; SELECT count(*) FROM chunks -> 1056",
+      "observer": "grepai_index_status read against a same-moment workspace search and a direct SELECT count(*) FROM chunks",
+      "carried": "references/procedures.md"
     },
     "freshness-needs-an-owner": {
       "producer": "HOST_OBSERVED",
       "claim": "the index went stale two ways at once: local clones days behind provider main (a landed change was unfindable) and a 4.5h-old watcher frozen at a static chunk count; cured by launchd com.neon.sync-code-intel (ff-only pull + watcher liveness) whose positive control made the same query return the landed change",
-      "how": "query for a landed gate missed pre-sync; sync log shows noodles 5968bc4b -> d234688 and skill-concerns c91dbd04 -> 71a85aa; watcher restarted with logging; post-scan the canary query hit"
+      "how": "query for a landed gate missed pre-sync; sync log shows noodles 5968bc4b -> d234688 and skill-concerns c91dbd04 -> 71a85aa; watcher restarted with logging; post-scan the canary query hit",
+      "observer": "a canary query for a landed change run before and after the sync service, plus the sync log's two fast-forward lines",
+      "carried": "references/procedures.md"
     }
   }
 }

@@ -390,16 +390,111 @@ class RepositoryControlTests(unittest.TestCase):
                 ["RECEIPT_PRODUCER_ESCAPES_SKILL:demo:escape:../../etc/passwd"],
                 check_skill_bundles.scan_receipt_producers("demo", skill_root),
             )
+            (skill_root / "domain").mkdir()
+            (skill_root / "domain" / "notes.md").write_text(
+                "the host observation for `host` lives here\n", encoding="utf-8"
+            )
             write(
                 {
                     "replayed": {"claim": "c", "producer": "scripts/driver.py"},
                     "cited": {"claim": "c", "refs": ["ed3c/skill-concerns#74"]},
-                    "host": {"claim": "c", "producer": "HOST_OBSERVED"},
+                    "host": {
+                        "claim": "c",
+                        "producer": "HOST_OBSERVED",
+                        "observer": "a one-time reading on the operator machine",
+                        "carried": "domain/notes.md",
+                    },
                 }
             )
             self.assertEqual(
                 [], check_skill_bundles.scan_receipt_producers("demo", skill_root)
             )
+
+    def test_the_host_observed_exit_costs_a_named_observer_and_a_carrier(self) -> None:
+        # ed3c/skill-concerns#91. Every arm of the obligation, planted one at a
+        # time: a sweep that only ever met conformant entries has never refused
+        # one, and this exit's whole defect was that it refused nothing.
+        with tempfile.TemporaryDirectory() as directory:
+            skill_root = Path(directory)
+            (skill_root / "domain").mkdir()
+            carrier = skill_root / "domain" / "notes.md"
+            carrier.write_text("the observation for `seen` lives here\n", encoding="utf-8")
+
+            def scan(entry: dict) -> list[str]:
+                (skill_root / "receipts.json").write_text(
+                    json.dumps({"schema_version": 1, "evidence": {"seen": entry}}),
+                    encoding="utf-8",
+                )
+                return check_skill_bundles.scan_receipt_producers("demo", skill_root)
+
+            grounded = {
+                "claim": "c",
+                "producer": "HOST_OBSERVED",
+                "observer": "launchctl print plus the run's own log lines",
+                "carried": "domain/notes.md",
+            }
+            self.assertEqual([], scan(dict(grounded)))
+
+            self.assertEqual(
+                ["RECEIPT_HOST_OBSERVED_UNATTRIBUTED:demo:seen"],
+                scan({key: value for key, value in grounded.items() if key != "observer"}),
+            )
+            self.assertEqual(
+                ["RECEIPT_HOST_OBSERVED_UNCARRIED:demo:seen"],
+                scan({key: value for key, value in grounded.items() if key != "carried"}),
+            )
+            self.assertEqual(
+                ["RECEIPT_HOST_OBSERVED_CARRIER_ABSENT:demo:seen:domain/gone.md"],
+                scan({**grounded, "carried": "domain/gone.md"}),
+            )
+            self.assertEqual(
+                ["RECEIPT_HOST_OBSERVED_CARRIER_ESCAPES_SKILL:demo:seen:../../etc/passwd"],
+                scan({**grounded, "carried": "../../etc/passwd"}),
+            )
+            # The arm that makes the obligation more than paperwork: the carrier
+            # exists, and says nothing about this receipt.
+            carrier.write_text("a page about something else entirely\n", encoding="utf-8")
+            self.assertEqual(
+                ["RECEIPT_HOST_OBSERVED_UNCITED:demo:seen:domain/notes.md"],
+                scan(dict(grounded)),
+            )
+
+    def test_rewriting_every_producer_to_the_typed_exit_now_reds(self) -> None:
+        # The wave-17 falsification itself, re-run: on landed main, rewriting
+        # all nine script-producers in this receipts file to HOST_OBSERVED and
+        # re-stamping through the Skill's own producer yielded `skill-bundles:
+        # PASS`. The gate was physical about existence and vacuous about ground.
+        root = self.scratch_copy()
+        skill_root = root / "skills" / "control-backup"
+        path = skill_root / "receipts.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        rewritten = [
+            key
+            for key, entry in document["evidence"].items()
+            if isinstance(entry.get("producer"), str)
+            and entry["producer"] != check_skill_bundles.HOST_OBSERVED
+        ]
+        self.assertTrue(rewritten, "nothing to rewrite: the fixture has no script producers")
+        for key in rewritten:
+            document["evidence"][key]["producer"] = check_skill_bundles.HOST_OBSERVED
+        path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+
+        errors = check_skill_bundles.scan_receipt_producers("control-backup", skill_root)
+        for key in rewritten:
+            self.assertIn(f"RECEIPT_HOST_OBSERVED_UNATTRIBUTED:control-backup:{key}", errors)
+            self.assertIn(f"RECEIPT_HOST_OBSERVED_UNCARRIED:control-backup:{key}", errors)
+        # And the whole repository sweep - the thing that reported PASS in
+        # wave-17 - reds on the same tree. What is asserted here is this gate
+        # only; whether the Skill's own re-stamp would also refuse is a
+        # different mechanism (its validator's producer check) and is not what
+        # this control measures.
+        self.assertTrue(
+            any(
+                error.startswith("RECEIPT_HOST_OBSERVED_")
+                for error in check_skill_bundles.check(root)
+            ),
+            "the repository sweep stayed green on an all-exit receipts file",
+        )
 
     def test_unregistered_skill_row_in_the_collection_documents_fails(self) -> None:
         root = self.scratch_copy()

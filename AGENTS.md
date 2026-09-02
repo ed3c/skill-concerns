@@ -85,7 +85,11 @@ directory and refuses the second half too (ed3c/skill-concerns#74):
   producing assertion with a positive one;
 - every `receipts.json` entry names its ground — a `producer` path that exists,
   provider/host `refs`, or the explicit `HOST_OBSERVED` exit for a one-time host
-  observation nothing here replays;
+  observation nothing here replays. That exit is not free
+  (ed3c/skill-concerns#91): the entry must also name an `observer` — what
+  actually made the observation — and a `carried` path inside its own bundle
+  whose bytes cite that receipt key. The citation is the obligation; a pointer
+  at any file that merely exists would be the same vacuity one level down;
 - both collection documents carry the Skill's row, kind included;
 - the pstack birth triple is present by shape: feature map, refusing Doctor,
   prove-once receipt.

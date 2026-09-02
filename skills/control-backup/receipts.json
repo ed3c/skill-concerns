@@ -21,12 +21,16 @@
     "volatile-subtree-isolated": {
       "producer": "HOST_OBSERVED",
       "claim": "excluding .noodle wholesale and carrying its durable subset in a dedicated seconds-scale rsync with 3 retries ended the vanished-file class at the fast tier",
-      "how": "three consecutive failures at different churn paths; isolation redesign; next run green with no retry consumed"
+      "how": "three consecutive failures at different churn paths; isolation redesign; next run green with no retry consumed",
+      "observer": "three consecutive backup-noodles.sh runs on the operator host, each dying on a different .noodle churn path, then the first green run after the isolation redesign",
+      "carried": "SKILL.md"
     },
     "hot-git-refs-vanish": {
       "producer": "HOST_OBSERVED",
       "claim": "a branch rename deleted refs/heads/* between the copier's file-list and copy, failing the backup on .git internals",
-      "how": "rsync error on noodles/.git/refs/heads/ed3c-noodles-159-0-execute immediately after the rename that unblocked the daemon"
+      "how": "rsync error on noodles/.git/refs/heads/ed3c-noodles-159-0-execute immediately after the rename that unblocked the daemon",
+      "observer": "the copier's own rsync stderr, taken during a live branch rename",
+      "carried": "references/procedures.md"
     },
     "linkdest-inode-verified": {
       "producer": "scripts/backup_driver.py",
@@ -41,12 +45,16 @@
     "exfat-no-hardlink": {
       "producer": "HOST_OBSERVED",
       "claim": "exFAT stores every snapshot at full cost: 2.9G APFS source became 4.4-4.6G per snapshot, no dedup across days",
-      "how": "du -sh on USB daily-* vs local daily-*; disk hit 99% with two snapshots"
+      "how": "du -sh on USB daily-* vs local daily-*; disk hit 99% with two snapshots",
+      "observer": "du -sh over the USB and the local snapshot roots on the same two days",
+      "carried": "domain/backup-topology.json"
     },
     "exfat-no-unix-socket": {
       "producer": "HOST_OBSERVED",
       "claim": "unix sockets cannot be created on exFAT ('mkstempsock: Operation not supported')",
-      "how": ".codex/ipc/ipc.sock failed the USB copy until sockets were excluded"
+      "how": ".codex/ipc/ipc.sock failed the USB copy until sockets were excluded",
+      "observer": "the USB tier copy's rsync error on the .codex/ipc socket path",
+      "carried": "domain/backup-topology.json"
     },
     "rotation-floor-unattainable-bug": {
       "producer": "scripts/backup_driver.py",
@@ -71,42 +79,58 @@
     "launchd-scheduled-fired": {
       "producer": "HOST_OBSERVED",
       "claim": "the launchd agent (StartCalendarInterval 03:30 + StartOnMount) is registered and actually fires",
-      "how": "launchctl print shows program + calendarinterval; the 03:30:27 run's own FAIL log lines prove the trigger fired unattended"
+      "how": "launchctl print shows program + calendarinterval; the 03:30:27 run's own FAIL log lines prove the trigger fired unattended",
+      "observer": "launchctl print for the agent label, plus the 03:30:27 run's own log lines",
+      "carried": "domain/backup-topology.json"
     },
     "pipeline-exit-swallowed": {
       "producer": "HOST_OBSERVED",
       "claim": "a trailing pipeline consumer (head) returns 0 and lets '&& echo PASS' print on a failed producer - the assertion instrument itself lied twice in one session",
-      "how": "ls failure and a failed mount both printed the success branch through '| head'; assertions rewritten to test file bytes directly"
+      "how": "ls failure and a failed mount both printed the success branch through '| head'; assertions rewritten to test file bytes directly",
+      "observer": "two shell assertions in the session that printed their success branch through a trailing | head on a failed producer",
+      "carried": "references/procedures.md"
     },
     "tcc-blocks-cloudstorage": {
       "producer": "HOST_OBSERVED",
       "claim": "TCC denies terminal processes ~/Library/CloudStorage ('Operation not permitted' on ls; 'mkpath: Permission denied' on user rsync) until Full Disk Access is granted and the app restarted",
-      "how": "both denials observed live; account folder name GoogleDrive-<account> confirms the path-embedded account lock"
+      "how": "both denials observed live; account folder name GoogleDrive-<account> confirms the path-embedded account lock",
+      "observer": "ls and a user rsync against the CloudStorage directory, both denied by TCC in the same session",
+      "carried": "domain/backup-topology.json"
     },
     "apfs-snapshot-mount-needs-root": {
       "producer": "HOST_OBSERVED",
       "claim": "tmutil localsnapshot succeeds unprivileged but mount_apfs -s returns 'Operation not permitted' as a user - APFS snapshots are unusable for unattended agents",
-      "how": "snapshot created and listed; mount attempt denied; snapshot deleted after test"
+      "how": "snapshot created and listed; mount attempt denied; snapshot deleted after test",
+      "observer": "tmutil localsnapshot and mount_apfs -s, run as the unprivileged user",
+      "carried": "domain/backup-topology.json"
     },
     "mcp-drive-text-lane": {
       "producer": "HOST_OBSERVED",
       "claim": "four text manifests (restore map, Brewfile, versions, bootstrap) uploaded via MCP create_file and re-verified by an independent folder listing; owner asserted from returned metadata",
-      "how": "create_file x4 with textContent; search_files parentId listing returned all four; owner field checked"
+      "how": "create_file x4 with textContent; search_files parentId listing returned all four; owner field checked",
+      "observer": "four MCP create_file calls followed by an independent search_files listing of the parent folder",
+      "carried": "domain/backup-topology.json"
     },
     "mcp-binary-infeasible": {
       "producer": "HOST_OBSERVED",
       "claim": "a 5MB tar.gz cannot ride the MCP lane: content transits model context and the base64 exceeds per-call limits by orders of magnitude",
-      "how": "5.0M bundle -> ~6.7M base64 chars; lane restricted to text manifests, bundle stays on physical tiers"
+      "how": "5.0M bundle -> ~6.7M base64 chars; lane restricted to text manifests, bundle stays on physical tiers",
+      "observer": "the base64 size of the 5.0M bundle measured against the MCP per-call limit",
+      "carried": "domain/backup-topology.json"
     },
     "secrets-cloud-refused": {
       "producer": "HOST_OBSERVED",
       "claim": "automated cloud upload of the environment including credentials was refused at the permission layer; final design keeps pem/token/auth material on physically-held tiers only",
-      "how": "two classifier denials on the cloud-tier script; cloud lane redesigned with explicit credential excludes"
+      "how": "two classifier denials on the cloud-tier script; cloud lane redesigned with explicit credential excludes",
+      "observer": "two permission-layer denials on the cloud-tier script",
+      "carried": "domain/backup-topology.json"
     },
     "restore-entrypoint-on-medium": {
       "producer": "HOST_OBSERVED",
       "claim": "the restore script and restore-kit travel inside every snapshot, so USB alone restores a bare machine; derived indexes are rebuilt not copied",
-      "how": "restore-from-sandisk.sh + restore-kit/ asserted present on USB latest after each green run"
+      "how": "restore-from-sandisk.sh + restore-kit/ asserted present on USB latest after each green run",
+      "observer": "a post-run assertion that the restore script and restore-kit are present on the USB latest snapshot",
+      "carried": "SKILL.md"
     }
   }
 }
