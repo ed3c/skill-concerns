@@ -149,6 +149,72 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
         path.write_text(text.replace("skills-shared", "elsewhere"), encoding="utf-8")
         self.assertTrue(any("provenance" in e for e in validate(root)), validate(root))
 
+    # --- clause fixtures: C7's written exit is judged, not narrated ---
+
+    C7_FIXTURES = Path("evals/clause-fixtures")
+
+    def c7_receipt(self, root: Path, fixture: str) -> Path:
+        return root / self.C7_FIXTURES / fixture / "escalation-receipt.json"
+
+    def test_c7_negative_fixture_fails_the_amendment_discriminators(self) -> None:
+        """The planted negative is not merely 'not compliant' - it must fail on
+        the exact discriminators C7's amendment turns on, or it would be
+        measuring some other defect. Widening the gate, an authorization with
+        no pinned subject, and one with no expiry are the three the clause
+        names; a fixture that lost them would still be violating and would
+        stop testing the amendment."""
+        from validate_spatial_loop_grounded import judge_c7  # noqa: PLC0415
+
+        failed = judge_c7(SKILL_ROOT / self.C7_FIXTURES / "c7-gate-widened-by-a-free-exit")
+        for discriminator in (
+            "gate-widened",
+            "authorization-not-byte-pinned",
+            "authorization-never-retired",
+        ):
+            self.assertIn(discriminator, failed)
+        self.assertEqual(
+            judge_c7(SKILL_ROOT / self.C7_FIXTURES / "c7-in-candidate-exit-unavailable"),
+            [],
+            "the wave-14-shaped escalation must be judged compliant",
+        )
+
+    def test_hollow_c7_authorization_unpinned_fails(self) -> None:
+        """Drop the byte pin and the same escalation becomes a standing key for
+        a name. The compliant fixture is the only thing that would notice."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        rewrite_json(
+            self.c7_receipt(root, "c7-in-candidate-exit-unavailable"),
+            lambda d: d["authorization"].__setitem__("subject_sha256", None),
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("authorization-not-byte-pinned" in e for e in errors), errors
+        )
+
+    def test_hollow_c7_negative_fixture_softened_fails(self) -> None:
+        """Soften the planted negative into the compliant shape and the judge
+        stops being able to refuse anything. That has to red here, otherwise
+        the whole fixture pair degrades into one arrival."""
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        compliant = json.loads(
+            self.c7_receipt(root, "c7-in-candidate-exit-unavailable").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.c7_receipt(root, "c7-gate-widened-by-a-free-exit").write_text(
+            json.dumps(compliant, indent=2), encoding="utf-8"
+        )
+        (root / self.C7_FIXTURES / "c7-gate-widened-by-a-free-exit" / "changed-files.txt").write_text(
+            "policy/bootstrap-admissions.json\n", encoding="utf-8"
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("judged compliant" in e and "declared violating" in e for e in errors),
+            errors,
+        )
+
     # --- campaign machinery: the judge keeps a case it must refuse, and waves land append-only ---
 
     def test_hollow_negative_control_dropped_fails(self) -> None:

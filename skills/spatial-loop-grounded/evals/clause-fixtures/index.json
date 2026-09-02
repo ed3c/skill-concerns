@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "purpose": "clause fixtures whose verdict is COMPUTED, not narrated: scripts/validate_spatial_loop_grounded.py judges each directory from its own bytes and reds when the verdict it computes disagrees with the expectation declared here.",
+  "why_mechanical": "a clause whose only evidence is its own prose has never been evaluated. The behavioral campaigns judge actor runs with a live model and are deliberately outside hermetic run_all; these fixtures are the hermetic half - they judge the CLAUSE against artifacts the clause is about, so an amendment that reads well and decides nothing fails closed.",
+  "both_directions": "every judged clause must carry at least one compliant and one violating fixture. A judge that has only ever agreed is a single arrival: nothing shows it can refuse.",
+  "fixtures": [
+    {
+      "id": "c7-in-candidate-exit-unavailable",
+      "clause": "C7",
+      "path": "c7-in-candidate-exit-unavailable",
+      "expected": "compliant",
+      "reproduces": "the wave-14 shape: a mid-wave gate refuses the candidate and C7's in-candidate exit is structurally unavailable, taken as C7 now writes it",
+      "receipts": ["ed3c/skill-concerns#72", "ed3c/skill-concerns#88", "ed3c/skill-concerns#89"]
+    },
+    {
+      "id": "c7-gate-widened-by-a-free-exit",
+      "clause": "C7",
+      "path": "c7-gate-widened-by-a-free-exit",
+      "expected": "violating",
+      "planted": "the same refusal answered by widening the gate instead: the lane edits the gate to accept a typed exit with no pinned subject and no expiry, and calls that its authorization",
+      "receipts": ["ed3c/skill-concerns#91"]
+    }
+  ]
+}

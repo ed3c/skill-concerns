@@ -51,6 +51,10 @@
       "refs": ["ed3c/noodles#211"],
       "claim": "a gate outran three in-flight siblings; the map-revision atom (not a gate rollback) unblocked them; candidates never widen the surface they are judged against"
     },
+    "structural-exit-bootstrap": {
+      "refs": ["ed3c/skill-concerns#72", "ed3c/skill-concerns#88", "ed3c/skill-concerns#89", "ed3c/skill-concerns#100", "ed3c/skill-concerns#101"],
+      "claim": "the escalation exit ran end to end twice after the refusal that had no written exit: each first-ever admission needed its authorization on the trusted side, so it landed as its own atom pinning the exact skill-tree sha256 (arrival-engineering 0e57fe03..., red-team ba74f1c1...), and the landing it bought deleted that entry in the same commit because a live entry whose skill directory exists reds BOOTSTRAP_ENTRY_STALE; all four landings changed one policy file and no gate file"
+    },
     "exact-subject": {
       "refs": ["ed3c/noodles#217"],
       "claim": "identity-bound run selection (name + headSha) after position-selection watched the wrong workflow"

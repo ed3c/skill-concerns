@@ -1,0 +1,14 @@
+{
+  "gate": "scripts/check_receipt_provenance.py",
+  "refusal": "the provenance gate was unhappy about the missing checks row",
+  "structural_reason": "",
+  "unavailability_probed": "the in-candidate exit looked like it would take another landing, so it was skipped",
+  "authorization": {
+    "kind": "typed exit accepted by the gate",
+    "producer": "HOST_OBSERVED",
+    "subject_sha256": null,
+    "retired_by": null
+  },
+  "filed_at": "",
+  "lane_exit": "MERGED"
+}

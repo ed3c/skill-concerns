@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/SKILL.md",
-      "sha256": "9dfb3ae73239203563bed231d9838217d83b7e664e18c0fcf814a2d815891c5d"
+      "sha256": "481ff32f67c1de0dbc795eaada0fd69257c8e58335f429dcb88b53ecea8d7ebd"
     },
     {
       "path": "skills/spatial-loop-grounded/domain/machine-topology.json",
@@ -609,15 +609,35 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "7a6c75380e2dff9596102bca161e038e2ee8636ddd91d9132d626161708f12ef"
+      "sha256": "9d600ef1884c50799d119c5ab73a72beaff2dcfee5028100f60d0e3566f4a325"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c7-gate-widened-by-a-free-exit/changed-files.txt",
+      "sha256": "49b3c42195816d29566372ddc4b32c1371fbe88cd4b87faf10b97b5c0cbb4cf6"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c7-gate-widened-by-a-free-exit/escalation-receipt.json",
+      "sha256": "ded20732fc4757941f23c8d1e325ee25075c6da37cc22497937c1c5be240a1f2"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c7-in-candidate-exit-unavailable/changed-files.txt",
+      "sha256": "8476b88707d6d8ada45feeba57442a915f560e60c4c95e4c47a61bcb4fb375db"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c7-in-candidate-exit-unavailable/escalation-receipt.json",
+      "sha256": "ac348ed66d2b2eacb4fa0f4344cb803d2898ef876cac00253234101bd69e37d7"
+    },
+    {
+      "path": "skills/spatial-loop-grounded/evals/clause-fixtures/index.json",
+      "sha256": "90aa580e91e97565bbb6ac3180b041bcbfdf843cbe6cffcf456b2ae80bdad936"
     },
     {
       "path": "skills/spatial-loop-grounded/receipts.json",
-      "sha256": "d608824a1d436ae0909005cfd52e1476626dfd70fb89cc25ced82b6f6a940e33"
+      "sha256": "4166527341c8ed19dac0f0d7b381d62414452d55274c2386ef2a31aff58903aa"
     },
     {
       "path": "skills/spatial-loop-grounded/references/portable-supervision-kernel.md",
-      "sha256": "dc3f587000b002eadb01fad91deef181b9e74a0b9612708163157f211a9494f4"
+      "sha256": "2dc875ed9e22271e3c77c17f76a29b49a239ccc2a251ca6c34a5ef2939a4c2ab"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
@@ -649,7 +669,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
-      "sha256": "7513adfbb4329fde65b03aa507aa2ea4895d6951b5514c1c12204748c53722c6"
+      "sha256": "8c79f7b9b04e57031772244f6635ef9a314acca38b1712471ac16e55e7e0c543"
     },
     {
       "path": "skills/spatial-loop-grounded/skill.json",
@@ -657,10 +677,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "c24f289742c77431bb1c59c4a5dae4e593a347af712b19136eddcee3efd0d40f"
+      "sha256": "860e3af14e5c107284163a6fe93663f09748537ad63dc98f93e90210d793801d"
     }
   ],
-  "skill_tree_sha256": "50b5c2bcf87cc29cf6d211cd9c0eb60830926598612780e30b078ff7b072608e",
+  "skill_tree_sha256": "adb8ce59e8435d6f9b1aa40cd45be8c529d83e0a9091e3841d4c11899e4d5be6",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -778,6 +798,14 @@
     },
     {
       "id": "negative-verdict-softened",
+      "state": "PASS"
+    },
+    {
+      "id": "c7-escalation-authorization-unpinned",
+      "state": "PASS"
+    },
+    {
+      "id": "c7-negative-fixture-softened",
       "state": "PASS"
     },
     {

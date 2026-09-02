@@ -1,0 +1,2 @@
+scripts/check_receipt_provenance.py
+skills/dynamic-workflow/receipts.json
