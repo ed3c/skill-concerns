@@ -323,11 +323,13 @@ def run_measurements(skill: str, root: Path, bound: dict[str, str]) -> None:
     raise StampRefused(f"{REFUSAL}:{skill}:UNMEASURED_CONTROL")
 
 
-def run_checks(skill: str, root: Path) -> dict[str, str]:
-    """Execute the Skill's declared checks, then every control's own producer.
+def declared_checks(skill: str, root: Path) -> tuple[tuple[str, ...], ...]:
+    """The exact argv that grades `skill`: its trusted row, else its bootstrap entry.
 
-    Raises `StampRefused` on the first red; returns the control -> producer map
-    the receipt's rows are built from.
+    One reader for both callers (ed3c/skill-concerns#81). A receipt that records
+    which argv graded it and the execution it claims to describe must come from
+    the SAME selection, or the trace is a second opinion about the grading
+    rather than a trace of it.
 
     A Skill that owns a `SKILL_CHECKS` row is graded by it and never reaches
     the bootstrap: a row and an entry are not alternatives a candidate can pick
@@ -336,6 +338,16 @@ def run_checks(skill: str, root: Path) -> dict[str, str]:
     checks = SKILL_CHECKS.get(skill) or bootstrap_checks(skill, root)
     if not checks:
         raise StampRefused(f"{REFUSAL}:{skill}:NO_DECLARED_CHECKS")
+    return checks
+
+
+def run_checks(skill: str, root: Path) -> dict[str, str]:
+    """Execute the Skill's declared checks, then every control's own producer.
+
+    Raises `StampRefused` on the first red; returns the control -> producer map
+    the receipt's rows are built from.
+    """
+    checks = declared_checks(skill, root)
     for argv in checks:
         command = [sys.executable, *argv]
         print("+", " ".join(command), flush=True)
