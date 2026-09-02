@@ -12,8 +12,13 @@
     {"id": "absence-is-not-a-negative-result", "control": "environment", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_tool_absence_and_a_red_assertion_are_different_states"},
     {"id": "tool-without-a-presence-declaration", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_a_tool_consuming_the_environment_without_a_declaration_fails"},
     {"id": "ambient-without-a-prerequisite", "control": "mutation", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_an_ambient_declaration_without_a_prerequisite_fails"},
-    {"id": "host-absolute-path-in-tracked-bytes", "control": "boundary", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_no_tracked_file_carries_a_host_absolute_path"}
+    {"id": "host-absolute-path-in-tracked-bytes", "control": "boundary", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_no_tracked_file_carries_a_host_absolute_path"},
+    {"id": "receipts-are-produced-not-typed", "control": "positive", "expected": "PASS", "test": "test_control_code_intel.ControlCodeIntelEvals.test_the_committed_receipts_are_what_the_producer_makes"},
+    {"id": "producer-for-an-absent-assertion", "control": "provenance", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_a_receipt_naming_an_assertion_that_does_not_exist_is_refused"},
+    {"id": "producer-for-a-red-assertion", "control": "provenance", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_a_receipt_whose_assertion_reds_is_refused"},
+    {"id": "producer-with-no-correspondence", "control": "provenance", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_an_entry_claiming_the_driver_with_no_correspondence_is_refused"},
+    {"id": "hand-edited-receipts", "control": "provenance", "expected": "FAIL", "test": "test_control_code_intel.ControlCodeIntelEvals.test_a_hand_edited_receipts_file_reds_the_validator"}
   ],
   "runner": "python3 -m unittest discover -s skills/control-code-intel/tests",
-  "hillclimb": "edits may add tools+receipts; weakening the three-layer structure, admitting an unbacked tool, defusing a driver negative control, or consuming a stack tool without a presence declaration fails closed"
+  "hillclimb": "edits may add tools+receipts; weakening the three-layer structure, admitting an unbacked tool, defusing a driver negative control, consuming a stack tool without a presence declaration, or hand-writing a producer field fails closed"
 }
