@@ -35,8 +35,14 @@
       "arrival": "DECLARED",
       "evidence": "consumer-less-core",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#294"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#294"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "no verb exposes it, the execution skill is silent about it, and navigation in practice is unguided text search. Trigger finding 1."
     },
@@ -49,8 +55,14 @@
       "arrival": "DECLARED",
       "evidence": "consumer-less-core",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#293"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#293"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "runnable, with no re-verification surface: silent rot until some future evidence re-run notices. Trigger finding 4."
     },
@@ -63,8 +75,14 @@
       "arrival": "DECLARED",
       "evidence": "planned-island",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#294"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#294"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "the near-miss the cure exposed: delivered as a verb a consumer may remember to call. Trigger finding 5."
     },
@@ -77,7 +95,10 @@
       "arrival": "DECLARED",
       "evidence": "shared-exit-cure",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#294"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#294"
+        }
       ],
       "note": "the amendment that converted the planned island above into a traversed exit. Adjudicated, not yet exercised here: the binding's own arrival stays DECLARED until a run receipt names it."
     },
@@ -90,8 +111,14 @@
       "arrival": "DECLARED",
       "evidence": "planned-island",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#295"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#295"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "the code-intel surface's missing slice: declared as a need, with no consumer surface yet."
     },
@@ -109,7 +136,10 @@
         "tree": "ed3c/noodles"
       },
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "live readback showed the lock carries no such entries. Trigger finding 2; the claim had been read past because reading it felt like checking it."
     },
@@ -126,8 +156,14 @@
         "tree": "ed3c/noodles"
       },
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#293"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#293"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "the carrier is adjudicated retired upstream and nothing in this repository re-reads the pointer. Trigger finding 3."
     },
@@ -140,7 +176,10 @@
       "arrival": "DECLARED",
       "evidence": "retired-carrier",
       "receipts": [
-        {"kind": "bytes", "ref": "ed3c/noodles#293"}
+        {
+          "kind": "bytes",
+          "ref": "ed3c/noodles#293"
+        }
       ],
       "note": "upstream retirement is the trigger; the pointing rows above are what it triggers."
     },
@@ -153,8 +192,14 @@
       "arrival": "PRODUCTION",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "run", "ref": "ops/first-run-receipt.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "run",
+          "ref": "ops/first-run-receipt.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "inside the checks=15 denominator of the 2026-09-01T05:09:02Z cadence run."
     },
@@ -167,8 +212,14 @@
       "arrival": "PRODUCTION",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "run", "ref": "ops/first-run-receipt.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "run",
+          "ref": "ops/first-run-receipt.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "inside the checks=15 denominator of the 2026-09-01T05:09:02Z cadence run."
     },
@@ -181,8 +232,14 @@
       "arrival": "PRODUCTION",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "run", "ref": "ops/first-run-receipt.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "run",
+          "ref": "ops/first-run-receipt.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "inside the checks=15 denominator of the 2026-09-01T05:09:02Z cadence run."
     },
@@ -195,8 +252,14 @@
       "arrival": "PRODUCTION",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "run", "ref": "ops/first-run-receipt.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "run",
+          "ref": "ops/first-run-receipt.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "inside the checks=15 denominator of the 2026-09-01T05:09:02Z cadence run."
     },
@@ -209,8 +272,14 @@
       "arrival": "PRODUCTION",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "run", "ref": "ops/first-run-receipt.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "run",
+          "ref": "ops/first-run-receipt.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "inside the checks=15 denominator of the 2026-09-01T05:09:02Z cadence run."
     },
@@ -223,8 +292,14 @@
       "arrival": "EXERCISED",
       "evidence": "cadence-run-denominator",
       "receipts": [
-        {"kind": "exercise", "ref": "admissions/context-closure-engineering.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#46"}
+        {
+          "kind": "exercise",
+          "ref": "admissions/context-closure-engineering.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#46"
+        }
       ],
       "note": "EXERCISED, not PRODUCTION, and the difference is byte-derived twice over: the cadence receipt records checks=15 (three repository gates plus the twelve argv of the five bundles that existed at 2026-09-01T05:09:02Z) while this bundle's admission landed at 2026-09-01T06:16Z, and this row carries no run-kind receipt, which is what the arrival tie reads. Recording it PRODUCTION alongside its siblings would be the A3 finding this ledger exists to catch; the tie reds either way now, since the column must equal what the receipts support."
     },
@@ -236,10 +311,19 @@
       "bound_exit": "skills/arrival-engineering/tests/test_arrival_engineering.py",
       "arrival": "EXERCISED",
       "evidence": "five-surface-audit",
-      "pointer": {"target": "skills/arrival-engineering/evals/fixtures/planted", "tree": "self"},
+      "pointer": {
+        "target": "skills/arrival-engineering/evals/fixtures/planted",
+        "tree": "self"
+      },
       "receipts": [
-        {"kind": "exercise", "ref": "skills/arrival-engineering/evals/cases.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "exercise",
+          "ref": "skills/arrival-engineering/evals/cases.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "exercised against planted fixtures and negative controls; no production SHADOW pass over live read-only clones has produced a run receipt yet, so this stays EXERCISED."
     },
@@ -252,8 +336,14 @@
       "arrival": "EXERCISED",
       "evidence": "arrival-ledger",
       "receipts": [
-        {"kind": "exercise", "ref": "skills/arrival-engineering/evals/cases.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#73"}
+        {
+          "kind": "exercise",
+          "ref": "skills/arrival-engineering/evals/cases.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#73"
+        }
       ],
       "note": "the append refusal is exercised by a planted receipt-less row; continuous intake is maintain-on-event, appended by BUILD, never by a SHADOW pass."
     },
@@ -265,10 +355,19 @@
       "bound_exit": "scripts/maintain_skills.py receipt_refs()",
       "arrival": "EXERCISED",
       "evidence": "closure-by-pointer",
-      "pointer": {"target": "skills/context-closure-engineering/references/portable-context-closure-policy.md", "tree": "self"},
+      "pointer": {
+        "target": "skills/context-closure-engineering/references/portable-context-closure-policy.md",
+        "tree": "self"
+      },
       "receipts": [
-        {"kind": "exercise", "ref": "skills/arrival-engineering/receipts.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#62"}
+        {
+          "kind": "exercise",
+          "ref": "skills/arrival-engineering/receipts.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#62"
+        }
       ],
       "note": "SHADOW rides the existing cadence because that sweep already globs skills/*/receipts.json and re-resolves every provider ref in it. No new scheduler is introduced by this bundle."
     },
@@ -281,8 +380,14 @@
       "arrival": "EXERCISED",
       "evidence": "arrival-ledger",
       "receipts": [
-        {"kind": "exercise", "ref": "skills/red-team/evals/cases.json"},
-        {"kind": "bytes", "ref": "ed3c/skill-concerns#95"}
+        {
+          "kind": "exercise",
+          "ref": "skills/red-team/evals/cases.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#95"
+        }
       ],
       "note": "the fixture generation-close bundle produced this station's first run record, which is a sandbox arrival and nothing more. PRODUCTION needs a run-kind receipt naming a real generation's record in skills/red-team/domain/run-ledger.json; until then this row stays where its receipts put it. The reverse direction is tied too: red-team's own validator reds with STATION_ARRIVAL_UNTIED once a non-fixture record for this station lands in that ledger while this row still carries no run receipt, so the station cannot outgrow the row silently."
     }
