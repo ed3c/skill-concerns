@@ -594,7 +594,12 @@ def selftest() -> int:
     skill_md = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     if body not in skill_md:
         errors.append("manual body is no longer a verbatim slice of SKILL.md")
-    if "## C11." not in body:
+    # Derived, never a literal: the slice's upper bound is `## Non-claims`, so a
+    # clause landing above it must appear in the body. A hardcoded id silently
+    # stops guarding the bound the moment a clause is appended (it was `C11`
+    # until C12 landed and it would still have been green).
+    clauses = re.findall(r"^## (C\d+)\. ", skill_md, re.M)
+    if clauses and f"## {clauses[-1]}." not in body:
         errors.append("manual body lost the last clause - the slice bounds drifted")
     for token in scan(manual_text(), HARD_LEAK):
         errors.append(f"manual carries harness label {token!r} - the disguise is broken")

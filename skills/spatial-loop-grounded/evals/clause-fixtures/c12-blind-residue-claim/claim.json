@@ -1,0 +1,15 @@
+{
+  "state": "NEGATIVE",
+  "statement": "zero residue: no .noodle/ runtime state was written by any test outside its own temporary directory",
+  "observer": {
+    "call_site": "lane completion checklist, residue step",
+    "argv": ["git", "status", "--porcelain", "--untracked-files=all"],
+    "demonstration": {
+      "clean_subject": null,
+      "planted_violation": null,
+      "call_site": null,
+      "argv": null
+    }
+  },
+  "what_actually_happened": "tests/run.sh materialises .noodle/codex-isolation/ into the repository root on an unmodified default branch too, and .gitignore carries .noodle/*, so this observer returns the same empty output whether the residue is there or not. Every lane that ran this step reported the clause satisfied; the clause had never once been evaluated."
+}

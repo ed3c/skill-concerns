@@ -123,7 +123,15 @@ goes to the escalation channel, never into steering.
 - Why: a launcher listed exit 1 for a nightly job while the job's own log ended with a full-success line and both of its produced artifacts read back complete — the residue came from an earlier attempt that a later run had already superseded.
 - evidence: exit-residue
 
+## C12. An observer's silence is evidence only after it has demonstrated both directions
+
+- Signal: about to write "none", "zero", "clean", "no residue", "not edited", "no such process" - any NEGATIVE read off an observer that returned nothing, whether it becomes a claim, a closure, or a new issue about the thing it failed to find.
+- Action: before the absence counts as a NO, demonstrate the observer at the same call site, with the same flags and the same access path the claim rests on: a clean subject must come back GREEN and a planted violation must come back RED. Undemonstrated silence is ABSENT - a third state that stays ABSENT in every artifact that carries it, never collapsed into NEGATIVE, and never load-bearing. Absence of a hit is not absence of the thing when nothing has shown the observer can hit.
+- Why: two blind observers surfaced in one day, in two repositories. A zero-residue clause that had never once been evaluated was checked with `git status --porcelain --untracked-files=all`, which structurally cannot see the ignored runtime paths the clause claims absent - while the correct `--ignored=matching` form already sat a few files away in the same repository. A provider-edit probe read the REST events feed, which returns zero edited-events for issue bodies the GraphQL surface shows edited two to five times; the landing machine rewrites every landed issue body, so every landing produced an edit that probe reported as zero, in good faith, forever.
+- evidence: blind-observer-instances
+
 ## Non-claims
 
 - This skill does not restate the upstream spatial-loop body (ICPG, complexity classes, constraint compiler); consult upstream for method, this skill for what survived contact.
-- Receipts prove the clauses fired in one repository-machine environment (ed3c/noodles, 2026-08-30/31), plus one host-scheduler receipt for C11 — a second environment class. Portability beyond these carries new receipts or stays a hypothesis.
+- Receipts prove the clauses fired in one repository-machine environment (ed3c/noodles, 2026-08-30/31), plus one host-scheduler receipt for C11 — a second environment class — and C12's pair, which spans two repositories on 2026-09-01. Portability beyond these carries new receipts or stays a hypothesis.
+- C12 governs what an absence may be recorded as; it does not say which observer is correct for a given subject. Choosing the observer is the caller's problem, and the clause is satisfied by an honest ABSENT just as much as by a demonstrated NEGATIVE.

@@ -1,0 +1,16 @@
+{
+  "state": "NEGATIVE",
+  "statement": "zero residue: no ignored runtime state was written into the repository by this run",
+  "observer": {
+    "call_site": "lane completion checklist, residue step",
+    "argv": ["git", "status", "--porcelain", "--ignored=matching"],
+    "demonstration": {
+      "clean_subject": "GREEN",
+      "planted_violation": "RED",
+      "call_site": "lane completion checklist, residue step",
+      "argv": ["git", "status", "--porcelain", "--ignored=matching"],
+      "how": "clean subject: the step run on the tree before the suite prints no ignored runtime path. Planted violation: the same argv, at the same step, after touching one ignored runtime path by hand, prints it. The observer was watched failing before its silence was quoted."
+    }
+  },
+  "what_actually_happened": "the flag is the whole difference. The same step with --untracked-files=all is silent in both directions, so its silence carries nothing; with --ignored=matching it distinguishes them, so this silence is a NO."
+}

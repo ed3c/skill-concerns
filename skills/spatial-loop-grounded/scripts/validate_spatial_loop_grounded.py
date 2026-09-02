@@ -71,6 +71,7 @@ SKILL_MD_CLAUSES = (
     "C9. An oldest-first queue starves behind a permanently failing head",
     "C10. No completion notification means still running",
     "C11. Exit-code residue is not current state",
+    "C12. An observer's silence is evidence only after it has demonstrated both directions",
     "Non-claims",
 )
 
@@ -227,7 +228,50 @@ def judge_c7(root: Path) -> list[str]:
     return failures
 
 
-CLAUSE_JUDGES = {"C7": judge_c7}
+def judge_c12(root: Path) -> list[str]:
+    """Which of C12's demonstration discriminators this claim fails.
+
+    A claim that records its state as ABSENT is compliant by construction -
+    that is the honest exit the clause exists to keep open, and it needs no
+    demonstration because it asserts nothing. A claim that says NEGATIVE has
+    to have watched its own observer go GREEN on a clean subject and RED on a
+    planted violation, and it has to have watched it AT THE SAME CALL SITE
+    with the SAME argv: a demonstration through a different access path
+    licenses that other path, never this one, which is exactly how a probe
+    that cannot see body edits gets vouched for by a surface that can.
+    """
+    claim_path = root / "claim.json"
+    if not claim_path.is_file():
+        return ["fixture-not-claim-shaped"]
+    claim = json.loads(claim_path.read_text(encoding="utf-8"))
+    observer = claim.get("observer")
+    if not isinstance(observer, dict):
+        return ["observer-undeclared"]
+    demonstration = observer.get("demonstration")
+    if not isinstance(demonstration, dict):
+        demonstration = {}
+
+    failures: list[str] = []
+    state = str(claim.get("state") or "")
+    if state not in ("NEGATIVE", "ABSENT"):
+        failures.append("state-not-one-of-negative-absent")
+    if not str(claim.get("statement") or "").strip():
+        failures.append("claim-unstated")
+    if state != "NEGATIVE":
+        return failures
+
+    if demonstration.get("clean_subject") != "GREEN":
+        failures.append("clean-subject-not-demonstrated-green")
+    if demonstration.get("planted_violation") != "RED":
+        failures.append("planted-violation-not-demonstrated-red")
+    if demonstration.get("call_site") != observer.get("call_site"):
+        failures.append("demonstrated-at-a-different-call-site")
+    if demonstration.get("argv") != observer.get("argv"):
+        failures.append("demonstrated-with-different-flags")
+    return failures
+
+
+CLAUSE_JUDGES = {"C7": judge_c7, "C12": judge_c12}
 
 
 def validate_clause_fixtures(skill_root: Path, clause_ids: list[str]) -> list[str]:

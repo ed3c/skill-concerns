@@ -19,6 +19,30 @@
       "expected": "violating",
       "planted": "the same refusal answered by widening the gate instead: the lane edits the gate to accept a typed exit with no pinned subject and no expiry, and calls that its authorization",
       "receipts": ["ed3c/skill-concerns#91"]
+    },
+    {
+      "id": "c12-blind-residue-claim",
+      "clause": "C12",
+      "path": "c12-blind-residue-claim",
+      "expected": "violating",
+      "reproduces": "live instance 1: a zero-residue clause reported satisfied through a status form that cannot see the ignored paths the clause is about",
+      "receipts": ["ed3c/noodles#313"]
+    },
+    {
+      "id": "c12-blind-events-probe",
+      "clause": "C12",
+      "path": "c12-blind-events-probe",
+      "expected": "violating",
+      "reproduces": "live instance 2: a lane report's body-edit second arrival read off the REST events feed, which reports 0 for every issue body whether edited or not",
+      "receipts": ["ed3c/skill-concerns#83"]
+    },
+    {
+      "id": "c12-demonstrated-observer",
+      "clause": "C12",
+      "path": "c12-demonstrated-observer",
+      "expected": "compliant",
+      "reproduces": "the same residue claim through an observer watched GREEN on a clean subject and RED on a planted violation, at the same call site with the same argv",
+      "receipts": ["ed3c/noodles#313"]
     }
   ]
 }

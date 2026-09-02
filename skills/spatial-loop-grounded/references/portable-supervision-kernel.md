@@ -15,3 +15,4 @@ concrete system.
 - K9 An oldest-first queue starves behind a head that keeps re-entering eligibility but can never terminate; park it honestly and cure the selection rule itself.
 - K10 For dispatched background work, the completion notification is the only death certificate; silence, missing artifacts, and absence from process lists are all consistent with still-running.
 - K11 A launcher's residual exit status describes one past run; health is the job's terminal log line plus direct artifact readback.
+- K12 An observer's silence is evidence only after that observer has demonstrated both directions - clean subject GREEN, planted violation RED - at the same call site, with the same flags and the same access path the claim rests on; undemonstrated absence is ABSENT, a state of its own, never NEGATIVE.
