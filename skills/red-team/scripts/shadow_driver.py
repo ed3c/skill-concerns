@@ -106,9 +106,21 @@ DEFAULT_SUBJECT = "wave-boundary"
 # The sighted surface is not free of ceilings and its ceiling is carried here
 # rather than assumed, because it is the same absence-read-as-negative shape
 # one level down (ed3c/skill-concerns#102).
+#
+# `pattern` matches the PLACEHOLDER, not just a literal issue number. A lane
+# report writes `issues/N/events` or `issues/<n>/events` far more often than it
+# writes `issues/72/events`, so a probe anchored on `\d+` was structurally
+# silent on the documents this class exists to read -- it matched only the
+# fixture the class was filed from. `sighted` is the acquittal that has to come
+# with that widening: a document naming the GraphQL surface has DISPOSED of the
+# blind one, and firing on it would turn every correct disposition (including
+# this module's own, and every lane report that adopted it) into a hit. The
+# class is "an absence claim RESTS on a blind observer", never "a document
+# mentions one".
 BLIND_PROBES: dict[str, dict[str, Any]] = {
     "rest-events-edited": {
-        "pattern": re.compile(r"issues/\d+/(?:events|timeline)"),
+        "pattern": re.compile(r"issues/[^/\s`\"']+/(?:events|timeline)"),
+        "sighted": re.compile(r"userContentEdits"),
         "cannot": (
             "carry a body revision at all: `edited` in that payload is a COMMENT event"
         ),
@@ -126,6 +138,11 @@ BLIND_PROBES: dict[str, dict[str, Any]] = {
         ),
     },
 }
+# Deliberately NOT widened to `totalCount=0 -> ABSENT`, the phrasing lanes now
+# write. That sentence is the sighted surface read correctly and typed as the
+# third state; matching it would manufacture a hit out of the exact discipline
+# ed3c/skill-concerns#83 and #102 asked for, which is the instrument scoring
+# its own cure.
 ABSENCE_CLAIM = re.compile(
     r"(?i)\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit", re.M
 )
@@ -231,6 +248,11 @@ def experiment_blind_observer(bundle: Path) -> list[dict[str, Any]]:
             for probe, blind in BLIND_PROBES.items():
                 match = blind["pattern"].search(text)
                 if not match:
+                    continue
+                # Disposed, not resting: the document already names the surface
+                # that can carry the answer, so citing the blind one is the
+                # contrast rather than the ground.
+                if blind["sighted"].search(text):
                     continue
                 hits.append(
                     _hit(

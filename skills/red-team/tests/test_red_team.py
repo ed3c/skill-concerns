@@ -244,6 +244,62 @@ class RedTeamEvals(unittest.TestCase):
                 self.assertIn("ABSENT", blind["ceiling"])
                 self.assertIn("ed3c/skill-concerns#102", blind["ceiling"])
 
+    def test_the_probe_matches_the_placeholder_a_lane_actually_writes(self) -> None:
+        """A detector anchored on `\\d+` reads the fixture and nothing else.
+
+        Lane reports cite the probe with the issue number left as a
+        placeholder. Measured across wave-21's four lane reports, the forms
+        written were `issues/N/events` and `issues/<n>/events`; the literal
+        `issues/72/events` appears only in the fixture this class was filed
+        from. So the pattern that "detects" this class was structurally silent
+        on every document it was pointed at -- an observer blind to the thing
+        it is cited for, which is the class itself, one level up.
+        """
+        blind = driver.BLIND_PROBES["rest-events-edited"]
+        for citation in (
+            "gh api repos/ed3c/skill-concerns/issues/N/events",
+            "repos/OWNER/REPO/issues/<n>/events",
+            "issues/{number}/timeline",
+            "issues/72/events",
+        ):
+            with self.subTest(citation=citation):
+                self.assertTrue(blind["pattern"].search(citation), citation)
+
+    def test_a_document_naming_the_sighted_surface_is_disposed_not_hit(self) -> None:
+        """The acquittal the widening has to come with.
+
+        Widening the pattern without this fires on every correct disposition --
+        this module's own comment, the catalogue recipe, and every lane report
+        that adopted the GraphQL surface all cite the blind probe in order to
+        refuse it. The class is "an absence claim RESTS on a blind observer",
+        so a document that already names the surface which can carry the answer
+        has grounded its claim, not abandoned it.
+
+        Both arms in one bundle, so the conjunction is shown to be load-bearing
+        rather than asserted.
+        """
+        bundle = self.scratch / "sighted-bundle"
+        (bundle / "reports").mkdir(parents=True)
+        resting = (
+            "Second arrival: `gh api repos/ed3c/skill-concerns/issues/N/events`\n"
+            "-- no body edit by this lane and none by automation.\n"
+        )
+        disposed = resting + (
+            "REST is blind here; read userContentEdits instead, totalCount=0 "
+            "-> ABSENT.\n"
+        )
+        (bundle / "reports" / "lane-report-resting.md").write_text(
+            resting, encoding="utf-8"
+        )
+        (bundle / "reports" / "lane-report-disposed.md").write_text(
+            disposed, encoding="utf-8"
+        )
+        hits = driver.EXPERIMENTS["blind-observer"](bundle)
+        self.assertEqual(
+            ["reports/lane-report-resting.md"],
+            [hit["subject"]["path"] for hit in hits],
+        )
+
     def test_the_blind_observer_finding_points_at_the_sighted_surface(self) -> None:
         """Direct readback: a lane reads the finding, not this table.
 
