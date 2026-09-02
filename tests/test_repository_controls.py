@@ -655,7 +655,10 @@ class RepositoryControlTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "scripts").mkdir()
-            (root / "scripts" / "common.py").write_text("", encoding="utf-8")
+            (root / "scripts" / "common.py").write_text(
+                'ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")\n',
+                encoding="utf-8",
+            )
             self.plant_scripts_module(
                 root,
                 "skills/demo/scripts/validate_demo.py",

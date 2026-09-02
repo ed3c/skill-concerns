@@ -17,30 +17,20 @@ HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 # The maintain loop's role vocabulary (ed3c/skill-concerns#62): the two halves,
-# the reader-only clause, and the three severities. One declaration for the same
-# reason the two identity patterns above have one -- it is a single vocabulary
-# four readers check documents against (`check_skill_bundles` and three bundle
-# validators), and four literals of it can drift into four different ideas of
-# what a Roles block must say.
+# the reader-only clause, and the three severities. One declaration, because
+# four readers (`check_skill_bundles` and three bundle validators) each carried
+# their own copy before ed3c/skill-concerns#112 collapsed them to this one.
 #
-# It lives HERE, above `skills/`, and ed3c/skill-concerns#112 settled that by
-# execution rather than by argument. The worry was the trust boundary: under
-# `check_receipt_provenance.py --root <candidate>` the trusted checkout and the
-# candidate are two different trees, so which `scripts/common.py` does a
-# candidate's bundle validator resolve? The candidate's own. Every bundle
-# validator inserts `Path(__file__).resolve().parents[3] / "scripts"`, and under
-# that gate `__file__` IS the candidate's validator, so the path resolves inside
-# the candidate. Trusted code never lends its declaration to a graded tree, and
-# a candidate that weakened this file would be weakening bytes it already fully
-# controls -- the same bytes as its own validator, which is candidate code by
-# construction.
+# Lives HERE, above `skills/`, not inside a bundle: #112 verified by execution,
+# not argument, that a candidate's own bundle validator resolves the
+# candidate's own copy of this file under `check_receipt_provenance.py`, so
+# trusted code never lends this declaration to a graded tree. See #112 for the
+# probe and the trust argument in full.
 #
-# What that argument does not give for free is a PIN: `scripts/common.py` is in
-# no bundle's `skill_tree_sha256`. So every bundle importing from here names
-# `../../scripts/common.py` in its `shared_contracts`, which carries the shared
-# declaration's digest into that Skill's receipt through the mechanism that
-# already exists for exactly this shape -- a file outside the bundle whose bytes
-# the receipt binds.
+# Not pinned by any bundle's `skill_tree_sha256` (this file sits above
+# `skills/`), so every importing bundle names `../../scripts/common.py` in its
+# `shared_contracts` -- that is what carries this declaration's digest into
+# the bundle's receipt.
 ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 
 EVIDENCE_LEVELS = [

@@ -137,18 +137,18 @@
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "0c0f873ece1f114f29274a279e980d02f26846e91c01cc4b16c2e5cc1ad17daf"
+      "sha256": "a60faa614898ff1c9131c64a6be3f2417c6c571ec2c97bdc826adfcdb4055671"
     },
     {
       "path": "skills/red-team/skill.json",
-      "sha256": "d067ad3ba2afb8d7740ba99b92fb91e49df317641ff7e88294df042fd6d94a36"
+      "sha256": "a0959c25618f9ea8812d11c9ad7b3b4436cfa650894bd493341ddc16e157db97"
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
       "sha256": "bb56d422f76e942f0b108c171875fa0fdccd0c5978a031dba42d0cffd53abdac"
     }
   ],
-  "skill_tree_sha256": "9ca9bce2bc264ac9370dd73bc897038216ebd6d914605ab779ef6c43270f469e",
+  "skill_tree_sha256": "7b260bc88a8504865e75346863dd0273f3c19f1de53aa76822d37cecadec948d",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -161,6 +161,10 @@
     {
       "path": "contracts/admission.schema.json",
       "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    },
+    {
+      "path": "scripts/common.py",
+      "sha256": "3efbd19d7177506f533d68dafec5dd9533b26e12ad2946cc2f67e68dbbbb5f59"
     }
   ],
   "controls": [

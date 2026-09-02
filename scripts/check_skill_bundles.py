@@ -10,7 +10,7 @@ import re
 from typing import Any, Iterable
 
 from common import (
-    EVIDENCE_LEVELS,
+    HEX40,
     HEX64,
     REPO_ROOT,
     ROLE_TOKENS,
@@ -635,14 +635,26 @@ def _assigned_names(node: ast.stmt) -> list[str]:
     return [target.id for target in targets if isinstance(target, ast.Name)]
 
 
+IDENTITY_SHAPES = {
+    HEX40.pattern.removeprefix("^").removesuffix("$"),
+    HEX64.pattern.removeprefix("^").removesuffix("$"),
+}
+
+
 def _identity_pattern(node: ast.expr) -> str | None:
     """The hex-identity regex `node` compiles, or None.
 
     Matches the identity and nothing that merely CONTAINS it: once the anchors
-    are stripped the pattern must BE `[0-9a-f]{40}` or `[0-9a-f]{64}`. A
-    composite shape such as `^(?:commit:[0-9a-f]{40}|ledger:...)$` is a
-    different claim and is left alone, which is the difference between policing
-    one declaration and running a substring hunt.
+    are stripped the pattern must BE one of `IDENTITY_SHAPES`. That set is
+    DERIVED from `common.HEX40`/`common.HEX64`, not retyped -- a hand-typed
+    `"[0-9a-f]{40}"` here would itself be a second literal of the identity this
+    function polices, invisible to `scan_second_literals` because that scan
+    walks module-level assignments and this comparison used to live inside a
+    function body (the shape found and fixed while landing
+    ed3c/skill-concerns#112). A composite shape such as
+    `^(?:commit:[0-9a-f]{40}|ledger:...)$` is a different claim and is left
+    alone, which is the difference between policing one declaration and
+    running a substring hunt.
     """
     if not isinstance(node, ast.Call):
         return None
@@ -660,7 +672,35 @@ def _identity_pattern(node: ast.expr) -> str | None:
     if not isinstance(pattern, str):
         return None
     stripped = pattern.removeprefix("^").removesuffix("$")
-    return stripped if stripped in ("[0-9a-f]{40}", "[0-9a-f]{64}") else None
+    return stripped if stripped in IDENTITY_SHAPES else None
+
+
+def _shared_sequences(common_path: Path) -> dict[str, list]:
+    """name -> value for every module-level list/tuple `common.py` declares.
+
+    Reuses `_assigned_names` and `ast.literal_eval` against `common.py`'s own
+    bytes rather than importing the module and hand-picking which attributes
+    count: the subject is whatever `common.py` actually declares, so a third
+    vocabulary constant is included the day it lands there, with no second
+    edit in this file to keep it covered.
+    """
+    try:
+        tree = ast.parse(common_path.read_text(encoding="utf-8"), filename=common_path.name)
+    except (OSError, SyntaxError, UnicodeDecodeError):
+        return {}
+    found: dict[str, list] = {}
+    for node in tree.body:
+        names = _assigned_names(node)
+        value = getattr(node, "value", None)
+        if not names or value is None:
+            continue
+        try:
+            literal = ast.literal_eval(value)
+        except (ValueError, TypeError, SyntaxError):
+            continue
+        if isinstance(literal, (list, tuple)):
+            found[names[0]] = list(literal)
+    return found
 
 
 def scan_second_literals(root: Path) -> list[str]:
@@ -674,8 +714,13 @@ def scan_second_literals(root: Path) -> list[str]:
     (`HEX64_RE`), which is how a second literal survives a grep for the first. A
     hand grep is what found them, and a hand grep is what this replaces.
 
-    The values come from `common` itself, so a declaration added there is
-    covered on arrival and nothing here is a second copy of the list it polices.
+    Both the names and the values are PARSED from `common.py`'s own bytes
+    (`_shared_sequences`), never typed here as a list of subjects: a hand-typed
+    `{"ROLE_TOKENS": ..., "EVIDENCE_LEVELS": ...}` covers a value that drifts
+    but not a THIRD constant someone adds to `common.py` later, since nothing
+    would add its name to this dict -- a per-subject list inside a generic
+    gate is the same defect this scan exists to refuse in everyone else's file.
+    Parsing means a constant is covered on arrival with no second edit here.
 
     The subject is the executable surface -- `scripts/` and each bundle's
     `scripts/` -- and not tests, fixtures or domain records. Those are where
@@ -684,11 +729,8 @@ def scan_second_literals(root: Path) -> list[str]:
     declaration, and a gate that could not tell the difference would refuse the
     fixture that proves the rule.
     """
-    shared: dict[str, list] = {
-        "ROLE_TOKENS": list(ROLE_TOKENS),
-        "EVIDENCE_LEVELS": list(EVIDENCE_LEVELS),
-    }
     home = "scripts/common.py"
+    shared = _shared_sequences(root / home)
     errors: list[str] = []
     directories = [root / "scripts", *sorted((root / "skills").glob("*/scripts"))]
     for directory in directories:
