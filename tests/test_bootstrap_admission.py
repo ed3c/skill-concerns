@@ -17,7 +17,10 @@ states that separate it from a skeleton key:
   negative   no entry keeps the original diagnostic verbatim, so "unauthorized"
              and "authorized and green" never share a shape;
   negative   a pending entry is green only while the Skill it names is absent,
-             and an entry that outlives the landing it bought reds the tree.
+             and an entry that outlives the landing it bought reds the tree;
+  negative   a directory with no bytes in it is not the landing that spends the
+             entry -- empty and ignored-file-only both stay green
+             (ed3c/skill-concerns#106).
 
 The trusted copy is proved to be the one that counts by deleting the graded
 tree's copy first: every green below is produced with no allowlist inside the
@@ -255,12 +258,19 @@ class BootstrapAdmissionTests(unittest.TestCase):
             PLANTED, SKILL_CHECKS, "a pending entry is not a landed row"
         )
 
+    def land(self, root: Path, skill: str) -> Path:
+        """The smallest tree that is a landed Skill: a directory with bytes in it."""
+        bundle = root / "skills" / skill
+        bundle.mkdir(parents=True)
+        (bundle / "SKILL.md").write_text(f"# {skill}\n", encoding="utf-8")
+        return bundle
+
     def test_an_entry_that_outlives_its_landing_reds_the_tree(self) -> None:
         """Consumed or retired: the landing commit must delete its own entry."""
         root = self.scratch_copy()
         self.plant_pending(root)
 
-        (root / "skills" / PLANTED).mkdir()
+        self.land(root, PLANTED)
         self.assertIn(
             f"BOOTSTRAP_ENTRY_STALE:{PLANTED}",
             self.bootstrap_errors(root),
@@ -272,6 +282,63 @@ class BootstrapAdmissionTests(unittest.TestCase):
             [],
             self.bootstrap_errors(root),
             "retiring the entry is what makes the landed tree green",
+        )
+
+    def test_a_directory_with_no_bytes_in_it_is_not_a_landed_skill(self) -> None:
+        """The planted negative for the predicate (ed3c/skill-concerns#106).
+
+        A directory is not the Skill; the Skill's bytes are. Two states carry
+        no bytes and both were read as "landed" while the authorization was
+        still owed: an empty directory, and one whose only contents are the
+        ignored `__pycache__` that survives a branch switch, because git
+        neither tracks nor removes empty directories. Landing 1 of
+        ed3c/skill-concerns#75 red on exactly the second shape with
+        `git status --porcelain -uall` empty, which is what made it hard to
+        diagnose from the tree state a reviewer looks at.
+
+        Each state is planted and then removed, and the removal is asserted:
+        a control that leaves its own residue behind is the next false
+        positive.
+        """
+        root = self.scratch_copy()
+        self.plant_pending(root)
+        bundle = root / "skills" / PLANTED
+
+        def plant_empty() -> None:
+            bundle.mkdir()
+
+        def plant_ignored_only() -> None:
+            cache = bundle / "scripts" / "__pycache__"
+            cache.mkdir(parents=True)
+            (cache / "validate.cpython-312.pyc").write_bytes(b"\x00")
+
+        for label, plant in (
+            ("an empty directory", plant_empty),
+            ("an ignored-file-only directory", plant_ignored_only),
+        ):
+            with self.subTest(state=label):
+                plant()
+                self.assertTrue(
+                    bundle.is_dir(), "the reading the old predicate was satisfied by"
+                )
+                try:
+                    self.assertEqual(
+                        [],
+                        self.bootstrap_errors(root),
+                        f"{label} names an authorization that is in fact still owed",
+                    )
+                finally:
+                    # Unconditional: a control that only cleans up when it
+                    # passes leaves its own planted state behind on the run
+                    # that matters, and the next assertion inherits it.
+                    shutil.rmtree(bundle)
+                self.assertFalse(bundle.exists(), "the control leaves no residue")
+
+        self.land(root, PLANTED)
+        self.assertIn(
+            f"BOOTSTRAP_ENTRY_STALE:{PLANTED}",
+            self.bootstrap_errors(root),
+            "one byte in the same directory is what makes the entry stale",
         )
 
     def test_the_committed_allowlist_carries_only_pending_authorizations(self) -> None:
