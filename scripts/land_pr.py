@@ -9,6 +9,7 @@ repository, base branch and merge method. Nothing is taken from the candidate.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -20,6 +21,18 @@ from typing import Any
 
 API = "https://api.github.com"
 REFS_LINE = re.compile(r"^Refs\s+([A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#(\d+)$")
+
+
+def body_digest(body: str | None) -> str:
+    """sha256 of a provider-read body, full 64-hex, `null` read as empty.
+
+    One definition, so the anchor's field and any independent recomputation are
+    the same function of the same bytes: the body exactly as the provider
+    returns it, UTF-8 encoded, no normalisation of line endings and no trailing
+    newline added. A truncated digest is not a shorter version of this value,
+    it is a different claim; `HEX64` in `scripts/common.py` is the pattern.
+    """
+    return hashlib.sha256((body or "").encode("utf-8")).hexdigest()
 
 
 def parse_refs(body: str | None, repository: str) -> int:
@@ -84,6 +97,25 @@ def post_receipt_anchor(
     a land - every failure path returns 'failed' instead of raising. The Drive
     index is appended by the periodic batch reconcile, not here.
     Returns 'exists' | 'posted' | 'failed'.
+
+    Anchor format (ed3c/skill-concerns#77 appends the last field; the first
+    three are unchanged, so existing consumers keep parsing what they parsed):
+
+        physical-receipt-anchor: pr=<n> merge-commit=<sha> merged-at=<iso> \
+body-sha256=<64-hex>
+
+    `body-sha256` is `body_digest()` of the PR body this merge landed, read
+    back from the provider inside this function. Every wave lane self-reports
+    the digests of the bodies it wrote; this is the one field a reader can
+    recompute without trusting the report. The check is one line, and an anchor
+    whose field disagrees with it is the planted control:
+
+        python3 -c 'import hashlib,json,subprocess as s;print(hashlib.sha256(
+        (json.loads(s.check_output(["gh","api","repos/OWNER/REPO/pulls/N"]))
+        ["body"] or "").encode()).hexdigest())'
+
+    The PR body is stable across this landing: `main()` PATCHes the *Issue*
+    body afterwards, never the pull request's.
     """
     call = api if call is None else call
     try:
@@ -94,17 +126,26 @@ def post_receipt_anchor(
             if isinstance(item, dict)
         ):
             return "exists"
-        merged_at = str(call("GET", f"/repos/{repository}/pulls/{number}").get("merged_at") or "")
+        pull = call("GET", f"/repos/{repository}/pulls/{number}")
+        merged_at = str(pull.get("merged_at") or "")
+        digest = body_digest(pull.get("body"))
         call(
             "POST",
             f"/repos/{repository}/issues/{number}/comments",
             {
                 "body": (
                     f"physical-receipt-anchor: pr={number} merge-commit={merge_sha} "
-                    f"merged-at={merged_at}\n\n"
-                    "Anchor is the merge commit SHA (immutable provider truth). The Drive "
-                    "index is appended by the periodic batch reconcile; receipts are "
-                    "N-class, never a landing-gate dependency."
+                    f"merged-at={merged_at} body-sha256={digest}\n\n"
+                    "Anchor is the merge commit SHA (immutable provider truth). "
+                    "`body-sha256` is the sha256 of this pull request's body as the "
+                    "provider returned it at merge time, full 64-hex, so a claimed "
+                    "digest can be checked against provider bytes by anyone:\n"
+                    "`python3 -c 'import hashlib,json,subprocess as s;print("
+                    "hashlib.sha256((json.loads(s.check_output([\"gh\",\"api\","
+                    f'"repos/{repository}/pulls/{number}"]))["body"] or "")'
+                    ".encode()).hexdigest())'`\n"
+                    "The Drive index is appended by the periodic batch reconcile; "
+                    "receipts are N-class, never a landing-gate dependency."
                 )
             },
         )
