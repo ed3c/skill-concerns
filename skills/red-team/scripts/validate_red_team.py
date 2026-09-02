@@ -182,13 +182,21 @@ ARRIVAL_TOPOLOGY = "skills/arrival-engineering/domain/capability-topology.json"
 # sandbox arrival and nothing more. Anything else is a real generation.
 FIXTURE_BOUNDARY = "-fixture"
 
+# The set is this bundle's own, not a copy of the repository's skill list: a
+# name belongs here when red-team's page must state a differential against it,
+# which is a per-bundle judgement and the reason `registry.json` cannot supply
+# it. `ed3c/skill-concerns#95` fixes the membership at five skills - the three
+# judgment angles this pass is not, plus the two surfaces the station's own
+# carriers now reach into.
 NEIGHBOURS = {
     "spatial-loop-grounded": "issues clause verdicts over supervised conduct",
     "context-closure-engineering": "compiles and checks one bounded context projection",
     "dynamic-workflow": "classifies runtime liveness of dispatch lanes",
+    "control-noodle": "decides whether an atom's boundary was conducted correctly",
+    "arrival-engineering": "audits whether a declared capability is wired to anything",
 }
-# The fourth neighbour is not in this tree yet (ed3c/skill-concerns#75 has not
-# landed). Absence gets its own exit rather than a silent pass: the boundary
+# The unadmitted neighbour is not in this tree yet (ed3c/skill-concerns#75 has
+# not landed). Absence gets its own exit rather than a silent pass: the boundary
 # term must be on the page, and the check says the bytes were unavailable.
 ABSENT_NEIGHBOUR = "shadow-architect"
 
@@ -1005,7 +1013,15 @@ def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
 
     A neighbour whose bytes are not in this tree is reported as unavailable
     rather than as agreement: unresolvable and unreachable are different states.
+
+    The scan is scoped to the Non-claims section, not the whole document. Over
+    the whole document any incidental mention satisfies it - a path like
+    `skills/arrival-engineering/...` in a paragraph about something else is
+    enough - so the check would be green for a neighbour whose differential was
+    never stated, which is the grep-verifiability this section is supposed to
+    carry, hollowed.
     """
+    text = section_text(text, "Non-claims")
     for name in NEIGHBOURS:
         if name not in text:
             errors.append(f"Non-claims does not name the neighbour it is not: {name}")
@@ -1013,8 +1029,8 @@ def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
             errors.append(f"neighbour {name} named but absent from this tree")
     if ABSENT_NEIGHBOUR not in text:
         errors.append(
-            f"the fourth neighbour {ABSENT_NEIGHBOUR} is unadmitted and must still be "
-            "named, with its issue, rather than silently omitted"
+            f"the unadmitted neighbour {ABSENT_NEIGHBOUR} must still be named, with "
+            "its issue, rather than silently omitted"
         )
     elif (repo_root / "skills" / ABSENT_NEIGHBOUR).is_dir():
         # The exit re-resolves when the absence ends. Without this arm the
@@ -1318,6 +1334,27 @@ def selftest() -> int:
             "unnamed_neighbour_reds",
             unname_a_neighbour,
             "does not name the neighbour it is not",
+        )
+
+        def name_a_neighbour_outside_non_claims(copy: Path) -> None:
+            """Delete only the bullet; `skills/arrival-engineering` stays elsewhere.
+
+            The document still contains the string, so a whole-document scan
+            stays green here while the differential it was supposed to make
+            grep-verifiable is gone. This is the mutation that separates the
+            scoped check from the hollow one.
+            """
+            path = copy / "SKILL.md"
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            kept = [line for line in lines if not line.startswith("- No ceremony and no wiring audit.")]
+            assert len(kept) == len(lines) - 1, "the bullet this mutation removes moved"
+            path.write_text("".join(kept), encoding="utf-8")
+            assert "arrival-engineering" in path.read_text(encoding="utf-8")
+
+        mutate(
+            "neighbour_named_only_outside_non_claims_reds",
+            name_a_neighbour_outside_non_claims,
+            "does not name the neighbour it is not: arrival-engineering",
         )
 
         # Schema controls: a malformed finding, an out-of-list signal, and a
