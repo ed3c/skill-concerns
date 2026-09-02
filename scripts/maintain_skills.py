@@ -28,6 +28,18 @@ exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothin
 is the mechanical reader for that claim). Drift leaves SHADOW as a finding with
 a destination, never as a patch.
 
+Nothing SCHEDULES it either, and "cadence" here names what the sweep re-reads,
+not a clock it runs on. Worth stating rather than leaving a reader to discover:
+`test_sweep_gates_nothing` refuses any file under `.github/workflows/`
+containing the string `maintain_skills`, so a cron whose only job was to run
+this sweep would red the same test that keeps it N-class -- the scan cannot
+presently tell "a workflow that RUNS the sweep" from "a gate that CONSUMES its
+result". Until it can, the cadence is whoever types the command, and the pins
+record what to re-read when they do. Filed as ed3c/skill-concerns#134 rather
+than resolved here: widening the gate a candidate is judged against, in the
+landing that needs the widening, is the move this repository refuses by
+standing rule.
+
 Two modes, and the split is the point (ed3c/skill-concerns#62)
 --------------------------------------------------------------
 
@@ -378,6 +390,36 @@ def ancestry_ok(status: str) -> bool:
     return status in {"identical", "ahead"}
 
 
+def mirror_destination(root: Path, mirror: Any) -> str | None:
+    """`path:line` of the local copy whose shape a watched upstream file sets.
+
+    Without this a watched-file finding is filed at the pin that noticed it,
+    which is the one file the reader does not have to change: the pin is
+    correct, the MIRROR is what has to be re-derived. The line is resolved by
+    searching for the declared anchor rather than recorded as a number, so the
+    destination does not go stale the first time the mirror is edited.
+
+    A mirror that is not there, or an anchor the mirror no longer carries, gets
+    its own sentinel rather than a plausible-looking `path:1` -- the same rule
+    `locate_destination` follows about never guessing a destination.
+    """
+    if not isinstance(mirror, dict):
+        return None
+    relative = str(mirror.get("path", ""))
+    anchor = str(mirror.get("anchor", ""))
+    if not relative or not anchor:
+        return f"MIRROR_DECLARATION_INCOMPLETE:{relative or anchor}"
+    path = root / relative
+    if not path.is_file():
+        return f"MIRROR_ABSENT:{relative}"
+    for number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if anchor in line:
+            return f"{relative}:{number}"
+    return f"MIRROR_ANCHOR_ABSENT:{relative}:{anchor}"
+
+
 def check_refs(
     root: Path, online: bool
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]]]:
@@ -456,91 +498,100 @@ def check_upstream(
     for pin in document.get("pins", []):
         repository = pin["repository"]
         branch = pin.get("branch", "main")
-        commit = pin["pinned_commit"]
+        # A pin may watch FILE identity without pinning a commit
+        # (ed3c/skill-concerns#97). A consumer repository's head moves every
+        # day and reporting that as drift would leave the cadence permanently
+        # `changed` over a fact nobody watches, drowning the findings that
+        # matter. The field's presence is the switch, so there is no second
+        # flag to keep in step with it.
+        commit = pin.get("pinned_commit")
+        anchor = commit or pin["id"]
         if not online:
             unreachable.append(
                 {
                     "pin": pin["id"],
                     "skill": repository,
                     "prerequisite": "network + gh auth (run without --offline)",
-                    "destination": locate_destination(root, commit),
+                    "destination": locate_destination(root, anchor),
                 }
             )
             continue
 
-        head = _run(
-            ["gh", "api", f"repos/{repository}/commits/{branch}", "--jq", ".sha"], root, 60
-        )
-        if head["returncode"] != 0:
-            unreachable.append(
-                {
-                    "pin": pin["id"],
-                    "skill": repository,
-                    "prerequisite": f"provider readable: {head['tail']}",
-                    "destination": locate_destination(root, commit),
-                }
+        if commit:
+            head = _run(
+                ["gh", "api", f"repos/{repository}/commits/{branch}", "--jq", ".sha"], root, 60
             )
-            # Mirror check_refs: a genuine online read failure is not the
-            # same as "skipped by --offline" and must degrade the outcome,
-            # or the entire upstream-pin subject silently disappears behind
-            # a "clean" report.
-            results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": "BLOCKED"})
-            continue
-        head_sha = head["stdout"].strip()
-        results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": head_sha})
-        if head_sha != commit:
-            findings.append(
-                finding(
-                    root,
-                    "UPSTREAM_MAIN_MOVED",
-                    commit,
-                    f"{repository} {branch} is at {head_sha}; the pin names {commit}",
-                    pin.get("action_on_drift", "re-read the pinned upstream files"),
+            if head["returncode"] != 0:
+                unreachable.append(
+                    {
+                        "pin": pin["id"],
+                        "skill": repository,
+                        "prerequisite": f"provider readable: {head['tail']}",
+                        "destination": locate_destination(root, anchor),
+                    }
                 )
-            )
-
-        # The ancestry fact: a moved head is routine, an unreachable pin is not.
-        compare = _run(
-            [
-                "gh",
-                "api",
-                f"repos/{repository}/compare/{commit}...{branch}",
-                "--jq",
-                ".status",
-            ],
-            root,
-            60,
-        )
-        if compare["returncode"] != 0:
-            unreachable.append(
-                {
-                    "pin": f"{pin['id']}:ancestry",
-                    "skill": repository,
-                    "prerequisite": f"provider readable: {compare['tail']}",
-                    "destination": locate_destination(root, commit),
-                }
-            )
-            results.append(
-                {"pin": f"{pin['id']}:ancestry", "skill": repository, "state": "BLOCKED"}
-            )
-        else:
-            status = compare["stdout"].strip()
-            results.append(
-                {"pin": f"{pin['id']}:ancestry", "skill": repository, "state": status}
-            )
-            if not ancestry_ok(status):
+                # Mirror check_refs: a genuine online read failure is not the
+                # same as "skipped by --offline" and must degrade the outcome,
+                # or the entire upstream-pin subject silently disappears behind
+                # a "clean" report.
+                results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": "BLOCKED"})
+                continue
+            head_sha = head["stdout"].strip()
+            results.append({"pin": f"{pin['id']}:head", "skill": repository, "state": head_sha})
+            if head_sha != commit:
                 findings.append(
                     finding(
                         root,
-                        "UPSTREAM_PIN_NOT_ANCESTOR",
+                        "UPSTREAM_MAIN_MOVED",
                         commit,
-                        f"compare {commit}...{branch} is {status!r}; the pinned commit is no longer reachable from {branch}",
-                        "stop citing this pstack commit until the pin is re-anchored on a commit that is an ancestor of "
-                        f"{repository} {branch}",
+                        f"{repository} {branch} is at {head_sha}; the pin names {commit}",
+                        pin.get("action_on_drift", "re-read the pinned upstream files"),
                     )
                 )
 
+            # The ancestry fact: a moved head is routine, an unreachable pin is not.
+            compare = _run(
+                [
+                    "gh",
+                    "api",
+                    f"repos/{repository}/compare/{commit}...{branch}",
+                    "--jq",
+                    ".status",
+                ],
+                root,
+                60,
+            )
+            if compare["returncode"] != 0:
+                unreachable.append(
+                    {
+                        "pin": f"{pin['id']}:ancestry",
+                        "skill": repository,
+                        "prerequisite": f"provider readable: {compare['tail']}",
+                        "destination": locate_destination(root, anchor),
+                    }
+                )
+                results.append(
+                    {"pin": f"{pin['id']}:ancestry", "skill": repository, "state": "BLOCKED"}
+                )
+            else:
+                status = compare["stdout"].strip()
+                results.append(
+                    {"pin": f"{pin['id']}:ancestry", "skill": repository, "state": status}
+                )
+                if not ancestry_ok(status):
+                    findings.append(
+                        finding(
+                            root,
+                            "UPSTREAM_PIN_NOT_ANCESTOR",
+                            commit,
+                            f"compare {commit}...{branch} is {status!r}; the pinned commit is no longer reachable from {branch}",
+                            "stop citing this pstack commit until the pin is re-anchored on a commit that is an ancestor of "
+                            f"{repository} {branch}",
+                        )
+                    )
+
         for watched in pin.get("watched_files", []):
+            destination = mirror_destination(root, watched.get("mirror"))
             blob = _run(
                 [
                     "gh",
@@ -558,7 +609,8 @@ def check_upstream(
                         "pin": watched["path"],
                         "skill": repository,
                         "prerequisite": f"provider readable: {blob['tail']}",
-                        "destination": locate_destination(root, watched["blob_sha"]),
+                        "destination": destination
+                        or locate_destination(root, watched["blob_sha"]),
                     }
                 )
                 results.append({"pin": watched["path"], "skill": repository, "state": "BLOCKED"})
@@ -568,15 +620,16 @@ def check_upstream(
                 {"pin": watched["path"], "skill": repository, "state": current}
             )
             if current != watched["blob_sha"]:
-                findings.append(
-                    finding(
-                        root,
-                        "UPSTREAM_WATCHED_FILE_CHANGED",
-                        watched["blob_sha"],
-                        f"{repository}:{watched['path']} is blob {current}; the pin names {watched['blob_sha']}",
-                        pin.get("action_on_drift", "re-read the pinned upstream file"),
-                    )
+                drift = finding(
+                    root,
+                    "UPSTREAM_WATCHED_FILE_CHANGED",
+                    watched["blob_sha"],
+                    f"{repository}:{watched['path']} is blob {current}; the pin names {watched['blob_sha']}",
+                    pin.get("action_on_drift", "re-read the pinned upstream file"),
                 )
+                if destination:
+                    drift["destination"] = destination
+                findings.append(drift)
     return results, findings, unreachable
 
 

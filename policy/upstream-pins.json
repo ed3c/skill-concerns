@@ -25,6 +25,23 @@
         "why": "the providers-lock records this commit as the canonical pstack. A force-push or history rewrite upstream would leave the pin off main, and every pstack citation in this repository would name bytes no longer reachable from the branch we claim to follow. A moved head is routine; an unreachable pin is not.",
         "check": "GET repos/cursor/plugins/compare/<pinned_commit>...main -> status must be 'identical' or 'ahead'"
       }
+    },
+    {
+      "id": "noodles-issue-admission-gate",
+      "repository": "ed3c/noodles",
+      "branch": "main",
+      "why_pinned": "skills/red-team/scripts/validate_red_team.py carries a declared MIRROR of this file's issue-admission completeness shape - sections(), required_section_reasons(), completeness_reasons(), read 2026-09-02 - so the round-trip fixture can prove a finding's experiment block drops verbatim into an issue body's observer-demonstration section and still passes that gate, without this repository depending on that one. Nothing here re-read the mirrored bytes (ed3c/skill-concerns#97), which is the arrival-engineering A4 shape exactly: a documented 'recorded in X' is unverified until X's bytes are opened. No pinned_commit on purpose - the consumer's head moves daily and that is not drift; this pin watches FILE identity, so a moved head files nothing.",
+      "action_on_drift": "re-read issue_contract.py and re-derive the mirror against it. The load-bearing detail is the stripping order: fenced blocks and HTML comments are removed BEFORE sections are cut, so a section whose only content is a fenced block arrives at that gate empty - which is why the finding grammar carries no fence and why the fixture reds when the same block is fenced. The two deliberate omissions, the noodles-requirement id resolution and the dependency-state derivation, are undecidable from a body alone and stay declared rather than quietly acquired.",
+      "watched_files": [
+        {
+          "path": "issue_contract.py",
+          "blob_sha": "648c445e4e9d61c13727bdba9f1a2d314564b586",
+          "mirror": {
+            "path": "skills/red-team/scripts/validate_red_team.py",
+            "anchor": "def completeness_reasons"
+          }
+        }
+      ]
     }
   ]
 }
