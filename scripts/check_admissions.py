@@ -163,17 +163,28 @@ def bootstrap_retirement(root: Path) -> list[str]:
     demanded. `admission_stamp.BOOTSTRAP` still resolves inside the trusted
     tree, so no authorization is ever taken from the candidate.
 
-    An entry naming a skill whose directory is present in this tree has already
+    An entry naming a skill whose BYTES are present in this tree has already
     been spent: the commit that lands the skill also lands its permanent
     `SKILL_CHECKS` row, and an entry left behind is a standing authorization
     for bytes that are already admitted -- a skeleton key with nothing left to
     open honestly.
+
+    The predicate is the Skill's files, not `skills/<name>/.is_dir()`
+    (ed3c/skill-concerns#106). Git neither tracks nor removes empty
+    directories, so a branch switch leaves behind any directory whose only
+    contents were ignored -- `__pycache__` under a `scripts/` and a `tests/` is
+    the observed case -- and a directory entry with no bytes in it satisfied
+    `is_dir()`. The refusal then named an authorization that was in fact still
+    owed, on a tree `git status --porcelain -uall` reports as empty. Same
+    reader as the digest side of this mechanism: `regular_files` skips
+    `__pycache__` and `.pyc`, so an ignored-file-only directory is empty here
+    too, which is the whole point.
     """
     entries, errors = bootstrap_entries(root / "policy" / "bootstrap-admissions.json")
     return errors + [
         f"BOOTSTRAP_ENTRY_STALE:{skill}"
         for skill in sorted(entries)
-        if (root / "skills" / skill).is_dir()
+        if regular_files(root / "skills" / skill)
     ]
 
 
