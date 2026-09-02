@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
-      "sha256": "fe3964c792c6678d49fb0fa76e9c00e8224a9e8c926dd19bc2a586ff5195b234"
+      "sha256": "40cda100ab5a0b174463703b6cf240fbbf3bbf56d3567838c25028ceb90c267d"
     },
     {
       "path": "skills/red-team/domain/generation-close-runbook.md",
@@ -37,7 +37,7 @@
     },
     {
       "path": "skills/red-team/domain/run-ledger.json",
-      "sha256": "6e5993d4af8de74b0146289e0f45f2a155cdf95134685bb164191c660b8d7376"
+      "sha256": "0632768836ee99e7277da3d94f2c9da4a340b059d48264b1bfe3589ebb974f22"
     },
     {
       "path": "skills/red-team/evals/cases.json",
@@ -125,7 +125,7 @@
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "0cbe74855d9fef2768624f347ef33e1a289a8f3d8a0086efb2f81e4b697325b7"
+      "sha256": "1aaa86cb58a45227c233e52f0089022c9fa86c78fde5e135cf6ed3f6b243e434"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -136,7 +136,7 @@
       "sha256": "885dd4dd0192b92328bee517f7d98d3b9d64b780595124f6b6b6a6328f18fd2d"
     }
   ],
-  "skill_tree_sha256": "f74ce62fa556e07a49eb438cda5ea3999a6ac029f18171aed2815c549bb26eef",
+  "skill_tree_sha256": "e7c4e7af2b90a4d9079b596250c1cb0f94ef384a20abb75d663bb447a9c20183",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

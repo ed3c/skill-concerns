@@ -1284,7 +1284,29 @@ def selftest() -> int:
 
         def station_outgrew_its_row(copy: Path) -> None:
             def change(body):
-                record = dict(body["records"][-1])
+                # The subject to plant against is chosen by IDENTITY, never by
+                # position. `records[-1]` is whichever station ran last in an
+                # append-only ledger, so the first record appended for a station
+                # with no arrival row turned this arm into a silent no-op:
+                # `check_station_arrival` skips untracked stations, so the
+                # planted record reported nothing and the control still passed.
+                topology = json.loads(
+                    (copy / "domain" / "observation-topology.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                tracked = {
+                    row.get("id")
+                    for row in topology.get("targets") or []
+                    if row.get("arrival_row")
+                }
+                record = dict(
+                    next(
+                        item
+                        for item in body["records"]
+                        if item.get("subject") in tracked
+                    )
+                )
                 record["run_id"] = "2026-12-01T00:00:00+00:00"
                 record["boundary"] = "generation-close"
                 body["records"].append(record)

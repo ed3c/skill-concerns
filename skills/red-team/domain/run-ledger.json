@@ -61,6 +61,29 @@
       "novel_class_candidates": [],
       "judge_gaps": 1,
       "duplicate_blocks": 0
+    },
+    {
+      "run_id": "2026-09-02T16:34:23+00:00",
+      "wave": "2026-09-02-wave20-sc-redteam-duty",
+      "boundary": "wave-close",
+      "subject": "wave-boundary",
+      "classes_sampled": [
+        "blind-observer",
+        "free-exit",
+        "trusted-current-literal",
+        "duplicate-discovery",
+        "spec-first-lifecycle"
+      ],
+      "hits": {
+        "blind-observer": 0,
+        "free-exit": 0,
+        "trusted-current-literal": 0,
+        "duplicate-discovery": 2,
+        "spec-first-lifecycle": 0
+      },
+      "novel_class_candidates": [],
+      "judge_gaps": 2,
+      "duplicate_blocks": 2
     }
   ]
 }
