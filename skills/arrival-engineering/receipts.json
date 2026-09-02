@@ -81,12 +81,14 @@
       "refs": [
         "ed3c/noodles#294",
         "ed3c/noodles#295",
-        "ed3c/skill-concerns#73"
+        "ed3c/skill-concerns#73",
+        "ed3c/skill-concerns#75"
       ],
       "claim": "a verb a consumer may remember to call, and a retrieval slice with no consumer surface at all, are islands being planned rather than found",
       "rows": [
         "noodles-code-intel-runtime-verb",
-        "noodles-where-is-x-slice"
+        "noodles-where-is-x-slice",
+        "sc-shadow-architect-monitor-source"
       ]
     },
     "retired-carrier": {

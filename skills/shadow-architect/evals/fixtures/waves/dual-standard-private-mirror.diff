@@ -1,0 +1,515 @@
+commit a5c8d33038833f1841738c02bc62da0aedd63d5b
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 18:26:53 2026 +0800
+
+    feat(gate): sweep the whole dual standard, not the half already mechanical
+    
+    A new Skill's conformance split in two: one half the trusted checks already
+    refuse, one half an admission issue could enumerate and nothing would re-read.
+    An enumeration inside an issue body is author memory, which is the defect of
+    shape this repository cures everywhere else.
+    
+    `check_skill_bundles.py` already walks every `skills/*` directory, so the
+    second half lands there rather than in a new surface. Per Skill it now
+    asserts: a validator exists, is wired into its own `run_all.SKILL_CHECKS` row
+    next to that Skill's test discovery, and is count-tied to its entrypoint; an
+    admission stamp exists and was taken against the bytes that are here now; the
+    eval campaign is a directory whose planted-negative arms do not borrow a
+    positive arm's assertion; every `receipts.json` entry names its ground; both
+    collection documents carry the Skill's row and kind; and the pstack birth
+    triple is present by shape.
+    
+    The count tie is the load-bearing one, and it is generic by construction: each
+    validator declares `SKILL_MD_CLAUSES`, the gate reads that tuple out of the
+    validator's own bytes with `ast`, and compares it to the entrypoint's `## `
+    sections. There is no per-skill list in the gate to go stale, and a hollowed
+    SKILL.md reds against a tuple the hollowing never touched. Nothing is
+    imported: in CI this file is trusted code reading a candidate tree as data, so
+    `run_all.py` and every validator are parsed, never executed.
+    
+    Two nonconformances in already-admitted Skills, fixed here rather than
+    grandfathered:
+    
+    - `context-closure-engineering`'s `task-packet-unbounded` (expected FAIL)
+      named `test_context_pack_selftest_passes` -- the same assertion its POSITIVE
+      case names. One execution stood for two arms, so the admission receipt
+      carried a planted-negative control id whose only measurement was the
+      positive control. It now has its own arm, which defuses the per-row packet
+      binding and requires the tree to red.
+    - Every `receipts.json` entry in `control-backup` and `control-code-intel` was
+      a claim plus prose, with no ground any process re-reads. Nine and three
+      entries respectively now name the driver whose selftest replays them; the
+      rest carry the explicit `HOST_OBSERVED` exit, so a one-time host observation
+      and a replayed claim stop looking alike in the bytes.
+    
+    `run_all.py` is untouched: the new assertions live behind a gate it already
+    runs, and the runner's `SKILL_CHECKS` is read as data rather than edited.
+    
+    The Doctor of the birth triple is the stamper's refusing preflight, not the
+    cadence sweep's own doctor: the sweep is N-class and no gate may name it.
+    
+    Each assertion has its own planted negative in
+    `tests/test_repository_controls.py`, and all fifteen were also driven through
+    the shipped CLI against mutated scratch trees. What this cannot prove is
+    method honesty -- that the interview behind a feature map was faithful. That
+    stays with campaigns, planted negatives and wave monitors, and the gate says
+    so on the page.
+    
+    Refs ed3c/skill-concerns#74
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018aXhRTTuNoZFxnLyjNkTew
+
+diff --git a/scripts/check_skill_bundles.py b/scripts/check_skill_bundles.py
+index 20a43dc..67372cd 100644
+--- a/scripts/check_skill_bundles.py
++++ b/scripts/check_skill_bundles.py
+@@ -9,7 +9,15 @@ from pathlib import Path
+ import re
+ from typing import Any, Iterable
+ 
+-from common import REPO_ROOT, load_json, print_result, safe_repo_path
++from common import (
++    REPO_ROOT,
++    digest_entries,
++    load_json,
++    print_result,
++    regular_files,
++    safe_repo_path,
++    tree_digest,
++)
+ 
+ 
+ REQUIRED_MANIFEST_KEYS = {
+@@ -40,6 +48,55 @@ ROLE_CLAIM = re.compile(r"\b(?:BUILD|SHADOW)\b")
+ ROLE_DECLARATION_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
+ ROLE_DOCUMENTS = ("SKILL.md", "README.md")
+ 
++# --------------------------------------------------------------------------
++# Dual-standard conformance (ed3c/skill-concerns#74)
++#
++# Everything below asserts the SHAPE a bundle must carry, per skill, generically.
++# Before this, eight of those shapes were author memory: an admission issue could
++# enumerate them, and nothing re-read the enumeration. What the sweep cannot
++# prove is method honesty -- that the interview behind a feature map was
++# faithful, that a campaign arm measured anything. Those stay with campaigns,
++# planted negatives and wave monitors, exactly as issue #74 scopes them.
++#
++# Trust boundary: `verify.yml` runs THIS file from the default branch against
++# the candidate tree as data. Nothing here imports or executes a candidate
++# module -- `scripts/run_all.py` and each Skill's validator are read as bytes
++# and parsed with `ast`, never imported.
++VALIDATOR_PREFIX = "validate_"
++
++# The declared contract every Skill validator carries so the count tie is
++# generic: a tuple of the exact `## ` section headings of that Skill's SKILL.md.
++# Read out of the validator's own bytes, so the gate has no per-skill list to go
++# stale, and a hollowed SKILL.md reds against a tuple the hollowing never
++# touched.
++CLAUSE_CONTRACT = "SKILL_MD_CLAUSES"
++
++# The explicit exit a receipts entry takes when its evidence is a one-time host
++# observation nothing in this repository replays. An honest declaration, never a
++# waiver: it keeps "no producer" distinguishable from "producer ran green".
++HOST_OBSERVED = "HOST_OBSERVED"
++
++MARKDOWN_FENCE = re.compile(r"^\s*```")
++MARKDOWN_SECTION = re.compile(r"^##\s+(.+?)\s*$")
++
++# pstack's birth triple, by shape. These are repository-level artifacts: one
++# feature map for the admission capability, one Doctor that refuses before it
++# drives, one prove-once receipt for the first live run. A per-skill copy of
++# each does not exist and inventing six would be fabrication, not conformance.
++#
++# The Doctor named here is the stamper's refusing preflight. The cadence sweep
++# owns a `doctor()` of its own and is the more obvious reading, but it is
++# N-class by contract -- nothing on the gate path may name it, and its own suite
++# reds on the module name appearing in any script under `scripts/`. A gate that
++# required the sweep to exist would be a gate consuming an N-class reader, which
++# is exactly the coupling that guard refuses. See AGENTS.md, "Content freshness".
++BIRTH_FEATURE_MAP = "docs/features/skill-admission/feature-map.json"
++BIRTH_DOCTOR = "scripts/admission_stamp.py"
++BIRTH_DOCTOR_SHAPE = ("class StampRefused", "REFUSAL")
++BIRTH_PROVE_ONCE = "ops/first-run-receipt.json"
++FEATURE_MAP_SHAPE = ("feature", "actor", "states", "transitions", "observables")
++HEX64 = re.compile(r"^[0-9a-f]{64}$")
++
+ 
+ def roles_block(text: str) -> str | None:
+     """The paragraph opened by a `Roles:` line, or None when there is none.
+@@ -133,6 +190,337 @@ def scan_hollow_execution_routes(
+     ]
+ 
+ 
++def markdown_sections(text: str) -> list[str]:
++    """The `## ` headings of a Markdown document, fenced blocks excluded.
++
++    Fenced blocks are skipped because several SKILL.md files carry ```text
++    diagrams whose lines start with `#`; counting those would tie the contract
++    to illustration bytes instead of to the document's clause structure.
++    """
++    sections: list[str] = []
++    fenced = False
++    for line in text.splitlines():
++        if MARKDOWN_FENCE.match(line):
++            fenced = not fenced
++            continue
++        if fenced:
++            continue
++        match = MARKDOWN_SECTION.match(line)
++        if match:
++            sections.append(match.group(1))
++    return sections
++
++
++def declared_clauses(path: Path) -> list[str] | None:
++    """`SKILL_MD_CLAUSES` read out of a validator's bytes, or None if absent.
++
++    Parsed with `ast`, never imported: in CI this file is trusted code reading a
++    candidate module, and importing the candidate would execute it.
++    """
++    try:
++        tree = ast.parse(path.read_text(encoding="utf-8"), filename=path.name)
++    except (OSError, SyntaxError):
++        return None
++    for node in tree.body:
++        targets = node.targets if isinstance(node, ast.Assign) else (
++            [node.target] if isinstance(node, ast.AnnAssign) else []
++        )
++        if not any(
++            isinstance(target, ast.Name) and target.id == CLAUSE_CONTRACT
++            for target in targets
++        ):
++            continue
++        try:
++            value = ast.literal_eval(node.value)
++        except ValueError:
++            return None
++        if isinstance(value, (list, tuple)) and all(
++            isinstance(item, str) for item in value
++        ):
++            return list(value)
++        return None
++    return None
++
++
++def runner_rows(runner: Path) -> dict[str, list[str]]:
++    """Skill name -> every string literal in that Skill's `SKILL_CHECKS` row.
++
++    Structural rather than a substring search over the whole runner: a path that
++    appears anywhere in the file would otherwise read as "wired" for every
++    Skill, including the one whose row does not contain it. Starred names such
++    as `*DISCOVER` contribute nothing here, which is why the tests directory is
++    asserted from the row's own literal rather than from the shared tuple.
++    """
++    rows: dict[str, list[str]] = {}
++    try:
++        tree = ast.parse(runner.read_text(encoding="utf-8"), filename=runner.name)
++    except (OSError, SyntaxError):
++        return rows
++    for node in ast.walk(tree):
++        targets = node.targets if isinstance(node, ast.Assign) else (
++            [node.target] if isinstance(node, ast.AnnAssign) else []
++        )
++        if not any(
++            isinstance(target, ast.Name) and target.id == "SKILL_CHECKS"
++            for target in targets
++        ):
++            continue
++        if not isinstance(node.value, ast.Dict):
++            continue
++        for key, row in zip(node.value.keys, node.value.values):
++            if isinstance(key, ast.Constant) and isinstance(key.value, str):
++                rows[key.value] = [
++                    child.value
++                    for child in ast.walk(row)
++                    if isinstance(child, ast.Constant) and isinstance(child.value, str)
++                ]
++    return rows
++
++
++def scan_validator_contract(
++    name: str, skill_root: Path, execution: list[str], row: list[str] | None
++) -> list[str]:
++    """Validator present, wired into the runner's row, and count-tied to SKILL.md.
++
++    The tie is the whole point: a validator can be present and green while the
++    SKILL.md it is supposed to be validating loses a clause, because nothing
++    counted the clauses. `SKILL_MD_CLAUSES` is the Skill's own declaration of
++    that count and of the identities behind it, so dropping a section reds
++    against bytes the drop never touched.
++    """
++    errors: list[str] = []
++    validators = sorted(
++        relative
++        for relative in execution
++        if Path(relative).name.startswith(VALIDATOR_PREFIX)
++    )
++    if not validators:
++        return [f"SKILL_VALIDATOR_ABSENT:{name}"]
++    if len(validators) > 1:
++        errors.append(f"SKILL_VALIDATOR_AMBIGUOUS:{name}:{','.join(validators)}")
++    relative = validators[0]
++    validator = skill_root / relative
++
++    if row is None:
++        errors.append(f"SKILL_CHECKS_ROW_ABSENT:{name}")
++    else:
++        if f"skills/{name}/{relative}" not in row:
++            errors.append(f"SKILL_VALIDATOR_UNWIRED:{name}:{relative}")
++        if f"skills/{name}/tests" not in row:
++            errors.append(f"SKILL_TESTS_UNWIRED:{name}")
++
++    if not validator.is_file():
++        return errors + [f"SKILL_VALIDATOR_ABSENT:{name}:{relative}"]
++    declared = declared_clauses(validator)
++    if declared is None:
++        return errors + [f"SKILL_CLAUSE_CONTRACT_ABSENT:{name}:{relative}"]
++    entrypoint = skill_root / "SKILL.md"
++    observed = (
++        markdown_sections(entrypoint.read_text(encoding="utf-8"))
++        if entrypoint.is_file()
++        else []
++    )
++    if declared != observed:
++        errors.append(
++            f"SKILL_CLAUSE_COUNT_UNTIED:{name}:declared={len(declared)}:"
++            f"observed={len(observed)}:"
++            f"drift={','.join(sorted(set(declared) ^ set(observed))) or 'ORDER'}"
++        )
++    return errors
++
++
++def scan_admission_stamp(name: str, root: Path, skill_root: Path) -> list[str]:
++    """The stamp exists and was taken against the bytes that are here now.
++
++    Independent of `check_admissions`, which reaches its own digest comparison
++    only for a registry row complete enough to get that far: a row missing its
++    `admission` key short-circuits there and the stamp is never looked at. Here
++    the subject is the directory, so a stampless or stale bundle is named
++    whatever the registry says about it.
++    """
++    stamp_path = root / "admissions" / f"{name}.json"
++    if not stamp_path.is_file():
++        return [f"ADMISSION_STAMP_ABSENT:{name}"]
++    try:
++        stamp = load_json(stamp_path)
++        actual = tree_digest(digest_entries(root, regular_files(skill_root)))
++    except ValueError as exc:
++        return [str(exc)]
++    if not isinstance(stamp, dict):
++        return [f"ADMISSION_STAMP_NOT_OBJECT:{name}"]
++    if stamp.get("skill") != name:
++        return [f"ADMISSION_STAMP_SKILL_MISMATCH:{name}:{stamp.get('skill')}"]
++    if stamp.get("skill_tree_sha256") != actual:
++        return [f"ADMISSION_STAMP_STALE:{name}"]
++    return []
++
++
++def scan_campaign(
++    name: str, skill_root: Path, eval_inventory: str, cases: list[Any]
++) -> list[str]:
++    """The eval campaign is a directory, and its negative arm is its own arm.
++
++    A `FAIL` case pointing at the same assertion a `PASS` case points at is not
++    a second arm: one execution is being counted twice, and the receipt then
++    carries a control id whose only measurement is the positive control. That is
++    the shape `context-closure-engineering`'s `task-packet-unbounded` had
++    (ed3c/skill-concerns#74).
++
++    Live-agent behavioral campaigns stay outside this sweep by
++    `docs/behavioral-eval-protocol.md`; what is asserted here is the hermetic
++    campaign every Skill carries.
++    """
++    errors: list[str] = []
++    campaign = Path(eval_inventory).parent
++    if campaign in (Path("."), Path("")) or not (skill_root / campaign).is_dir():
++        errors.append(f"CAMPAIGN_DIRECTORY_ABSENT:{name}:{eval_inventory}")
++    positive = {
++        case.get("test")
++        for case in cases
++        if isinstance(case, dict) and case.get("expected") == "PASS"
++    }
++    for case in cases:
++        if not isinstance(case, dict) or case.get("expected") != "FAIL":
++            continue
++        if case.get("test") in positive:
++            errors.append(
++                f"CAMPAIGN_ARM_SHARES_PRODUCER:{name}:{case.get('id')}:{case.get('test')}"
++            )
++    return errors
++
++
++def scan_receipt_producers(name: str, skill_root: Path) -> list[str]:
++    """Every receipts entry names its ground, and a named producer exists.
++
++    Three grounds, because three exist and they are not interchangeable:
++
++    - `producer`: a path under the Skill whose execution replays the claim
++      (the L2 driver selftests do exactly this). A producer naming a path that
++      is not there is worse than none -- it reads as grounded.
++    - `refs`: provider or host pins, which the cadence sweep resolves at the
++      provider or reports unreachable with a prerequisite.
++    - `producer: "HOST_OBSERVED"`: the explicit exit for a one-time host
++      observation with no repository producer at all. It is a declaration, not a
++      pass: absence and a replayed claim must not look alike in the bytes, and
++      before this an ungrounded entry looked exactly like a grounded one.
++    """
++    path = skill_root / "receipts.json"
++    if not path.is_file():
++        return []
++    try:
++        document = load_json(path)
++    except ValueError as exc:
++        return [str(exc)]
++    evidence = document.get("evidence") if isinstance(document, dict) else None
++    if not isinstance(evidence, dict) or not evidence:
++        return [f"RECEIPT_EVIDENCE_EMPTY:{name}"]
++    errors: list[str] = []
++    for key in sorted(evidence):
++        entry = evidence[key]
++        if not isinstance(entry, dict):
++            errors.append(f"RECEIPT_ENTRY_NOT_OBJECT:{name}:{key}")
++            continue
++        producer = entry.get("producer")
++        refs = entry.get("refs")
++        if producer == HOST_OBSERVED:
++            continue
++        if isinstance(producer, str) and producer:
++            candidate = Path(producer)
++            if candidate.is_absolute() or ".." in candidate.parts:
++                errors.append(f"RECEIPT_PRODUCER_ESCAPES_SKILL:{name}:{key}:{producer}")
++            elif not (skill_root / candidate).is_file():
++                errors.append(f"RECEIPT_PRODUCER_ABSENT:{name}:{key}:{producer}")
++        elif not (
++            isinstance(refs, list)
++            and any(isinstance(ref, str) and ref for ref in refs)
++        ):
++            errors.append(f"RECEIPT_ENTRY_UNGROUNDED:{name}:{key}")
++    return errors
++
++
++def scan_collection_rows(name: str, kind: Any, root: Path) -> list[str]:
++    """The two collection documents carry this Skill's row.
++
++    `check_agents_hops` proves the routing graph is closed; it does not prove
++    the collection `AGENTS.md` is the document that routes to this Skill, and
++    nothing at all read `skills/README.md`, which calls itself a reader's index
++    and was therefore free to omit a bundle or misname its kind.
++    """
++    errors: list[str] = []
++    agents = root / "skills" / "AGENTS.md"
++    if not agents.is_file() or f"skills/{name}/AGENTS.md" not in agents.read_text(
++        encoding="utf-8"
++    ):
++        errors.append(f"SKILL_COLLECTION_ROW_ABSENT:{name}")
++    index = root / "skills" / "README.md"
++    rows = (
++        [
++            line
++            for line in index.read_text(encoding="utf-8").splitlines()
++            if line.startswith("|") and f"`{name}`" in line
++        ]
++        if index.is_file()
++        else []
++    )
++    if len(rows) != 1:
++        errors.append(f"SKILL_INDEX_ROW_ABSENT:{name}:{len(rows)}")
++    elif f"`{kind}`" not in rows[0]:
++        errors.append(f"SKILL_INDEX_ROW_KIND_DRIFT:{name}:{kind}")
++    return errors
++
++
++def scan_birth_artifacts(root: Path) -> list[str]:
++    """pstack's birth triple, by shape: feature map, Doctor, prove-once receipt.
++
++    Shape only. That a feature map exists and declares states, transitions and
++    observables is decidable from bytes; that the interview behind it was
++    faithful is not, and this gate does not pretend otherwise.
++    """
++    errors: list[str] = []
++    feature_map = root / BIRTH_FEATURE_MAP
++    if not feature_map.is_file():
++        errors.append(f"BIRTH_FEATURE_MAP_ABSENT:{BIRTH_FEATURE_MAP}")
++    else:
++        try:
++            document = load_json(feature_map)
++        except ValueError as exc:
++            errors.append(str(exc))
++            document = None
++        if isinstance(document, dict):
++            for key in FEATURE_MAP_SHAPE:
++                if not document.get(key):
++                    errors.append(f"BIRTH_FEATURE_MAP_INCOMPLETE:{key}")
++        elif document is not None:
++            errors.append("BIRTH_FEATURE_MAP_NOT_OBJECT")
++
++    doctor = root / BIRTH_DOCTOR
++    if not doctor.is_file():
++        errors.append(f"BIRTH_DOCTOR_ABSENT:{BIRTH_DOCTOR}")
++    else:
++        text = doctor.read_text(encoding="utf-8")
++        for token in BIRTH_DOCTOR_SHAPE:
++            if token not in text:
++                errors.append(f"BIRTH_DOCTOR_INCOMPLETE:{token}")
++
++    prove_once = root / BIRTH_PROVE_ONCE
++    if not prove_once.is_file():
++        errors.append(f"BIRTH_PROVE_ONCE_ABSENT:{BIRTH_PROVE_ONCE}")
++    else:
++        try:
++            receipt = load_json(prove_once)
++        except ValueError as exc:
++            return errors + [str(exc)]
++        run = receipt.get("run") if isinstance(receipt, dict) else None
++        if not isinstance(run, dict):
++            errors.append("BIRTH_PROVE_ONCE_RUN_INVALID")
++        else:
++            if run.get("exit_code") != 0:
++                errors.append(f"BIRTH_PROVE_ONCE_NOT_GREEN:{run.get('exit_code')}")
++            if not HEX64.fullmatch(str(run.get("report_sha256", ""))):
++                errors.append("BIRTH_PROVE_ONCE_DIGEST_INVALID")
++    return errors
++
++
+ def _qualified_test_methods(skill_root: Path, tests: list[str]) -> set[tuple[str, str, str]]:
+     """(module, class, method) for every test method declared under `tests`.
+ 
+@@ -244,8 +632,12 @@ def check(root: Path = REPO_ROOT) -> list[str]:
+ 
+     runner_text = ""
+     runner = root / "scripts" / "run_all.py"
++    rows_by_skill: dict[str, list[str]] = {}
+     if runner.is_file():
+         runner_text = runner.read_text(encoding="utf-8")
++        rows_by_skill = runner_rows(runner)
++
++    errors.extend(scan_birth_artifacts(root))
+ 
+     for row in rows:
+         if not isinstance(row, dict):
+@@ -384,6 +776,14 @@ def check(root: Path = REPO_ROOT) -> list[str]:
+         errors.extend(
+             scan_hollow_execution_routes(name, execution, test_text, runner_text)
+         )
++        errors.extend(
++            scan_validator_contract(
++                name, skill_root, execution, rows_by_skill.get(name)
++            )
++        )
++        errors.extend(scan_admission_stamp(name, root, skill_root))
++        errors.extend(scan_receipt_producers(name, skill_root))
++        errors.extend(scan_collection_rows(name, kind, root))
+ 
+         if isinstance(eval_inventory, str) and (skill_root / eval_inventory).is_file():
+             try:
+@@ -419,6 +819,9 @@ def check(root: Path = REPO_ROOT) -> list[str]:
+                                 f"EVAL_CASE_EXPECTED_INVALID:{name}:{case_id}:{expected}"
+                             )
+                     errors.extend(scan_case_producers(name, skill_root, tests, cases))
++                    errors.extend(
++                        scan_campaign(name, skill_root, eval_inventory, cases)
++                    )
+                     if not positive:
+                         errors.append(f"EVAL_POSITIVE_CONTROL_ABSENT:{name}")
+                     if not negative:

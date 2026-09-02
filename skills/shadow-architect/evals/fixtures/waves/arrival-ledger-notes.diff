@@ -1,0 +1,221 @@
+commit eab118d4c0f29a9fd4986f406c72f1d863d9d206
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 20:11:33 2026 +0800
+
+    reconcile(arrival): name the arrival axis, derive the ledger, own one tree digest
+    
+    Three monitor findings against this branch, each fixed in the bytes rather
+    than answered in prose.
+    
+    Arrival levels are DECLARED / EXERCISED / PRODUCTION, not L0 / L1 / L2. The
+    branch as pushed shipped a validator clause requiring SKILL.md to disambiguate
+    its levels from the two other axes in this repository that also count from L0.
+    That is a gate coupled to prose, and it cures the collision rather than its
+    cause. This axis was the newest of the three and had zero consumers, so it is
+    the one that moves; the disambiguation paragraph and the gate that read it are
+    both deleted.
+    
+    The arrival column is now derived, not remembered. `audit_row` compared with
+    `>`, so an over-claim was a finding and an under-claim was invisible -- a row
+    whose receipts had outgrown it stayed understated until an author remembered,
+    which is exactly the stale list this ledger exists to kill. The comparison is
+    equality, `CLAIM_BELOW_ARRIVAL` joins the diagnostic table with its own planted
+    fixture row, and both readers now call one `arrival_mismatch()` instead of the
+    validator carrying a second copy of the comparison.
+    
+    `audit_islands.tree_digest` is renamed `tree_fingerprint`. It never was this
+    repository's tree identity -- `scripts/common.tree_digest` is, and the two
+    selected different files over the same tree (`.git` kept vs skipped, symlinks
+    raising vs tolerated), so one name covered two numbers. Importing the shared
+    helper is the wrong fix here: the audited tree is usually another repository,
+    where `.git` mutates on read and a symlink must not abort the pass.
+    
+    Conformance with the dual-standard sweep landed by #74: `SKILL_MD_CLAUSES`
+    declared in the validator, a `skills/README.md` index row, and this bundle's
+    permanent `SKILL_CHECKS` row. The admission receipt is still structurally
+    absent and is stamped, never hand-authored, once #72's bootstrap entry for this
+    tree lands.
+    
+    Refs ed3c/skill-concerns#73
+
+diff --git a/skills/arrival-engineering/domain/capability-topology.json b/skills/arrival-engineering/domain/capability-topology.json
+index 1b57425..a55f183 100644
+--- a/skills/arrival-engineering/domain/capability-topology.json
++++ b/skills/arrival-engineering/domain/capability-topology.json
+@@ -2,16 +2,17 @@
+   "schema_version": 1,
+   "subject": "declared capabilities, their bound exits, and the highest arrival each one's receipts support",
+   "arrival_levels": {
+-    "L0": "declared - the bytes exist and a validator or gate can see them; possibility only",
+-    "L1": "exercised - a fixture, selftest, or test ran it on synthetic input; sandbox arrival",
+-    "L2": "production - a session, cycle, or cadence receipt from a real run names it"
++    "DECLARED": "the bytes exist and a validator or gate can see them; possibility only",
++    "EXERCISED": "a fixture, selftest, or test ran it on synthetic input; sandbox arrival",
++    "PRODUCTION": "a session, cycle, or cadence receipt from a real run names it"
+   },
+   "receipt_kinds": {
+-    "bytes": "L0",
+-    "exercise": "L1",
+-    "run": "L2"
++    "bytes": "DECLARED",
++    "exercise": "EXERCISED",
++    "run": "PRODUCTION"
+   },
+   "append_rule": "a row without at least one receipt carrying a resolvable ref is refused at append (TOPOLOGY_ROW_WITHOUT_RECEIPT). There are no aspirational rows: an unreceipted intention belongs on an issue, not in this ledger.",
++  "arrival_rule": "the arrival column is derived, not remembered: it must equal the highest level this row's own receipts support. Above reds CLAIM_ABOVE_ARRIVAL, below reds CLAIM_BELOW_ARRIVAL. A ledger whose rows only move when an author remembers them is the stale list this one exists to kill.",
+   "evidence_claims": {
+     "five-surface-audit": "an audit that reads one surface answers declaration, not arrival: the driver enumerates imports, value_flow, ci, adapter and cli_text and reports the surface set",
+     "consumer-less-core": "offline-provable cores and __main__ probe scripts with zero consumers on any of the five surfaces, found by hand in one dispatcher session",
+@@ -31,7 +32,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": null,
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "consumer-less-core",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#294"},
+@@ -45,7 +46,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": "python3 <probe>.py",
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "consumer-less-core",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#293"},
+@@ -59,7 +60,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": "the verb itself",
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "planned-island",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#294"},
+@@ -73,7 +74,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": "the checkout ceremony every consumer already runs",
+       "bound_exit": "checkout ceremony",
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "shared-exit-cure",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#294"}
+@@ -86,7 +87,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": null,
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "planned-island",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#295"},
+@@ -100,7 +101,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": "the lock file entries the header claims exist",
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "false-documented-pin",
+       "documented_pin": {
+         "claim_in": "policy/providers.lock.json",
+@@ -118,7 +119,7 @@
+       "carrier": "skills/control-code-intel/domain/code-intel-topology.json",
+       "exit": "noodles scip probe",
+       "bound_exit": null,
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "dangling-pointer",
+       "pointer": {
+         "target": "the migrations/skills-shared probe carrier",
+@@ -136,7 +137,7 @@
+       "carrier": "ed3c/noodles",
+       "exit": "the adjudication itself",
+       "bound_exit": "maintain-on-event re-audit of every row naming the carrier",
+-      "arrival": "L0",
++      "arrival": "DECLARED",
+       "evidence": "retired-carrier",
+       "receipts": [
+         {"kind": "bytes", "ref": "ed3c/noodles#293"}
+@@ -149,7 +150,7 @@
+       "carrier": "skills/feature-map-engineering",
+       "exit": "skills/feature-map-engineering/scripts/validate_feature_map.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L2",
++      "arrival": "PRODUCTION",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "run", "ref": "ops/first-run-receipt.json"},
+@@ -163,7 +164,7 @@
+       "carrier": "skills/control-noodle",
+       "exit": "skills/control-noodle/scripts/validate_control_noodle.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L2",
++      "arrival": "PRODUCTION",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "run", "ref": "ops/first-run-receipt.json"},
+@@ -177,7 +178,7 @@
+       "carrier": "skills/spatial-loop-grounded",
+       "exit": "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L2",
++      "arrival": "PRODUCTION",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "run", "ref": "ops/first-run-receipt.json"},
+@@ -191,7 +192,7 @@
+       "carrier": "skills/control-code-intel",
+       "exit": "skills/control-code-intel/scripts/validate_control_code_intel.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L2",
++      "arrival": "PRODUCTION",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "run", "ref": "ops/first-run-receipt.json"},
+@@ -205,7 +206,7 @@
+       "carrier": "skills/control-backup",
+       "exit": "skills/control-backup/scripts/validate_control_backup.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L2",
++      "arrival": "PRODUCTION",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "run", "ref": "ops/first-run-receipt.json"},
+@@ -219,7 +220,7 @@
+       "carrier": "skills/context-closure-engineering",
+       "exit": "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py",
+       "bound_exit": "scripts/run_all.py and scripts/maintain_skills.py",
+-      "arrival": "L1",
++      "arrival": "EXERCISED",
+       "evidence": "cadence-run-denominator",
+       "receipts": [
+         {"kind": "exercise", "ref": "admissions/context-closure-engineering.json"},
+@@ -233,7 +234,7 @@
+       "carrier": "skills/arrival-engineering/scripts/audit_islands.py",
+       "exit": "python3 scripts/audit_islands.py --tree <dir> --topology <file>",
+       "bound_exit": "skills/arrival-engineering/tests/test_arrival_engineering.py",
+-      "arrival": "L1",
++      "arrival": "EXERCISED",
+       "evidence": "five-surface-audit",
+       "pointer": {"target": "skills/arrival-engineering/evals/fixtures/planted", "tree": "self"},
+       "receipts": [
+@@ -248,7 +249,7 @@
+       "carrier": "skills/arrival-engineering/domain/capability-topology.json",
+       "exit": "python3 scripts/audit_islands.py --append-row <row.json>",
+       "bound_exit": "skills/arrival-engineering/scripts/validate_arrival_engineering.py",
+-      "arrival": "L1",
++      "arrival": "EXERCISED",
+       "evidence": "arrival-ledger",
+       "receipts": [
+         {"kind": "exercise", "ref": "skills/arrival-engineering/evals/cases.json"},
+@@ -262,7 +263,7 @@
+       "carrier": "skills/arrival-engineering/receipts.json",
+       "exit": "skills/*/receipts.json",
+       "bound_exit": "scripts/maintain_skills.py receipt_refs()",
+-      "arrival": "L1",
++      "arrival": "EXERCISED",
+       "evidence": "closure-by-pointer",
+       "pointer": {"target": "skills/context-closure-engineering/references/portable-context-closure-policy.md", "tree": "self"},
+       "receipts": [

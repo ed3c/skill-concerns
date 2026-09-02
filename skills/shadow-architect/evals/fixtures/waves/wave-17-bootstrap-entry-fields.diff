@@ -1,0 +1,246 @@
+commit 03f47646e28c3f29b963256664a3e289cb4a7355
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 18:16:42 2026 +0800
+
+    feat(admissions): open a trusted-side path for a first-ever admission
+    
+    `check_receipt_provenance` re-executes through `run_all.SKILL_CHECKS`
+    imported from the validator's own tree, so a candidate can never declare
+    the checks that grade it. That is the reason a candidate cannot vouch for
+    itself and it is not weakened here. Its cost, unpaid until now, is that a
+    *first-ever* admission is structurally impossible: the commit that adds a
+    Skill is the commit that adds its row, and the gate reads that row from a
+    branch the commit is not on yet. PR 68 (dynamic-workflow, Refs #59) died
+    there on ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS, and
+    every Skill already in the tree was admitted before ffe361a tightened the
+    gate, so nothing had exercised this path since.
+    
+    `policy/bootstrap-admissions.json` is the one narrow way in, trusted on
+    exactly the same terms: `admission_stamp.BOOTSTRAP` is REPO_ROOT-relative,
+    never root-relative, so in CI it resolves inside .trusted while the graded
+    tree is .candidate. An entry authorizes ONE Skill's first admission and
+    pins the argv to execute plus the sha256 of the exact skill tree they may
+    run against -- a candidate one byte away from the reviewed one is refused
+    before anything of its executes, so an entry is an authorization for a
+    reviewed tree rather than a standing key for a name.
+    
+    Nothing becomes a default in either direction. A Skill that owns a
+    SKILL_CHECKS row is graded by it and never reads the allowlist, so
+    re-admission stays refused when the trusted row disagrees; no entry falls
+    through to the same NO_DECLARED_CHECKS refusal an unknown Skill has always
+    had; and a malformed allowlist refuses loudly instead of decaying into the
+    "no entry" shape.
+    
+    The entry is spent by the landing it authorizes rather than superseded by
+    it: check_admissions reds with BOOTSTRAP_ENTRY_STALE on any entry whose
+    Skill directory is present in the same tree, so the commit that lands the
+    Skill must delete its own entry and no authorization outlives its
+    admission. Both sides of that rule are read from one tree -- the
+    candidate's -- because it can only add a refusal, and the only way to
+    silence it is to perform the retirement being demanded.
+    
+    The dynamic-workflow entry ships here, authorizing PR 68's skill bytes at
+    45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224. This
+    branch is landing 1 of 2; PR 68 is landing 2 and carries the deletion.
+    
+    Refs ed3c/skill-concerns#72
+
+diff --git a/policy/bootstrap-admissions.json b/policy/bootstrap-admissions.json
+new file mode 100644
+index 0000000..be0041b
+--- /dev/null
++++ b/policy/bootstrap-admissions.json
+@@ -0,0 +1,24 @@
++{
++  "schema_version": 1,
++  "entries": [
++    {
++      "skill": "dynamic-workflow",
++      "refs": "ed3c/skill-concerns#59",
++      "authorized_head": "80951179b202d2f44d21a76f0efbdd676fa1410e",
++      "skill_tree_sha256": "45126a80f7abb25c6261c4bf1ab716827f2afc8a1a7cd267fe7b4d15eb94d224",
++      "checks": [
++        ["skills/dynamic-workflow/scripts/validate_dynamic_workflow.py"],
++        [
++          "-m",
++          "unittest",
++          "discover",
++          "-p",
++          "test_*.py",
++          "-v",
++          "-s",
++          "skills/dynamic-workflow/tests"
++        ]
++      ]
++    }
++  ]
++}
+diff --git a/scripts/admission_stamp.py b/scripts/admission_stamp.py
+index 09a9150..13d79d0 100644
+--- a/scripts/admission_stamp.py
++++ b/scripts/admission_stamp.py
+@@ -31,6 +31,11 @@ the suite and the stamper cannot diverge. The table lives in the runner rather
+ than here: `check_skill_bundles` proves a declared executable route is reached by
+ reading the runner's bytes, and in CI that checker runs from the default branch
+ against this tree as data.
++
++`SKILL_CHECKS` is imported from *this* file's tree and never from the graded
++one, which is why a candidate cannot vouch for itself -- and why a first-ever
++admission was structurally impossible until `BOOTSTRAP` below
++(ed3c/skill-concerns#72).
+ """
+ 
+ from __future__ import annotations
+@@ -38,10 +43,13 @@ from __future__ import annotations
+ import json
+ import os
+ from pathlib import Path
++import re
+ import subprocess
+ import sys
+ 
+ from common import (
++    HEX40,
++    HEX64,
+     REPO_ROOT,
+     digest_entries,
+     load_json,
+@@ -54,6 +62,37 @@ from run_all import SKILL_CHECKS
+ 
+ REFUSAL = "ADMISSION_STAMP_REFUSED"
+ 
++# The trusted-side first-admission allowlist (ed3c/skill-concerns#72).
++#
++# The invariant above is load-bearing and stays: the checks that grade a
++# candidate are declared on the trusted side, so a candidate cannot supply
++# them. Its unavoidable cost is that a *first-ever* admission cannot happen at
++# all -- the commit that adds the skill is the same commit that adds its
++# `SKILL_CHECKS` row, and the gate reads that row from a branch the commit is
++# not on yet. PR 68 (dynamic-workflow) died there on
++# `ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS`.
++#
++# This is the one narrow way in, trusted on exactly the same terms and no
++# looser: the constant is `REPO_ROOT`-relative, never `root`-relative, so in CI
++# it resolves inside `.trusted/` while the tree being graded is `.candidate/`.
++# One entry authorizes ONE skill's first admission and pins two things a
++# candidate cannot move -- the argv to execute, and the sha256 of the exact
++# skill tree those argv may be run against. Bytes that differ from the reviewed
++# ones by one character are refused rather than run, so an entry is an
++# authorization for a specific reviewed tree, not a standing key for a name.
++#
++# Nothing here is a default in either direction. No entry falls through to the
++# same `NO_DECLARED_CHECKS` refusal a skill with no row has always had, and a
++# skill that already owns a `SKILL_CHECKS` row is never routed here at all --
++# re-admission still fails when the trusted row disagrees.
++#
++# The entry is spent by the landing it authorizes: `check_admissions` reds with
++# `BOOTSTRAP_ENTRY_STALE` on any entry whose skill directory exists in the same
++# tree, so the commit that lands the skill must also delete its entry and no
++# authorization can outlive the admission it was written for.
++BOOTSTRAP = REPO_ROOT / "policy" / "bootstrap-admissions.json"
++REFS = re.compile(r"^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+#[0-9]+$")
++
+ # Mandatory control id -> the unittest id whose execution measures it, in the
+ # order `check_admissions` expects the rows.
+ #
+@@ -116,6 +155,86 @@ class StampRefused(RuntimeError):
+     """Raised instead of writing a receipt the tree does not support."""
+ 
+ 
++def bootstrap_entries(path: Path) -> tuple[dict[str, dict], list[str]]:
++    """`skill -> entry` for the allowlist at `path`, plus every shape error.
++
++    An absent file is legal and empty: a repository with no first admission
++    pending has nothing to authorize. Every other malformity is an error rather
++    than a skipped row -- a half-read allowlist must not read as "no entry for
++    this skill", which is the shape both readers treat as unauthorized.
++    """
++    if not path.is_file():
++        return {}, []
++    try:
++        document = load_json(path)
++    except ValueError as exc:
++        return {}, [f"BOOTSTRAP_FILE_INVALID:{exc}"]
++    if not isinstance(document, dict) or document.get("schema_version") != 1:
++        return {}, [f"BOOTSTRAP_FILE_SCHEMA_VERSION:{path.name}"]
++    rows = document.get("entries")
++    if not isinstance(rows, list):
++        return {}, ["BOOTSTRAP_ENTRIES_NOT_LIST"]
++
++    entries: dict[str, dict] = {}
++    errors: list[str] = []
++    for position, row in enumerate(rows):
++        if not isinstance(row, dict):
++            errors.append(f"BOOTSTRAP_ENTRY_NOT_OBJECT:{position}")
++            continue
++        skill = row.get("skill")
++        if not isinstance(skill, str) or not skill:
++            errors.append(f"BOOTSTRAP_ENTRY_SKILL_INVALID:{position}")
++            continue
++        if skill in entries:
++            errors.append(f"BOOTSTRAP_ENTRY_DUPLICATE:{skill}")
++            continue
++        entries[skill] = row
++        if not HEX64.fullmatch(str(row.get("skill_tree_sha256"))):
++            errors.append(f"BOOTSTRAP_ENTRY_DIGEST_INVALID:{skill}")
++        if not HEX40.fullmatch(str(row.get("authorized_head"))):
++            errors.append(f"BOOTSTRAP_ENTRY_HEAD_INVALID:{skill}")
++        if not REFS.fullmatch(str(row.get("refs"))):
++            errors.append(f"BOOTSTRAP_ENTRY_REFS_INVALID:{skill}")
++        checks = row.get("checks")
++        if not isinstance(checks, list) or not checks:
++            errors.append(f"BOOTSTRAP_ENTRY_CHECKS_EMPTY:{skill}")
++            continue
++        for argv in checks:
++            if (
++                not isinstance(argv, list)
++                or not argv
++                or any(not isinstance(part, str) or not part for part in argv)
++            ):
++                errors.append(f"BOOTSTRAP_ENTRY_ARGV_INVALID:{skill}")
++            # An entry may authorize running the incoming Skill's own checks and
++            # nothing else. Argv that never names that Skill's tree is an
++            # authorization for some other execution wearing this Skill's name.
++            elif not any(part.startswith(f"skills/{skill}/") for part in argv):
++                errors.append(f"BOOTSTRAP_ENTRY_ARGV_FOREIGN:{skill}:{argv[0]}")
++    return entries, errors
++
++
++def bootstrap_checks(skill: str, root: Path) -> tuple[tuple[str, ...], ...] | None:
++    """The trusted first-admission argv for `skill`, or None when unauthorized.
++
++    Read from `BOOTSTRAP` -- this validator's own tree -- and never from
++    `root`, which in CI is the candidate: reading the candidate's copy would
++    hand a candidate exactly the self-declaration the trust boundary exists to
++    deny. `root` supplies only the bytes being weighed, and they are weighed
++    against the reviewed digest before a single one of them executes.
++    """
++    entries, errors = bootstrap_entries(BOOTSTRAP)
++    if errors:
++        raise StampRefused(f"{REFUSAL}:{skill}:BOOTSTRAP_FILE_REJECTED:{errors[0]}")
++    entry = entries.get(skill)
++    if entry is None:
++        return None
++    actual = tree_digest(digest_entries(root, regular_files(root / "skills" / skill)))
++    if actual != entry["skill_tree_sha256"]:
++        raise StampRefused(f"{REFUSAL}:{skill}:BOOTSTRAP_DIGEST_MISMATCH:{actual}")
++    return tuple(tuple(argv) for argv in entry["checks"])
++
++
+ def unittest_path(root: Path) -> str:
+     """The sys.path a bare `test_<module>` id needs, matching `discover -s`.
+ 
+@@ -194,8 +313,12 @@ def run_checks(skill: str, root: Path) -> dict[str, str]:
+ 
+     Raises `StampRefused` on the first red; returns the control -> producer map
+     the receipt's rows are built from.
++
++    A Skill that owns a `SKILL_CHECKS` row is graded by it and never reaches
++    the bootstrap: a row and an entry are not alternatives a candidate can pick
++    between, and re-admission stays refused when the trusted row disagrees.
+     """
+-    checks = SKILL_CHECKS.get(skill)
++    checks = SKILL_CHECKS.get(skill) or bootstrap_checks(skill, root)
+     if not checks:
+         raise StampRefused(f"{REFUSAL}:{skill}:NO_DECLARED_CHECKS")
+     for argv in checks:

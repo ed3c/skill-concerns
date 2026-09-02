@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "producer": "python3 skills/shadow-architect/scripts/gen_shadow_receipts.py",
+  "note": "Derived from domain/precedents.json. Hand edits are refused: validate_shadow_architect.py re-derives these bytes and compares.",
+  "evidence": {
+    "P1": {
+      "refs": [
+        "ed3c/skill-concerns#72"
+      ],
+      "claim": "Wave-17 monitor review of b72-bootstrap raised three defects in the entry shape. authorized_head and refs were validated with their own diagnostics and never read by anything: a grep of the branch finds each field only inside its own validation. A documented pin no process resolves is the exact failure this repository admits skills to detect, so both are deleted rather than demoted to comments.",
+      "wave": "wave-17",
+      "monitor_record": "commit:f0cf0803d5981111f60e439afaa6c04bdb3a2492",
+      "subject_commit": "03f47646e28c3f29b963256664a3e289cb4a7355"
+    },
+    "P2": {
+      "refs": [
+        "ed3c/skill-concerns#72"
+      ],
+      "claim": "Wave-17 monitor review of b72-bootstrap: skills/<skill>/../../scripts/anything.py satisfied the prefix test that was supposed to bind an entry to its own Skill's tree. A prefix is only a binding when a path cannot lie about where it points, so no argv part may be absolute or carry a spelling normpath would change.",
+      "wave": "wave-17",
+      "monitor_record": "commit:f0cf0803d5981111f60e439afaa6c04bdb3a2492",
+      "subject_commit": "03f47646e28c3f29b963256664a3e289cb4a7355"
+    },
+    "P3": {
+      "refs": [
+        "ed3c/skill-concerns#40",
+        "ed3c/skill-concerns#74",
+        "ed3c/skill-concerns#82"
+      ],
+      "claim": "check_skill_bundles.py declared a private HEX64 regex identical to the one scripts/common.py landed with issue #72 (ed3c/skill-concerns#82): import the shared one instead of a second literal of the same identity shape.",
+      "wave": null,
+      "monitor_record": "commit:b7827d58fb85e5dc2cccaa9f09114e42992e9dcc",
+      "subject_commit": "a5c8d33038833f1841738c02bc62da0aedd63d5b"
+    },
+    "P4": {
+      "refs": [
+        "ed3c/skill-concerns#73",
+        "ed3c/skill-concerns#74"
+      ],
+      "claim": "Three row notes in domain/capability-topology.json landed still reasoning in the numbering the same atom had just retired. Every arrival value moved mechanically with the rename; the free text did not, because nothing read it. That is clause A4's own shape - a documented claim whose subject no longer carries it - inside the ledger that names A4, so the cure is a reader rather than a careful pass.",
+      "wave": null,
+      "monitor_record": "commit:2e59255a580b291b54a294bfce722564416d16bc",
+      "subject_commit": "eab118d4c0f29a9fd4986f406c72f1d863d9d206"
+    },
+    "P5": {
+      "refs": [
+        "ed3c/skill-concerns#44",
+        "ed3c/skill-concerns#78"
+      ],
+      "claim": "Changing the check's expected authoring_command and the receipts' actual value in the same PR is checked by the old, not-yet-merged validator, which still expects the old string -- CI caught this immediately (AUTHORING_COMMAND_INVALID on all five Skills). Filed ed3c/skill-concerns#44 with the two-PR sequence this actually needs.",
+      "wave": null,
+      "monitor_record": "commit:65e1b41c4e03e0551682b305ba6566b74f7719e8",
+      "subject_commit": "36074870085de88f70a136fccc4ae2c8d1557148"
+    },
+    "P6": {
+      "refs": [
+        "ed3c/skill-concerns#59",
+        "ed3c/skill-concerns#62"
+      ],
+      "claim": "wave-14 monitor findings on ed3c/skill-concerns#62: The module docstring restated AGENTS.md's three sc#59 adjudications in full prose with no mechanical reader of its own - exactly the 'restated copy is the drift the split exists to prevent' anti-pattern AGENTS.md itself names. Replaced with a pointer; AGENTS.md stays the source.",
+      "wave": "wave-14",
+      "monitor_record": "commit:aaf05089cd7b6e738068561d25e586f938b9b47f",
+      "subject_commit": "fd5247c10008e17782b27995411036331169ab79"
+    },
+    "P7": {
+      "refs": [
+        "ed3c/skill-concerns#49",
+        "ed3c/skill-concerns#75",
+        "ed3c/skill-concerns#76"
+      ],
+      "claim": "harness layer: the actors were driven by `claude -p` on the operator's own machine, so the arm-without floor depends on that host's settings. --setting-sources \"\" was readback-probed once and reported no user-level memory loaded; that probe is a one-time observation with no standing reader, and a campaign re-run on a differently configured host would move the control arm without anything going red",
+      "wave": "2026-09-01-ab-control-arm",
+      "monitor_record": "ledger:2026-09-01-ab-control-arm",
+      "subject_commit": "402c02b4b61b673317a7b0a109b43ed03339def9"
+    }
+  }
+}

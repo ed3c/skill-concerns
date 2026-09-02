@@ -1,0 +1,383 @@
+commit bea95ae6def4877d6a9d11062138bea8e51c85da
+Author: ed3c <ed3c@users.noreply.github.com>
+Date:   Tue Sep 1 20:23:37 2026 +0800
+
+    chore(admissions): stamp arrival-engineering, retire the entry it spends
+    
+    The receipt was written by `skills/arrival-engineering/scripts/gen_admission.py`
+    through the shared refusing surface, never by hand: `run_checks` executes this
+    bundle's declared argv and then every control's own producer, and returns before
+    `build_receipt` is reached on any red. 27 control rows, 50 subject files,
+    `skill_tree_sha256 0e57fe03...`, which is the same number `policy/bootstrap-
+    admissions.json` authorized in #88 -- the entry pinned bytes and the stamper
+    derived the same bytes independently.
+    
+    The entry is deleted in this commit because it is spent. That is mechanical,
+    not polite: with it still present this tree reds
+    
+        admissions: FAIL
+        BOOTSTRAP_ENTRY_STALE:arrival-engineering
+    
+    and deleting it is the only thing that restores green. The permanent
+    `SKILL_CHECKS` row lands in the same range, so from here the ordinary trusted
+    row grades this bundle and the authorization has nothing left to open honestly.
+    
+    The trusted-side path was exercised as CI runs it, not inferred: all four
+    validators from `origin/main@9efad84` -- which has no `SKILL_CHECKS` row for
+    this Skill -- run with `--root` against this candidate return
+    `agents-routing: PASS`, `skill-bundles: PASS`, `admissions: PASS`,
+    `receipt-provenance: PASS`. `check_receipt_provenance` re-ran the argv it read
+    from the bootstrap entry and rebuilt the receipt byte-for-byte, which is the
+    whole claim #72 opened and this is its second consumer.
+    
+    Refs ed3c/skill-concerns#73
+
+diff --git a/admissions/arrival-engineering.json b/admissions/arrival-engineering.json
+new file mode 100644
+index 0000000..472637b
+--- /dev/null
++++ b/admissions/arrival-engineering.json
+@@ -0,0 +1,343 @@
++{
++  "schema_version": 1,
++  "skill": "arrival-engineering",
++  "status": "ADMITTED",
++  "source_lock": {
++    "path": "intake/arrival-engineering/source-lock.json",
++    "sha256": "b3f7c3066762b63190e01117e431312470ca15eea48a9f11f559e2792e821d63"
++  },
++  "subject_files": [
++    {
++      "path": "skills/arrival-engineering/AGENTS.md",
++      "sha256": "8dfe384476f7bef4919169144b81df20516f51f9f7a363ad2256a141914a2c03"
++    },
++    {
++      "path": "skills/arrival-engineering/README.md",
++      "sha256": "3c95c43218e3a9538280d43bd54c7058bb2f5699f75a5738659b94c0d2875edd"
++    },
++    {
++      "path": "skills/arrival-engineering/SKILL.md",
++      "sha256": "3f50c6d65cc7a90d5b97ba6a8b2c260df23d9b4d7679e467ca077a99cdda7916"
++    },
++    {
++      "path": "skills/arrival-engineering/domain/capability-topology.json",
++      "sha256": "bd6b1493c4a50032d8f6c918b7b8f4c8ed62fc0ae877fe90acc54930f1f9d1ff"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
++      "sha256": "a08da518518d9cc939045926d5ba36b9e90b19f51db12b2d5800e357d0abfbbe"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/actor-final-message.txt",
++      "sha256": "07f248b5712d7a8ec661a8721e8911ed20e260b191aa09f9b84cb3ee018e6062"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/calls.log",
++      "sha256": "07679aeafae48e9bc87c0050dabc3d8ca13db5815326184cc1c1b8aa894d0ae2"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/chore.txt",
++      "sha256": "d99cf836bcaf0e112e969e38a8d055dde0feecda7f40caf91675634d5cfc1bd1"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/terminal-state.txt",
++      "sha256": "8cd83454e4efd5a67f3c23f41b91e18c90b025ff8f6fd83d7d979d72f9bde465"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/workspace/RUN-RECEIPT.txt",
++      "sha256": "25d0d5a0d9d1f07d8585bde7aed6675640d46fbb1b5b054497ac8d62ece0e19f"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/workspace/ops/checkout.sh",
++      "sha256": "b4684bf75cc8960ca77a70789241b6632b5b512d189bd6c931f6bd18e517dd3e"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-a1/workspace/src/index.py",
++      "sha256": "eff7d87d54333678362e1cb928248a33e96a57201894ef2ab9759ad16cc3a804"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/actor-final-message.txt",
++      "sha256": "5fff0fabfb32722920d0e879dbd60ebe15f8052895782b0ff174ad60161c13fa"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/calls.log",
++      "sha256": "6f628019986b479c624c9a5f72bf3104ffd64529247dc3829f70545d8fbbc927"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/chore.txt",
++      "sha256": "957b83491513fa450599ac144a5d6283d04baba2f12a82ac5678bb15238ea76a"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/terminal-state.txt",
++      "sha256": "c2a50c0bf9462b3edfff1cfbf51b1b788001e46778ac741fc3773c907768897a"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/workspace/release.lock",
++      "sha256": "c272044b518fe6fed2a9e47563dc3b0be629bd5535e93389d310064808543d07"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-b2/workspace/src/wrapper.py",
++      "sha256": "32d7abbf5fffab47018a34d36e355023defe22f04eb780f1c9da83041cf451f1"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/actor-final-message.txt",
++      "sha256": "1c0048953225043655d02064c686ab8d4f6a4777f93f1e3e8ae0ccd0ad537605"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/calls.log",
++      "sha256": "d3bb2c2eba98dfe5bd44547e95d452ef90081d3e30aac3a9faeb13c5ae3c2ed9"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/chore.txt",
++      "sha256": "d99cf836bcaf0e112e969e38a8d055dde0feecda7f40caf91675634d5cfc1bd1"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/terminal-state.txt",
++      "sha256": "bd37879bea6f22581a3e18d03bf3fcb5930cfeafafc56cc87feecc9617c7fc0a"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/workspace/docs/USAGE.md",
++      "sha256": "ca54fe4ef34df0bb14132ae9de208c9e520e7f31afd0edb666db92275c66f754"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/workspace/ops/checkout.sh",
++      "sha256": "b9ed8b8dcee69d50c14ddf7246c390019a5b634f8d8bd81d73aea2e93c2494d5"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/judge-inputs/r-c3/workspace/src/index.py",
++      "sha256": "eff7d87d54333678362e1cb928248a33e96a57201894ef2ab9759ad16cc3a804"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/behavioral-campaigns/spec.json",
++      "sha256": "28decdf26e1c24ceaed4efc735908e0677bebcf6a017f17fc8e879712b8ab293"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/cases.json",
++      "sha256": "80e2a7744598259f479d09a10b7030a604c3538da7d49463f7c8791a1dd0c7f6"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/capabilities.json",
++      "sha256": "2c8254300f19f7c436652dabfacb32ba52d846d17cb9e83ccd70c79f8490a960"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/ops/checkout.sh",
++      "sha256": "542628fbb86f1706a4901aa4479a3001fe0907eef5277838c118fbae32937cd8"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/pins.json",
++      "sha256": "187464f1c46d4e512196a2c79385f2bc73716f5ff933cd30ef23a235b81724f5"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/src/indexer.py",
++      "sha256": "191f962d17ad73b532c9751b4f22f86f837c21d1a9fc99c3cf232e1f2d9a6087"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/src/pinned_tool.py",
++      "sha256": "a617e2fdb401535cbe5d860befd3b66d6b3aad160a6cf5e3d9b147c9b02aaeef"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/clean/tests/test_indexer.py",
++      "sha256": "55456b39fb3bc1535160a2b024a1bf4a004e3d02964ffdfadc2d388a4fc75a67"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/README.md",
++      "sha256": "7f436f1a7ce743d401d0b9b78f7ca3b1ec5fc05ecf2c457e3cae0fb21c292050"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/capabilities.json",
++      "sha256": "74295406b02138bdf3741993655b390dc02c24af973d51dcd89b85cbb7e0e37d"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/ops/checkout.sh",
++      "sha256": "02e5f421484538facd689b2ca1143e5e04e09a8aeb5e43324648b60e5771fa7d"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/pins.json",
++      "sha256": "0b21fb5734473df5a4723a56ef625f43f0c27d9fd239c8f6cbd307ff22deb358"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/src/lonely_core.py",
++      "sha256": "418f08fa448cbd82040d7582864db08603cdcae6edbd57d10e1705538f35974c"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/src/orphan_probe.py",
++      "sha256": "de9950dbc51a2bc62f43bc865cb24810c65f156605eb5e2c4c53d83bab153f72"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/src/pinned_tool.py",
++      "sha256": "4e0de7bdb5641f28709200e89ed93e296b3ca9b43abd2c45e915f974c59b43e1"
++    },
++    {
++      "path": "skills/arrival-engineering/evals/fixtures/planted/src/runtime_verb.py",
++      "sha256": "b7e4c37c94b08853b3d0bcc424c81ec11f82a786e8e228b4ac271692fc1e16cc"
++    },
++    {
++      "path": "skills/arrival-engineering/receipts.json",
++      "sha256": "2c52e081ce0e601c5d068b3065ba4d3c111f11952abe46c8405a897d0d8beede"
++    },
++    {
++      "path": "skills/arrival-engineering/references/portable-arrival-kernel.md",
++      "sha256": "c3a7fd3dcc740c6d04625fc27eecbb0d7458f85964717e42eaf02e9f9c3493f1"
++    },
++    {
++      "path": "skills/arrival-engineering/scripts/audit_islands.py",
++      "sha256": "eefef573e0eb9fc72fe8a30348278b742b5c33096645ff5c0c9964d37d260b53"
++    },
++    {
++      "path": "skills/arrival-engineering/scripts/gen_admission.py",
++      "sha256": "098d6f0c77173851155870e16dec52534f9b79125827e5c29c99091068b1d315"
++    },
++    {
++      "path": "skills/arrival-engineering/scripts/gen_receipts.py",
++      "sha256": "b63ad55dd4cbd7b18dc3016e7237220c1e3e55a7df399db1ea2c303e496c4bdd"
++    },
++    {
++      "path": "skills/arrival-engineering/scripts/gen_source_lock.py",
++      "sha256": "2fa90779c75904cae02677375199861bc00fa8aba3a2a2f0deef87f1055f3df5"
++    },
++    {
++      "path": "skills/arrival-engineering/scripts/validate_arrival_engineering.py",
++      "sha256": "4470e4bde353a648de33adde583bec9617c1faf5b8198bc80a04bc8bc368c688"
++    },
++    {
++      "path": "skills/arrival-engineering/skill.json",
++      "sha256": "b55b222a9f6c61addfd166b36ec35a9dbaf6ff0968147fa8e657db88ae914016"
++    },
++    {
++      "path": "skills/arrival-engineering/tests/test_arrival_engineering.py",
++      "sha256": "86b4d64dde3f745b76839aa43429387a83c10ab4c2446faf160632c5cf3d2de3"
++    }
++  ],
++  "skill_tree_sha256": "0e57fe030f066fad2f8d35e6de543b49cf14d6cc9359979332e3d16e24b07c2c",
++  "contract_files": [
++    {
++      "path": "contracts/skill-manifest.schema.json",
++      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
++    },
++    {
++      "path": "contracts/source-lock.schema.json",
++      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
++    },
++    {
++      "path": "contracts/admission.schema.json",
++      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
++    }
++  ],
++  "controls": [
++    {
++      "id": "agents-three-document-route",
++      "state": "PASS"
++    },
++    {
++      "id": "bundle-anatomy",
++      "state": "PASS"
++    },
++    {
++      "id": "source-lock",
++      "state": "PASS"
++    },
++    {
++      "id": "executable-route",
++      "state": "PASS"
++    },
++    {
++      "id": "feature-map-positive",
++      "state": "PASS"
++    },
++    {
++      "id": "missing-terminal-oracle",
++      "state": "PASS"
++    },
++    {
++      "id": "static-only-false-proof",
++      "state": "PASS"
++    },
++    {
++      "id": "skip-without-blocker",
++      "state": "PASS"
++    },
++    {
++      "id": "changed-feature-hollow-route",
++      "state": "PASS"
++    },
++    {
++      "id": "transition-chain-mutation",
++      "state": "PASS"
++    },
++    {
++      "id": "persistence-mutation",
++      "state": "PASS"
++    },
++    {
++      "id": "admission-tree-digest",
++      "state": "PASS"
++    },
++    {
++      "id": "arrival-ties-positive",
++      "state": "PASS"
++    },
++    {
++      "id": "island-audit-selftest",
++      "state": "PASS"
++    },
++    {
++      "id": "validator-selftest",
++      "state": "PASS"
++    },
++    {
++      "id": "every-planted-island-class",
++      "state": "PASS"
++    },
++    {
++      "id": "negative-controls-unflagged",
++      "state": "PASS"
++    },
++    {
++      "id": "receipts-are-produced-not-written",
++      "state": "PASS"
++    },
++    {
++      "id": "aspirational-row-refused",
++      "state": "PASS"
++    },
++    {
++      "id": "kernel-clause-count-untied",
++      "state": "PASS"
++    },
++    {
++      "id": "receipt-hand-edited",
++      "state": "PASS"
++    },
++    {
++      "id": "claim-above-arrival",
++      "state": "PASS"
++    },
++    {
++      "id": "claim-below-arrival",
++      "state": "PASS"
++    },
++    {
++      "id": "a6-loses-its-owner-pointer",
++      "state": "PASS"
++    },
++    {
++      "id": "diagnostic-dropped-from-doc",
++      "state": "PASS"
++    },
++    {
++      "id": "negative-arm-announces-itself",
++      "state": "PASS"
++    },
++    {
++      "id": "arrival-level-undefined",
++      "state": "PASS"
++    }
++  ],
++  "evidence_ceiling": "L3_HERMETIC",
++  "not_claimed": [
++    "L4_MATCHED_LIVE_RUNTIME",
++    "L5_DELIVERY_AND_PRODUCTION"
++  ],
++  "authoring_command": "python3 scripts/run_all.py",
++  "hosted_evidence": "READ_FROM_GITHUB"
++}

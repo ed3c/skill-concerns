@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/arrival-engineering/domain/capability-topology.json",
-      "sha256": "7446864192c14df6b059165c6e20270b9e6477832c59fbaece497265d0516a36"
+      "sha256": "f196af25eefb422ad0b4b1a78b7351313c405300f48094e53bd4136e5e800e24"
     },
     {
       "path": "skills/arrival-engineering/evals/behavioral-campaigns/fixtures/negative-control/ANSWER-KEY.md",
@@ -173,7 +173,7 @@
     },
     {
       "path": "skills/arrival-engineering/receipts.json",
-      "sha256": "cc320759a8f7e45ba1f39a7d400c58d7db7bc57e67a8260f1317cc1100cb03e9"
+      "sha256": "826dca73103a840f23bbf5f07829cbedb00f7ac136a8bc97e230aee66a98c6c1"
     },
     {
       "path": "skills/arrival-engineering/references/portable-arrival-kernel.md",
@@ -208,7 +208,7 @@
       "sha256": "113747186231cddc8738beb03b809b7bff005608e3e65003e6ba9b9f15818272"
     }
   ],
-  "skill_tree_sha256": "cbf5c0e322164f6fe113f9ad6d04aa0916e3a855cc974ad4793178be44b4966b",
+  "skill_tree_sha256": "273fb890a79f2a6a03c22853d593df8897d659473df27bb1ec7298e5acad2601",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

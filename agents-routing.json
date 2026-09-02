@@ -15,7 +15,8 @@
    "skills/context-closure-engineering/AGENTS.md",
    "skills/dynamic-workflow/AGENTS.md",
    "skills/arrival-engineering/AGENTS.md",
-   "skills/red-team/AGENTS.md"
+   "skills/red-team/AGENTS.md",
+   "skills/shadow-architect/AGENTS.md"
   ],
   "skills/feature-map-engineering/AGENTS.md": [],
   "skills/control-noodle/AGENTS.md": [],
@@ -25,6 +26,7 @@
   "skills/context-closure-engineering/AGENTS.md": [],
   "skills/dynamic-workflow/AGENTS.md": [],
   "skills/arrival-engineering/AGENTS.md": [],
-  "skills/red-team/AGENTS.md": []
+  "skills/red-team/AGENTS.md": [],
+  "skills/shadow-architect/AGENTS.md": []
  }
 }

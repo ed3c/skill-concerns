@@ -153,10 +153,10 @@
       "test": "test_red_team.RedTeamEvals.test_a_bundle_script_that_could_spawn_a_process_reds"
     },
     {
-      "id": "absent-neighbour-exit-re-resolves",
+      "id": "named-neighbour-absent-from-the-tree-refused",
       "expected": "FAIL",
-      "note": "When skills/shadow-architect exists in the tree, the named-but-unavailable exit reds and demands promotion. An exit with no expiry is the free-exit class this bundle catalogues, aimed at itself.",
-      "test": "test_red_team.RedTeamEvals.test_the_absent_neighbour_exit_re_resolves_when_the_absence_ends"
+      "note": "A named boundary term that resolves to no bytes in the tree reds. Successor to the absent-neighbour exit, which expired when shadow-architect landed (ed3c/skill-concerns#75) and was removed rather than left standing - an exit with no expiry is the free-exit class this bundle catalogues, aimed at itself.",
+      "test": "test_red_team.RedTeamEvals.test_a_named_neighbour_absent_from_the_tree_fails"
     },
     {
       "id": "duplicate-finding-digest-binds-its-file",

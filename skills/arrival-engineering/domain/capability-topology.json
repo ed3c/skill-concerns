@@ -390,6 +390,26 @@
         }
       ],
       "note": "the fixture generation-close bundle produced this station's first run record, which is a sandbox arrival and nothing more. PRODUCTION needs a run-kind receipt naming a real generation's record in skills/red-team/domain/run-ledger.json; until then this row stays where its receipts put it. The reverse direction is tied too: red-team's own validator reds with STATION_ARRIVAL_UNTIED once a non-fixture record for this station lands in that ledger while this row still carries no run receipt, so the station cannot outgrow the row silently."
+    },
+    {
+      "id": "sc-shadow-architect-monitor-source",
+      "capability": "the wave monitor's architecture principles as admitted, digest-pinned bytes",
+      "carrier": "skills/shadow-architect/SKILL.md",
+      "exit": "skills/shadow-architect/scripts/shadow_driver.py",
+      "bound_exit": null,
+      "arrival": "EXERCISED",
+      "evidence": "planned-island",
+      "receipts": [
+        {
+          "kind": "exercise",
+          "ref": "skills/shadow-architect/evals/cases.json"
+        },
+        {
+          "kind": "bytes",
+          "ref": "ed3c/skill-concerns#75"
+        }
+      ],
+      "note": "the bundle's own campaign runs the pass over real judged diffs, so a sandbox arrival is measured. The dispatch prompt that will consume it still names a host directory, so the consumer side is planned rather than bound; the row rises to production arrival when a wave monitor's own findings cite these clauses by digest-pinned path."
     }
   ]
 }

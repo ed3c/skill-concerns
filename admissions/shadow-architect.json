@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "skill": "shadow-architect",
+  "status": "ADMITTED",
+  "source_lock": {
+    "path": "intake/shadow-architect/source-lock.json",
+    "sha256": "2e6a2de874b53ee49c70a749bd244614c9e90faa67f017758808dd017590eded"
+  },
+  "subject_files": [
+    {
+      "path": "skills/shadow-architect/AGENTS.md",
+      "sha256": "4394f21e4287fb98ca7b19851ef40e9ee4e27151a2dd0c35189a634267402d95"
+    },
+    {
+      "path": "skills/shadow-architect/README.md",
+      "sha256": "079ea493441ae949cbeccefc462c0e052b798fa3cf94a7944e531c2cecaf86d5"
+    },
+    {
+      "path": "skills/shadow-architect/SKILL.md",
+      "sha256": "93d8ae75e0dacd3515e2856e01fe7ec1c8bc43e585cb4a54d488550a9b4a0f9e"
+    },
+    {
+      "path": "skills/shadow-architect/domain/precedents.json",
+      "sha256": "55da69b9350e3727eca6ed455664bd5565445633610fcf07bc9ecbcd6d6d0f59"
+    },
+    {
+      "path": "skills/shadow-architect/evals/cases.json",
+      "sha256": "5d39ffce23b8516d44df2d82dd42fecb83e8882d15e8a454ac3334a9e229de65"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/planted/ANSWER-KEY.md",
+      "sha256": "2b3938d9c156b85a78c218de1858bd39deedc06f4a78c0285511e172308de918"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/planted/clean.diff",
+      "sha256": "ae50c33f9692c6f06747c4032bbe8b030620fb12b144ea6ecfa47f5cecae2a97"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/planted/over-designed.diff",
+      "sha256": "4be399c16c588b8797a161b9dc9a525d5537e8cdcd8a5c89ec2faea12723f001"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/ab-control-arm-host-command.diff",
+      "sha256": "ed92cb6994e45cd2cf976fcbe40cbc295c6f169b15886188417ba5c9e4545cd2"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/admission-data-atom.diff",
+      "sha256": "b07952ed58a7ada20e223913a373dca3cae3204dda92cc252c3930fb823af0ea"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/arrival-ledger-note-reader.diff",
+      "sha256": "34951c7a9ba02d6eae2494a68e428f0fc3185d67eb26c4b3b1b46a45339145ac"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/arrival-ledger-notes.diff",
+      "sha256": "1d6b68f06a89537bda85f4bb95eb954950b1d64cdcaaafba2b2e40d9e29be86e"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/authoring-command-tightening.diff",
+      "sha256": "e272243ee429f534bdf8a1b3c49a5d2ba60b91ceca1f111ca6f164e0c17ae5a7"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/dual-standard-private-mirror.diff",
+      "sha256": "4ff25f6329b55b96e8a0a6efd4262200a5c8556326283fe712bcaf3e53a5196e"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/dual-standard-shared-identity.diff",
+      "sha256": "4044d2587a63b1f3a0d155c43144570f784ee3e8f345d45cd64c5d4396db32bb"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/intake-source-lock-pins.diff",
+      "sha256": "cd396a434c1be39df29a8f4ae5ee2f2bb5dd6b89918a32b5e64ff53c78adb4c3"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/maintain-modes-pointer.diff",
+      "sha256": "24cb3e3a68f354f1a556f34dd105ffc5dc1d731c2c66f4534c635a2b26f67a72"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/maintain-modes-restated-copy.diff",
+      "sha256": "7e7467767b8c9a334371595bda6d994cc8d44d0b986f73d095e75a803f3aaccb"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/wave-17-bootstrap-entry-cure.diff",
+      "sha256": "9cd3bba727b1800413126e0e04cc9884b75643fe6ec0a189e4eddb42dde2a20c"
+    },
+    {
+      "path": "skills/shadow-architect/evals/fixtures/waves/wave-17-bootstrap-entry-fields.diff",
+      "sha256": "df183634d9a058b72ba595997366c88b7a141c2f88e3427f3ad05173816cca5b"
+    },
+    {
+      "path": "skills/shadow-architect/receipts.json",
+      "sha256": "c8b5e27dea00ac9d09865827f35badb6556a2d2708a69589218a37a4c453b3c1"
+    },
+    {
+      "path": "skills/shadow-architect/references/portable-architecture-policy.md",
+      "sha256": "eab8b92fc2968b671f68c00ec77e843b2b2b31b4460bee72a442279e4140165e"
+    },
+    {
+      "path": "skills/shadow-architect/scripts/gen_admission.py",
+      "sha256": "2bf5c19df7b47101f1bcaab4bd641a30e5caa742e9bb52fcab7ec6615640d099"
+    },
+    {
+      "path": "skills/shadow-architect/scripts/gen_shadow_receipts.py",
+      "sha256": "59e425703a5fb99d06a39a928c2d7ccda9014dfa150564e886e7481b14440628"
+    },
+    {
+      "path": "skills/shadow-architect/scripts/gen_source_lock.py",
+      "sha256": "21d4363018ffe26dffa10d7d3e4d222e320a4b51024bdfa4ea9daf03530f7030"
+    },
+    {
+      "path": "skills/shadow-architect/scripts/shadow_driver.py",
+      "sha256": "042e1b732b2c4a59efe1d1e8e2ddc88ef1bdc443b7276e63adb943c77e520e98"
+    },
+    {
+      "path": "skills/shadow-architect/scripts/validate_shadow_architect.py",
+      "sha256": "9a98757455e4cad4968007ad4659f68b90c4ceed1a74c747dd8c4e58cfe1c604"
+    },
+    {
+      "path": "skills/shadow-architect/skill.json",
+      "sha256": "274a57fc6b675ce085e00a55bb6d57c509498d14bc71e62a960523f423e7d18b"
+    },
+    {
+      "path": "skills/shadow-architect/tests/test_shadow_architect.py",
+      "sha256": "970d851b906ff3c3f23e5fadd9a76d2dd81caa71fd74fd131ef0f5d28b39ee73"
+    }
+  ],
+  "skill_tree_sha256": "3d2b3ea8e3ffa1ed9fcbca1bea632be00ad8afa0c30680afe99dc65310f1bc3d",
+  "contract_files": [
+    {
+      "path": "contracts/skill-manifest.schema.json",
+      "sha256": "e8a926418ceadeaee03d3a80bd8ad016e387470f42e34b173d3cad89c83cc209"
+    },
+    {
+      "path": "contracts/source-lock.schema.json",
+      "sha256": "a59e1c7701ac8e56e8c6110930b27ca269864f963f3c60d427b9f343921db5be"
+    },
+    {
+      "path": "contracts/admission.schema.json",
+      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+    }
+  ],
+  "controls": [
+    {
+      "id": "agents-three-document-route",
+      "state": "PASS"
+    },
+    {
+      "id": "bundle-anatomy",
+      "state": "PASS"
+    },
+    {
+      "id": "source-lock",
+      "state": "PASS"
+    },
+    {
+      "id": "executable-route",
+      "state": "PASS"
+    },
+    {
+      "id": "feature-map-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "missing-terminal-oracle",
+      "state": "PASS"
+    },
+    {
+      "id": "static-only-false-proof",
+      "state": "PASS"
+    },
+    {
+      "id": "skip-without-blocker",
+      "state": "PASS"
+    },
+    {
+      "id": "changed-feature-hollow-route",
+      "state": "PASS"
+    },
+    {
+      "id": "transition-chain-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "persistence-mutation",
+      "state": "PASS"
+    },
+    {
+      "id": "admission-tree-digest",
+      "state": "PASS"
+    },
+    {
+      "id": "shadow-architect-ties-positive",
+      "state": "PASS"
+    },
+    {
+      "id": "validator-selftest",
+      "state": "PASS"
+    },
+    {
+      "id": "historical-wave-dry-run",
+      "state": "PASS"
+    },
+    {
+      "id": "every-clause-has-seen-itself-fire",
+      "state": "PASS"
+    },
+    {
+      "id": "provenance-binds-its-own-fixture",
+      "state": "PASS"
+    },
+    {
+      "id": "planted-over-designed-arm-flagged",
+      "state": "PASS"
+    },
+    {
+      "id": "planted-clean-arm-passed",
+      "state": "PASS"
+    },
+    {
+      "id": "campaign-blind-to-the-answer-key",
+      "state": "PASS"
+    },
+    {
+      "id": "receipts-are-produced-not-written",
+      "state": "PASS"
+    },
+    {
+      "id": "adjudicated-precedent-folds-in",
+      "state": "PASS"
+    },
+    {
+      "id": "severity-is-derived-not-set",
+      "state": "PASS"
+    },
+    {
+      "id": "adjudicated-but-ungrounded-precedent-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "subject-mutated-mid-pass",
+      "state": "PASS"
+    },
+    {
+      "id": "context-cannot-acquit-an-added-shape",
+      "state": "PASS"
+    },
+    {
+      "id": "acquittal-does-not-cross-files",
+      "state": "PASS"
+    }
+  ],
+  "evidence_ceiling": "L3_HERMETIC",
+  "not_claimed": [
+    "L4_MATCHED_LIVE_RUNTIME",
+    "L5_DELIVERY_AND_PRODUCTION"
+  ],
+  "authoring_command": "python3 scripts/run_all.py",
+  "hosted_evidence": "READ_FROM_GITHUB"
+}

@@ -99,6 +99,16 @@
       "source_lock": "intake/red-team/source-lock.json",
       "admission": "admissions/red-team.json",
       "evidence_ceiling": "L3_HERMETIC"
+    },
+    {
+      "name": "shadow-architect",
+      "path": "skills/shadow-architect",
+      "kind": "domain-rich",
+      "status": "ADMITTED",
+      "manifest": "skills/shadow-architect/skill.json",
+      "source_lock": "intake/shadow-architect/source-lock.json",
+      "admission": "admissions/shadow-architect.json",
+      "evidence_ceiling": "L3_HERMETIC"
     }
   ]
 }

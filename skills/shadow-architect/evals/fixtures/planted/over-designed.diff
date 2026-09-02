@@ -1,0 +1,53 @@
+commit 0000000000000000000000000000000000000000
+Author: planted <planted@example.invalid>
+Date:   Mon Jan 1 00:00:00 2001 +0000
+
+    planted: an over-designed atom, five shapes at once
+
+    Synthetic. Every shape here is one this bundle's precedent ledger already
+    grounds in a real judged diff; none of these bytes were ever landed.
+
+diff --git a/policy/limits.json b/policy/limits.json
+index 1111111..2222222 100644
+--- a/policy/limits.json
++++ b/policy/limits.json
+@@ -1,4 +1,6 @@
+ {
+   "schema_version": 1,
++  "reviewed_by": "the wave monitor",
++  "future_owner": "unassigned",
+   "budget": 12
+ }
+diff --git a/scripts/check_limits.py b/scripts/check_limits.py
+index 3333333..4444444 100644
+--- a/scripts/check_limits.py
++++ b/scripts/check_limits.py
+@@ -1,8 +1,20 @@
+ import re
+
++HEX40 = re.compile(r"^[0-9a-f]{40}$")
++
+
+ def check(document):
++    """Refuse a limits document.
++
++    ed3c/skill-concerns#93 says a BUILD proposal that alters an enforcement
++    shape must name its cure-authorization; the whole rule is restated below so
++    a reader of this module does not have to leave it.
++    """
+     errors = []
++    if not isinstance(document.get("reviewed_by"), str):
++        errors.append("REVIEWED_BY_INVALID")
++    if not HEX40.fullmatch(str(document.get("future_owner"))):
++        errors.append("FUTURE_OWNER_INVALID")
++    if document.get("mode") != "strict":
++        errors.append("MODE_INVALID")
+     return errors
+diff --git a/ops/refresh.sh b/ops/refresh.sh
+index 5555555..6666666 100755
+--- a/ops/refresh.sh
++++ b/ops/refresh.sh
+@@ -1,2 +1,3 @@
+ #!/bin/sh
++cp /Users/operator/cache/limits.json ./policy/limits.json
+ exit 0

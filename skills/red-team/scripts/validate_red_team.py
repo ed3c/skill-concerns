@@ -185,20 +185,24 @@ FIXTURE_BOUNDARY = "-fixture"
 # The set is this bundle's own, not a copy of the repository's skill list: a
 # name belongs here when red-team's page must state a differential against it,
 # which is a per-bundle judgement and the reason `registry.json` cannot supply
-# it. `ed3c/skill-concerns#95` fixes the membership at five skills - the three
-# judgment angles this pass is not, plus the two surfaces the station's own
-# carriers now reach into.
+# it. `ed3c/skill-concerns#95` fixed the membership at five skills - the three
+# judgment angles this pass was not, plus the two surfaces the station's own
+# carriers reach into. `ed3c/skill-concerns#75` made it six: the architecture
+# angle stopped being an unadmitted name and became bytes in this tree.
 NEIGHBOURS = {
     "spatial-loop-grounded": "issues clause verdicts over supervised conduct",
     "context-closure-engineering": "compiles and checks one bounded context projection",
     "dynamic-workflow": "classifies runtime liveness of dispatch lanes",
     "control-noodle": "decides whether an atom's boundary was conducted correctly",
     "arrival-engineering": "audits whether a declared capability is wired to anything",
+    # The architecture angle landed with ed3c/skill-concerns#75. It sat in
+    # `ABSENT_NEIGHBOUR` while its bytes were unavailable, with an arm that red
+    # the moment the absence ended -- an exit with no expiry is the free-exit
+    # class this bundle catalogues, aimed at itself. The exit has now expired
+    # and is gone rather than left standing: this boundary term is verified
+    # against bytes like the other five.
+    "shadow-architect": "judges the architecture shape of a change and asks",
 }
-# The unadmitted neighbour is not in this tree yet (ed3c/skill-concerns#75 has
-# not landed). Absence gets its own exit rather than a silent pass: the boundary
-# term must be on the page, and the check says the bytes were unavailable.
-ABSENT_NEIGHBOUR = "shadow-architect"
 
 
 def finding_errors(record: Any) -> list[str]:
@@ -1049,20 +1053,6 @@ def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
             errors.append(f"Non-claims does not name the neighbour it is not: {name}")
         elif not (repo_root / "skills" / name).is_dir():
             errors.append(f"neighbour {name} named but absent from this tree")
-    if ABSENT_NEIGHBOUR not in text:
-        errors.append(
-            f"the unadmitted neighbour {ABSENT_NEIGHBOUR} must still be named, with "
-            "its issue, rather than silently omitted"
-        )
-    elif (repo_root / "skills" / ABSENT_NEIGHBOUR).is_dir():
-        # The exit re-resolves when the absence ends. Without this arm the
-        # named-but-unverified state would outlive the reason for it, which is
-        # the free-exit class this bundle catalogues, aimed at itself.
-        errors.append(
-            f"{ABSENT_NEIGHBOUR} has landed in this tree; move it from "
-            "ABSENT_NEIGHBOUR into NEIGHBOURS so its boundary term is verified "
-            "against bytes rather than asserted as unavailable"
-        )
 
 
 def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
