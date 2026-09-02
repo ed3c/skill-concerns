@@ -676,6 +676,42 @@ class RepositoryControlTests(unittest.TestCase):
             errors,
         )
 
+    def plant_bundle_producers(
+        self, root: Path, producers: dict[str, str], imported: str | None
+    ) -> None:
+        """`bundle -> producer stem` under `root`, plus one bare import of `imported`."""
+        for bundle, stem in producers.items():
+            path = root / "skills" / bundle / "scripts" / f"{stem}.py"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("VALUE = 1\n", encoding="utf-8")
+        if imported is None:
+            return
+        consumer = root / "skills" / sorted(producers)[0] / "tests" / "test_thing.py"
+        consumer.parent.mkdir(parents=True, exist_ok=True)
+        consumer.write_text(f"import {imported}\n", encoding="utf-8")
+
+    def test_two_bundles_sharing_an_imported_producer_name_fail(self) -> None:
+        """ed3c/skill-concerns#96: the refusal names every colliding path.
+
+        The readback is the gate's own output, not a report about it: the
+        assertion is on the diagnostic string the scanner returns.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.plant_bundle_producers(
+                root,
+                {"alpha": "gen_thing", "beta": "gen_thing"},
+                imported="gen_thing",
+            )
+            errors = check_skill_bundles.scan_producer_module_collisions(root)
+        self.assertEqual(
+            [
+                "PRODUCER_MODULE_NAME_SHADOWED:gen_thing:"
+                "skills/alpha/scripts/gen_thing.py,skills/beta/scripts/gen_thing.py"
+            ],
+            errors,
+        )
+
     def test_a_composite_shape_that_merely_contains_an_identity_is_not_a_copy(
         self,
     ) -> None:
@@ -728,6 +764,38 @@ class RepositoryControlTests(unittest.TestCase):
             )
             with self.subTest(skill=skill_root.name):
                 self.assertIn(entry, manifest["shared_contracts"])
+
+    def test_a_shared_producer_name_nobody_imports_is_not_flagged(self) -> None:
+        """The `gen_admission.py` / `gen_source_lock.py` shape, derived not declared.
+
+        Ten bundles ship a byte-identical `gen_admission.py` and it is only ever
+        executed as a script. Nothing imports the name, so nothing can resolve
+        the wrong copy; an exemption LIST for those names would be a standing
+        waiver, while this exemption ends by itself the day a file imports one.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.plant_bundle_producers(
+                root, {"alpha": "gen_thing", "beta": "gen_thing"}, imported=None
+            )
+            self.assertEqual(
+                [], check_skill_bundles.scan_producer_module_collisions(root)
+            )
+
+    def test_uniquely_named_imported_producers_are_not_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.plant_bundle_producers(
+                root,
+                {"alpha": "gen_alpha_thing", "beta": "gen_beta_thing"},
+                imported="gen_alpha_thing",
+            )
+            self.assertEqual(
+                [], check_skill_bundles.scan_producer_module_collisions(root)
+            )
+
+    def test_no_admitted_bundle_shares_an_imported_producer_name(self) -> None:
+        self.assertEqual([], check_skill_bundles.scan_producer_module_collisions(ROOT))
 
     def test_current_skill_bundles_pass(self) -> None:
         self.assertEqual([], check_skill_bundles.check(ROOT))
@@ -1005,7 +1073,7 @@ class CureAuthorizationTests(unittest.TestCase):
                 "scripts/maintain_skills.py",
                 "skills/arrival-engineering/scripts/audit_islands.py",
                 "skills/red-team/scripts/shadow_driver.py",
-                "skills/shadow-architect/scripts/shadow_driver.py",
+                "skills/shadow-architect/scripts/precedent_driver.py",
             ],
             callers,
         )

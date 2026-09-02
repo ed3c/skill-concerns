@@ -769,6 +769,66 @@ def scan_second_literals(root: Path) -> list[str]:
     return errors
 
 
+def _bare_imports(path: Path) -> set[str]:
+    """Every module this file imports by BARE name, `ast`-parsed not grepped.
+
+    Bare is the whole point: a dotted or relative import names a package and
+    cannot be answered by a sibling bundle's loose module, while `import x`
+    against a `sys.path` carrying two bundles' `scripts/` resolves to whichever
+    was inserted first.
+    """
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=path.name)
+    except (OSError, SyntaxError, UnicodeDecodeError):
+        return set()
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names if "." not in alias.name)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level == 0 and node.module and "." not in node.module:
+                names.add(node.module)
+    return names
+
+
+def scan_producer_module_collisions(root: Path) -> list[str]:
+    """No two bundles may ship a bare-IMPORTABLE module with the same name.
+
+    ed3c/skill-concerns#96. Two admitted bundles shipping `scripts/gen_receipts.py`
+    put one name on one `sys.path`, and the second `import gen_receipts` in a
+    process returns the FIRST bundle's module object. Nothing was broken by it,
+    and that was the reason to refuse it rather than only repair it: the property
+    held by accident -- `run_all.py` discovers each bundle's tests in its own
+    subprocess and `admission_stamp.run_measurements` batches one skill's ids at a
+    time -- and no gate said so.
+
+    The subject is not every file under `skills/*/scripts/`. `gen_admission.py`
+    and `gen_source_lock.py` are deliberately identical across bundles and are
+    only ever executed as scripts, never imported by name. That exemption is
+    DERIVED, never declared: the scan collects the names some `.py` in this
+    repository actually imports BARE, and a name nothing imports cannot be
+    shadowed by anything. An exemption list would be the free-exit class -- a
+    standing waiver for a name -- whereas this one ends by itself the moment a
+    file imports the name, which is the moment the hazard starts existing.
+
+    `admission_stamp.unittest_path` refuses this same shape one level up, for the
+    TEST modules `MANDATORY_PRODUCERS` names. This is the producer half.
+    """
+    owners: dict[str, list[str]] = {}
+    for path in sorted((root / "skills").glob("*/scripts/*.py")):
+        owners.setdefault(path.stem, []).append(path.relative_to(root).as_posix())
+    imported: set[str] = set()
+    for path in sorted(root.rglob("*.py")):
+        if ".git" in path.parts or "__pycache__" in path.parts:
+            continue
+        imported |= _bare_imports(path)
+    return [
+        f"PRODUCER_MODULE_NAME_SHADOWED:{name}:{','.join(paths)}"
+        for name, paths in sorted(owners.items())
+        if len(paths) > 1 and name in imported
+    ]
+
+
 def _qualified_test_methods(skill_root: Path, tests: list[str]) -> set[tuple[str, str, str]]:
     """(module, class, method) for every test method declared under `tests`.
 
@@ -887,6 +947,7 @@ def check(root: Path = REPO_ROOT) -> list[str]:
 
     errors.extend(scan_birth_artifacts(root))
     errors.extend(scan_second_literals(root))
+    errors.extend(scan_producer_module_collisions(root))
 
     for row in rows:
         if not isinstance(row, dict):

@@ -51,8 +51,8 @@ red the validator. The key is read after the run, by the test that compares.
 ## Run it
 
 ```sh
-python3 skills/shadow-architect/scripts/shadow_driver.py --diff <path>           # a reader-only pass
-python3 skills/shadow-architect/scripts/shadow_driver.py --diff <path> --render  # the issue-body block
+python3 skills/shadow-architect/scripts/precedent_driver.py --diff <path>           # a reader-only pass
+python3 skills/shadow-architect/scripts/precedent_driver.py --diff <path> --render  # the issue-body block
 python3 skills/shadow-architect/scripts/validate_shadow_architect.py --selftest
 python3 -m unittest discover -s skills/shadow-architect/tests
 ```

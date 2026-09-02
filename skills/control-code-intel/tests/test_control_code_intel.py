@@ -20,7 +20,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
 import code_intel_driver  # noqa: E402
-import gen_receipts  # noqa: E402
+import gen_code_intel_receipts  # noqa: E402
 from validate_control_code_intel import validate  # noqa: E402
 
 TOPOLOGY = SKILL_ROOT / "domain" / "code-intel-topology.json"
@@ -206,24 +206,24 @@ class ControlCodeIntelEvals(unittest.TestCase):
         return json.loads((SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"))
 
     def test_the_committed_receipts_are_what_the_producer_makes(self) -> None:
-        results = gen_receipts.run_driver()
+        results = gen_code_intel_receipts.run_driver()
         self.assertEqual(
             (SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"),
-            gen_receipts.render(self.committed(), results),
+            gen_code_intel_receipts.render(self.committed(), results),
         )
 
     def test_a_receipt_naming_an_assertion_that_does_not_exist_is_refused(self) -> None:
-        results = gen_receipts.run_driver()
+        results = gen_code_intel_receipts.run_driver()
         results.pop("index_populated")
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(self.committed(), results)
+        with self.assertRaises(gen_code_intel_receipts.ReceiptRefused) as caught:
+            gen_code_intel_receipts.build(self.committed(), results)
         self.assertIn("RECEIPT_ASSERTION_ABSENT:last-index-time-gotcha", str(caught.exception))
 
     def test_a_receipt_whose_assertion_reds_is_refused(self) -> None:
-        results = gen_receipts.run_driver()
+        results = gen_code_intel_receipts.run_driver()
         results["index_populated"] = False
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(self.committed(), results)
+        with self.assertRaises(gen_code_intel_receipts.ReceiptRefused) as caught:
+            gen_code_intel_receipts.build(self.committed(), results)
         self.assertIn("RECEIPT_ASSERTION_RED:last-index-time-gotcha", str(caught.exception))
 
     def test_an_entry_claiming_the_driver_with_no_correspondence_is_refused(self) -> None:
@@ -231,9 +231,9 @@ class ControlCodeIntelEvals(unittest.TestCase):
         # nothing replays. HOST_OBSERVED is the earned default, and this is the
         # refusal that keeps it from being an escape hatch in reverse.
         document = self.committed()
-        document["evidence"]["pgvector-built-pg16"]["producer"] = gen_receipts.DRIVER
-        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
-            gen_receipts.build(document, gen_receipts.run_driver())
+        document["evidence"]["pgvector-built-pg16"]["producer"] = gen_code_intel_receipts.DRIVER
+        with self.assertRaises(gen_code_intel_receipts.ReceiptRefused) as caught:
+            gen_code_intel_receipts.build(document, gen_code_intel_receipts.run_driver())
         self.assertIn("RECEIPT_PRODUCER_UNEARNED:pgvector-built-pg16", str(caught.exception))
 
     def test_a_hand_edited_receipts_file_reds_the_validator(self) -> None:

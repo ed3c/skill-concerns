@@ -11,10 +11,10 @@ that is no longer there:
   clause provenance line <-> ledger monitor record (verbatim)
   provenance subject commit <-> the fixture's own bytes (the fixture IS that diff)
   precedent detector <-> its own fixture and control (fires there, silent here)
-  Diagnostics prose <-> shadow_driver.DIAGNOSTICS  (by name, both ways)
+  Diagnostics prose <-> precedent_driver.DIAGNOSTICS  (by name, both ways)
   receipts.json <-> gen_shadow_receipts.render(ledger)  (byte-identical; hand edits red)
 
-The finding schema is NOT re-declared here. `shadow_driver.finding_errors` is
+The finding schema is NOT re-declared here. `precedent_driver.finding_errors` is
 the one declaration, the emitter refuses its own records against it, and this
 file calls the same function -- a wrapper here would be a second literal of one
 schema, which is the shape clause P3 exists to refuse.
@@ -242,7 +242,7 @@ def check_detectors(skill_root: Path, ledger: dict, errors: list[str]) -> None:
     read out of the ledger's own fixture fields, so there is no list here to go
     stale.
     """
-    import shadow_driver  # noqa: PLC0415
+    import precedent_driver  # noqa: PLC0415
 
     for precedent in ledger.get("precedents") or []:
         clause = precedent.get("id") or "<unidentified>"
@@ -250,7 +250,7 @@ def check_detectors(skill_root: Path, ledger: dict, errors: list[str]) -> None:
         if not fixture.is_file():
             errors.append(f"PRECEDENT_FIXTURE_SILENT:{clause}: fixture absent")
             continue
-        hits = shadow_driver.match(
+        hits = precedent_driver.match(
             precedent, fixture.read_text(encoding="utf-8", errors="replace")
         )
         if not hits:
@@ -271,7 +271,7 @@ def check_detectors(skill_root: Path, ledger: dict, errors: list[str]) -> None:
         path = skill_root / str(control)
         if not path.is_file():
             errors.append(f"PRECEDENT_CONTROL_NOISY:{clause}: control absent")
-        elif shadow_driver.match(
+        elif precedent_driver.match(
             precedent, path.read_text(encoding="utf-8", errors="replace")
         ):
             errors.append(
@@ -281,7 +281,7 @@ def check_detectors(skill_root: Path, ledger: dict, errors: list[str]) -> None:
 
 
 def check_diagnostic_tie(text: str, errors: list[str]) -> None:
-    import shadow_driver  # noqa: PLC0415
+    import precedent_driver  # noqa: PLC0415
 
     body = section_text(text, "Diagnostics")
     if not body:
@@ -290,9 +290,9 @@ def check_diagnostic_tie(text: str, errors: list[str]) -> None:
     documented = {
         token for token in BACKTICKED.findall(body) if re.fullmatch(r"[A-Z][A-Z_]+", token)
     }
-    for missing in sorted(set(shadow_driver.DIAGNOSTICS) - documented):
+    for missing in sorted(set(precedent_driver.DIAGNOSTICS) - documented):
         errors.append(f"Diagnostics section omits a diagnostic the driver emits: {missing}")
-    for extra in sorted(documented - set(shadow_driver.DIAGNOSTICS)):
+    for extra in sorted(documented - set(precedent_driver.DIAGNOSTICS)):
         errors.append(f"Diagnostics section names a diagnostic the driver cannot emit: {extra}")
 
 
@@ -442,7 +442,7 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
 
 def selftest() -> int:
     import cure_authorization  # noqa: PLC0415
-    import shadow_driver  # noqa: PLC0415
+    import precedent_driver  # noqa: PLC0415
 
     real = Path(__file__).resolve().parents[1]
     repo_root = real.parents[1]
@@ -584,7 +584,7 @@ def selftest() -> int:
         )
 
         def plant_a_reach(copy: Path) -> None:
-            path = copy / "scripts" / "shadow_driver.py"
+            path = copy / "scripts" / "precedent_driver.py"
             path.write_text(
                 "import subprocess\n" + path.read_text(encoding="utf-8"), encoding="utf-8"
             )
@@ -612,12 +612,12 @@ def selftest() -> int:
 
         # Schema controls: the driver's own record, and the two shapes a signal
         # must never take -- an unquoted opinion and a verdict with no question.
-        ledger = shadow_driver.load_ledger(real)
-        report = shadow_driver.run(
+        ledger = precedent_driver.load_ledger(real)
+        report = precedent_driver.run(
             real / "evals/fixtures/waves/wave-17-bootstrap-entry-fields.diff", ledger
         )
         good = report["findings"][0]
-        schema = shadow_driver.finding_errors
+        schema = precedent_driver.finding_errors
         record("well_formed_finding_passes_the_schema", not schema(good), "")
         record(
             "finding_with_no_quoted_bytes_reds",
@@ -635,7 +635,7 @@ def selftest() -> int:
         record(
             "unadjudicated_precedent_cannot_legislate",
             _refuses(
-                shadow_driver,
+                precedent_driver,
                 ledger,
                 {"id": "planted-clause"},
                 cure_authorization.DIAGNOSTIC,
@@ -645,7 +645,7 @@ def selftest() -> int:
         record(
             "a_detection_never_legislates",
             _refuses(
-                shadow_driver,
+                precedent_driver,
                 ledger,
                 {
                     "id": "planted-detected-clause",

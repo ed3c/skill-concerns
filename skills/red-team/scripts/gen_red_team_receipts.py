@@ -19,7 +19,7 @@ from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+$")
-PRODUCER = "python3 skills/red-team/scripts/gen_receipts.py"
+PRODUCER = "python3 skills/red-team/scripts/gen_red_team_receipts.py"
 
 
 class ReceiptRefused(RuntimeError):

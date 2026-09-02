@@ -395,7 +395,7 @@
       "id": "sc-shadow-architect-monitor-source",
       "capability": "the wave monitor's architecture principles as admitted, digest-pinned bytes",
       "carrier": "skills/shadow-architect/SKILL.md",
-      "exit": "skills/shadow-architect/scripts/shadow_driver.py",
+      "exit": "skills/shadow-architect/scripts/precedent_driver.py",
       "bound_exit": null,
       "arrival": "EXERCISED",
       "evidence": "planned-island",

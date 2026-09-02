@@ -9,7 +9,7 @@ mechanism that is no longer there:
   clauses    <-> receipts evidence ids       (every clause cited, every id bound)
   catalogue  <-> shadow_driver.EXPERIMENTS   (by id, both ways)
   Diagnostics prose <-> shadow_driver.DIAGNOSTICS (by name, both ways)
-  receipts.json <-> gen_receipts.render(catalogue) (byte-identical; hand edits red)
+  receipts.json <-> gen_red_team_receipts.render(catalogue) (byte-identical; hand edits red)
   catalogue lifecycle <-> its own gate and stock-sweep references
   observation topology <-> the run ledger's subject vocabulary (one declaration)
   a station's runbook  <-> the document and the completion receipt it names
@@ -919,7 +919,7 @@ def check_method_claims(catalogue: dict, repo_root: Path, errors: list[str]) -> 
     One tie is owned here rather than there, because it is about grounding
     rather than about the authorization's shape: the adjudication issue an
     operator ref names must also be one of the claim's own `refs`. That is what
-    makes "existence-checked" true offline - `gen_receipts` projects `refs` into
+    makes "existence-checked" true offline - `gen_red_team_receipts` projects `refs` into
     `receipts.json`, and `scripts/maintain_skills.py` re-resolves every ref it
     finds there at the provider, so an adjudication issue that stopped existing
     comes back from a sweep that already runs.
@@ -1043,7 +1043,7 @@ def check_evidence(bodies: dict[str, str], receipts: dict, errors: list[str]) ->
 
 
 def check_receipts_are_produced(skill_root: Path, catalogue: dict, errors: list[str]) -> None:
-    from gen_receipts import ReceiptRefused, render  # noqa: PLC0415
+    from gen_red_team_receipts import ReceiptRefused, render  # noqa: PLC0415
 
     path = skill_root / "receipts.json"
     if not path.is_file():
@@ -1060,7 +1060,7 @@ def check_receipts_are_produced(skill_root: Path, catalogue: dict, errors: list[
         return
     if path.read_text(encoding="utf-8") != produced:
         errors.append(
-            "receipts.json is not what gen_receipts.py produces from the catalogue - "
+            "receipts.json is not what gen_red_team_receipts.py produces from the catalogue - "
             "regenerate it with its producer; a hand-edited receipt is laundering even "
             "when the edit would be factually right"
         )
@@ -1447,7 +1447,7 @@ def selftest() -> int:
             body["evidence"]["free-exit"]["claim"] = "a nicer sentence"
             path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
 
-        mutate("hand_edited_receipts_red", hand_edit_receipts, "not what gen_receipts.py produces")
+        mutate("hand_edited_receipts_red", hand_edit_receipts, "not what gen_red_team_receipts.py produces")
 
         def drop_a_diagnostic(copy: Path) -> None:
             path = copy / "SKILL.md"

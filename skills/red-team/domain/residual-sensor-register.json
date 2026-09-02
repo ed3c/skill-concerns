@@ -15,7 +15,7 @@
       "sensor": {
         "readback": "skills/red-team/receipts.json",
         "phrase": "authorization",
-        "how": "gen_receipts carries every method claim's authorization into the evidence table on purpose, so a judge sampling cited authorizations has one place to read them from and can compare each ref against what its body actually holds"
+        "how": "gen_red_team_receipts carries every method claim's authorization into the evidence table on purpose, so a judge sampling cited authorizations has one place to read them from and can compare each ref against what its body actually holds"
       },
       "escalation": {
         "trigger": "one confirmed rubber-stamp instance - an authorization whose named artifact carries no adjudication",

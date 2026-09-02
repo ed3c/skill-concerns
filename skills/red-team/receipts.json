@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "producer": "python3 skills/red-team/scripts/gen_receipts.py",
+  "producer": "python3 skills/red-team/scripts/gen_red_team_receipts.py",
   "note": "Derived from domain/catalogue.json. Hand edits are refused: validate_red_team.py re-derives these bytes and compares.",
   "evidence": {
     "blind-observer": {

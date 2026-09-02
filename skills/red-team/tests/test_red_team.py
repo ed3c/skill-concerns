@@ -22,7 +22,7 @@ sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import cure_authorization  # noqa: E402
-import gen_receipts  # noqa: E402
+import gen_red_team_receipts  # noqa: E402
 import shadow_driver as driver  # noqa: E402
 import validate_red_team as validator  # noqa: E402
 
@@ -339,12 +339,12 @@ class RedTeamEvals(unittest.TestCase):
         # instrument anyone is being told to use.
         self.assertTrue([step for step in recipe if "/events" in step])
 
-    def test_gen_receipts_is_idempotent_and_authors_the_committed_bytes(self) -> None:
-        rendered = gen_receipts.render(catalogue())
+    def test_gen_red_team_receipts_is_idempotent_and_authors_the_committed_bytes(self) -> None:
+        rendered = gen_red_team_receipts.render(catalogue())
         self.assertEqual(
             (SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"), rendered
         )
-        self.assertEqual(gen_receipts.render(catalogue()), rendered)
+        self.assertEqual(gen_red_team_receipts.render(catalogue()), rendered)
 
     def test_an_adjudicated_class_folds_in(self) -> None:
         """The planted negative control for the BUILD refusal below."""
@@ -481,7 +481,7 @@ class RedTeamEvals(unittest.TestCase):
         path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
         self.assertTrue(
             any(
-                "not what gen_receipts.py produces" in error
+                "not what gen_red_team_receipts.py produces" in error
                 for error in validator.validate(copy, REPO_ROOT)
             )
         )
@@ -629,13 +629,13 @@ class RedTeamEvals(unittest.TestCase):
         verbs; this is the property underneath it, and it covers all five.
         """
         copy = self.copy()
-        path = copy / "scripts" / "gen_receipts.py"
+        path = copy / "scripts" / "gen_red_team_receipts.py"
         path.write_text(
             "import subprocess\n" + path.read_text(encoding="utf-8"), encoding="utf-8"
         )
         self.assertTrue(
             any(
-                "DRIVER_SURFACE_FORBIDDEN:gen_receipts.py" in error
+                "DRIVER_SURFACE_FORBIDDEN:gen_red_team_receipts.py" in error
                 and "spawn a process" in error
                 for error in validator.validate(copy, REPO_ROOT)
             )
@@ -976,7 +976,7 @@ class RedTeamEvals(unittest.TestCase):
     def test_an_adjudication_issue_outside_the_claims_refs_reds(self) -> None:
         """Existence-checked means a reader re-resolves it, not that it parses.
 
-        `gen_receipts` projects a claim's refs into receipts.json and the
+        `gen_red_team_receipts` projects a claim's refs into receipts.json and the
         maintain cadence re-resolves every ref it finds there. An adjudication
         issue that is not among those refs is an artifact nothing re-reads.
         """
