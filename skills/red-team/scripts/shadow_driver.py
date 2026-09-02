@@ -107,6 +107,25 @@ HISTORICAL_FIELD = re.compile(
 LIVE_READ = re.compile(r"read_text\(|load_json\(|json\.load\(|rev-parse|\bnow\(\)")
 DIAGNOSTIC_TOKEN = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
 PATH_TOKEN = re.compile(r"\b(?:[\w.-]+/)+[\w.-]+\.\w+\b")
+
+# ed3c/skill-concerns#105. A result payload that declares the work unfinished
+# in the certificate's own text, in a slot the harness records as completed.
+# Both halves are required and the conjunction is the whole discriminator: a
+# full report that narrates a yield it recovered from is a report, and a short
+# payload that claims nothing is merely short. Only a payload that says it is
+# still alive AND fails the report contract is the class.
+YIELD_DECLARATION = re.compile(
+    r"(?i)\b(?:still in progress|still running|yielding now|"
+    r"(?:not|never) (?:yet )?(?:finished|complete|completed)|"
+    r"handing (?:back|off) mid[- ](?:run|flight|task))\b"
+)
+# The lane report contract's load-bearing blocks, named by the same filing:
+# the branch it left, the controls it ran, and the body-digest ledger.
+REPORT_CONTRACT_BLOCKS = {
+    "branch@sha": re.compile(r"(?i)branch@\S"),
+    "controls": re.compile(r"(?i)\bcontrols\b"),
+    "body-digest ledger": re.compile(r"(?i)\bdigest ledger\b"),
+}
 DECLARED_MECHANISM = ("producer", "gate", "validator", "checker")
 ADDED_LINE = re.compile(r"^\+(?!\+\+)(.*)$", re.M)
 AUTHORIZATION_NAMED = re.compile(
@@ -340,6 +359,40 @@ def experiment_shape_copying(bundle: Path) -> list[dict[str, Any]]:
     return hits
 
 
+def experiment_yielded_non_report(bundle: Path) -> list[dict[str, Any]]:
+    """A result payload that declares itself alive, in a slot recorded as done.
+
+    The byte length rides in the observed half because it is the measurement
+    that made the live case legible - a 117-byte result beside eleven full
+    reports - and because a reader who wants to re-run this needs the number
+    the recipe's first step prints.
+    """
+    hits: list[dict[str, Any]] = []
+    for path in bundle_files(bundle, "reports"):
+        text = read(path)
+        declaration = YIELD_DECLARATION.search(text)
+        if not declaration:
+            continue
+        missing = [
+            name
+            for name, pattern in REPORT_CONTRACT_BLOCKS.items()
+            if not pattern.search(text)
+        ]
+        if not missing:
+            continue
+        hits.append(
+            _hit(
+                bundle,
+                path,
+                "a payload recorded as a completed result satisfies the report contract",
+                f"the payload declares {declaration.group(0)!r} in "
+                f"{len(text.encode('utf-8'))} bytes and carries none of {missing}, "
+                "while the record counts it as one of the completed results",
+            )
+        )
+    return hits
+
+
 EXPERIMENTS: dict[str, Callable[[Path], list[dict[str, Any]]]] = {
     "blind-observer": experiment_blind_observer,
     "free-exit": experiment_free_exit,
@@ -347,6 +400,7 @@ EXPERIMENTS: dict[str, Callable[[Path], list[dict[str, Any]]]] = {
     "duplicate-discovery": experiment_duplicate_discovery,
     "spec-first-lifecycle": experiment_spec_first_lifecycle,
     "shape-copying": experiment_shape_copying,
+    "yielded-non-report": experiment_yielded_non_report,
 }
 
 

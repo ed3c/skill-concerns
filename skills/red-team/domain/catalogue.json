@@ -163,6 +163,35 @@
       "status": "gated",
       "gate_ref": "scripts/cure_authorization.py (ed3c/skill-concerns#93, tightened by ed3c/skill-concerns#103): every BUILD carrier refuses an unauthorized enforcement shape with BUILD_CURE_UNAUTHORIZED, and an operator adjudication must now RESOLVE - a pinned subject that exists in the tree and that its own ref repeats, plus either an issue whose body holds the adjudication or an inline record with an expiry or a re-resolution cadence. What is still not judged is the QUALITY of the adjudication the artifact carries: that is a structural ceiling with a sensor and a trigger rather than a sentence. CEILING:rubber-stamp-authorization",
       "stock_sweep_ref": "ed3c/skill-concerns#93 binds the rule from landing forward and explicitly claims no retroactive audit; the stock is therefore the empty set by adjudication, recorded here rather than assumed"
+    },
+    {
+      "id": "yielded-non-report",
+      "title": "a self-declared incompleteness is recorded as a completed result",
+      "signal": "a dispatch record shows N started and N completed, and at least one completion payload declares the work unfinished in its own text",
+      "provenance": {
+        "receipts": [
+          "ed3c/skill-concerns#105"
+        ],
+        "ledger": "slg cross-wave ledger, wave 2026-09-01-wave18-noodles-drain: 'C10 SPLIT - dispatcher conduct passed (no takeover of the yielded lane), but the harness recorded a completed result whose payload declared itself alive'; the same wave's ranked gaps carry it as 'a 117-byte still in progress payload counted as one of twelve results'",
+        "why": "a 117-byte payload reading 'Still in progress. Yielding now...' was recorded as one of twelve results while the eleven sibling payloads each carried branch@sha, controls and a body-digest ledger. The completion notification everything downstream is instructed to trust fired on a body that declared itself alive in the certificate's own text - fail-open in the forbidden direction, composed-false in the blind-observer shape. Measured consequence of the live case: one lane's land phase silently vanished and its first atom landed a day later by a different actor"
+      },
+      "falsification": {
+        "experiment": "yielded-non-report",
+        "recipe": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class yielded-non-report",
+          "ls -l <bundle>/reports",
+          "grep -ciE 'branch@|controls|digest ledger' <bundle>/reports/*.md"
+        ],
+        "expected": "a result payload that declares itself unfinished and carries none of the report contract's load-bearing blocks is reported, with its byte length and the blocks it is missing",
+        "both_directions": "positive: the short self-declared-alive payload is reported. negative, two arms because one is not enough here: a full report carrying branch@sha, controls and a body-digest ledger is not reported, and neither is a full report that NARRATES a yield it recovered from - the declaration alone does not make a report a non-report, and a detector that fired on it would refuse every honest account of a park-and-resume"
+      },
+      "status": "active",
+      "gate_ref": null,
+      "stock_sweep_ref": "The stock lives in the dispatcher's wave journals, which this repository does not carry and cannot sweep. ed3c/skill-concerns#105 records the instances it found and no others: one payload of twelve in the wave-18 journal, plus the secondary positive on the same journal - thirteen started lines against twelve results, one agent with neither result nor transcript. No retroactive audit of earlier journals is claimed, so the stock inside this tree is the empty set by adjudication rather than by assumption. The standing sweep is per-run: every boundary pass over a bundle that carries a reports kind samples this class, and what it finds lands in domain/run-ledger.json as that run's judge_gaps.",
+      "cure_authorization": {
+        "kind": "falsification",
+        "ref": "ed3c/skill-concerns#105"
+      }
     }
   ],
   "method_claims": {

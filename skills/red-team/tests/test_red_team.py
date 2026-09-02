@@ -30,6 +30,7 @@ FIXTURES = SKILL_ROOT / "evals" / "fixtures"
 WAVE_17 = FIXTURES / "wave-17"
 CLEAN = FIXTURES / "clean"
 GENERATION_CLOSE = FIXTURES / "generation-close"
+YIELDED = FIXTURES / "yielded-non-report"
 TEMPLATE = FIXTURES / "issue-round-trip" / "body-template.md"
 STATION = "noodles-generation-close"
 
@@ -40,6 +41,25 @@ def catalogue() -> dict:
 
 def domain(name: str) -> dict:
     return json.loads((SKILL_ROOT / "domain" / name).read_text(encoding="utf-8"))
+
+
+def catalogue_as_of(record: dict) -> dict:
+    """The catalogue restricted to the classes one committed record sampled.
+
+    A run record is a measurement taken under the classes in force at its
+    instant, and the ledger is append-only. Re-deriving it from whatever the
+    catalogue carries NOW is `trusted-current-literal` aimed at this bundle's
+    own controls: every landed class would force a rewrite of every historical
+    record, which is exactly what an append-only ledger forbids. The record's
+    own `classes_sampled` is the pin, and the caller asserts that pin is a
+    subset of the live catalogue so a record cannot name a class that never
+    existed and be re-derived against it.
+    """
+    body = catalogue()
+    body["classes"] = [
+        entry for entry in body["classes"] if entry["id"] in record["classes_sampled"]
+    ]
+    return body
 
 
 class RedTeamEvals(unittest.TestCase):
@@ -107,14 +127,91 @@ class RedTeamEvals(unittest.TestCase):
         self.assertTrue(driver.EXPERIMENTS["shape-copying"](WAVE_17))
         self.assertEqual([], driver.EXPERIMENTS["shape-copying"](CLEAN))
 
+    def test_a_yielded_payload_recorded_as_a_result_is_reported(self) -> None:
+        """ed3c/skill-concerns#105, both directions, in one bundle.
+
+        Positive: the short payload that declares itself alive and carries none
+        of the report contract's blocks. Negative, two arms, because one is not
+        enough to show the conjunction is load-bearing - a full report, and a
+        full report that NARRATES a yield it recovered from. A detector that
+        fired on the second would refuse every honest account of a
+        park-and-resume, which is the false positive this class would otherwise
+        buy.
+        """
+        hits = driver.EXPERIMENTS["yielded-non-report"](YIELDED)
+        self.assertEqual(
+            ["reports/lane-report-yielded.md"],
+            [hit["subject"]["path"] for hit in hits],
+        )
+        observed = hits[0]["observed"]
+        self.assertIn("Still in progress", observed)
+        self.assertIn("branch@sha", observed)
+        payload = YIELDED / "reports" / "lane-report-yielded.md"
+        self.assertIn(f"{len(payload.read_bytes())} bytes", observed)
+
+        for report in ("lane-report-complete.md", "lane-report-recovered.md"):
+            with self.subTest(negative=report):
+                text = (YIELDED / "reports" / report).read_text(encoding="utf-8")
+                for name, pattern in driver.REPORT_CONTRACT_BLOCKS.items():
+                    self.assertTrue(pattern.search(text), name)
+
+        self.assertEqual([], driver.EXPERIMENTS["yielded-non-report"](CLEAN))
+        self.assertEqual([], driver.EXPERIMENTS["yielded-non-report"](WAVE_17))
+
+    def test_the_yielded_class_only_fires_on_the_conjunction(self) -> None:
+        """The planted negative for the second half of the predicate.
+
+        Strip the contract blocks out of the recovered report and it becomes
+        the class; leave them in and the same self-declaration is not a
+        finding. Measured against a scratch copy, so the fixture keeps both
+        arms.
+        """
+        bundle = self.scratch / "yield-conjunction"
+        (bundle / "reports").mkdir(parents=True)
+        source = (YIELDED / "reports" / "lane-report-recovered.md").read_text(
+            encoding="utf-8"
+        )
+        target = bundle / "reports" / "lane-report-recovered.md"
+
+        target.write_text(source, encoding="utf-8")
+        self.assertEqual([], driver.EXPERIMENTS["yielded-non-report"](bundle))
+
+        stripped = "\n".join(
+            line
+            for line in source.splitlines()
+            if not any(
+                pattern.search(line)
+                for pattern in driver.REPORT_CONTRACT_BLOCKS.values()
+            )
+        )
+        target.write_text(stripped + "\n", encoding="utf-8")
+        self.assertTrue(driver.YIELD_DECLARATION.search(stripped), "the arm is vacuous")
+        self.assertEqual(
+            ["reports/lane-report-recovered.md"],
+            [
+                hit["subject"]["path"]
+                for hit in driver.EXPERIMENTS["yielded-non-report"](bundle)
+            ],
+        )
+
     def test_the_committed_run_record_is_what_the_fixture_run_produces(self) -> None:
-        """The ledger's one record is derived, not typed."""
-        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
-        produced = driver.ledger_record(report)
+        """The ledger's first record is derived, not typed."""
         ledger = json.loads(
             (SKILL_ROOT / "domain" / "run-ledger.json").read_text(encoding="utf-8")
         )
         committed = dict(ledger["records"][0])
+        self.assertEqual(
+            driver.sampled_classes(catalogue())[: len(committed["classes_sampled"])],
+            committed["classes_sampled"],
+            "BUILD only ever appends, so the classes in force at a record's "
+            "instant are a PREFIX of today's active list; a record that names a "
+            "class the catalogue never carried, or that skips one it did, has "
+            "been edited rather than measured",
+        )
+        report = driver.run(
+            WAVE_17, catalogue_as_of(committed), "wave-17", "admission-fixture"
+        )
+        produced = driver.ledger_record(report)
         produced.pop("run_id")
         committed.pop("run_id")
         self.assertEqual(committed, produced)
@@ -477,9 +574,24 @@ class RedTeamEvals(unittest.TestCase):
         the run produces, the finding satisfies the schema, and the bundle's
         digest is the same before and after - measured, not promised.
         """
+        committed = dict(
+            next(
+                record
+                for record in domain("run-ledger.json")["records"]
+                if record["subject"] == STATION
+            )
+        )
+        self.assertEqual(
+            driver.sampled_classes(catalogue())[: len(committed["classes_sampled"])],
+            committed["classes_sampled"],
+            "BUILD only ever appends, so the classes in force at a record's "
+            "instant are a PREFIX of today's active list; a record that names a "
+            "class the catalogue never carried, or that skips one it did, has "
+            "been edited rather than measured",
+        )
         report = driver.run(
             GENERATION_CLOSE,
-            catalogue(),
+            catalogue_as_of(committed),
             "generation-fixture",
             "generation-close-fixture",
             subject_kind=STATION,
@@ -491,13 +603,6 @@ class RedTeamEvals(unittest.TestCase):
         for finding in report["findings"]:
             self.assertEqual([], validator.finding_errors(finding))
         produced = driver.ledger_record(report)
-        committed = dict(
-            next(
-                record
-                for record in domain("run-ledger.json")["records"]
-                if record["subject"] == STATION
-            )
-        )
         produced.pop("run_id")
         committed.pop("run_id")
         self.assertEqual(committed, produced)
