@@ -3,26 +3,110 @@
   "session": "2026-08-30/31 noodles production backup build-out",
   "note": "Every admitted claim carries a physical receipt from these sessions; the L2 driver's selftest replays the assertions these receipts ground. Nothing speculative is admitted.",
   "evidence": {
-    "openrsync-hot-source-fatal": {"producer": "scripts/backup_driver.py", "claim": "macOS openrsync fails the entire transfer on one vanished/changed source file ('unexpected end of file'); three distinct hot paths killed three runs", "how": ".noodle/sessions/*/meta.json vanished mid-USB-copy -> FAIL; receipts/providers/cursor-pstack.json vanished during dry-run; .claude.json EBADF while a live session rewrote it"},
-    "gnu-rsync-exit24": {"producer": "scripts/backup_driver.py", "claim": "GNU rsync 3.5.0 (brew) degrades vanished-source churn to exit 24; wrapper maps 24->0 and the same hot tree that killed openrsync passed first try", "how": "brew install rsync; run_rsync() maps rc 24 to 0; local snapshot OK 21:24:55 on first GNU run"},
-    "freeze-then-replicate-verified": {"producer": "scripts/backup_driver.py", "claim": "USB tier reading live HOME failed twice; replicating from the completed local snapshot (frozen source) succeeded over a 65-minute window", "how": "FAIL 14:55 + 15:01 reading live tree; redesign; OK /Volumes/SANDISK/noodles-backup/daily-2026-08-31 22:29:58"},
-    "volatile-subtree-isolated": {"producer": "HOST_OBSERVED", "claim": "excluding .noodle wholesale and carrying its durable subset in a dedicated seconds-scale rsync with 3 retries ended the vanished-file class at the fast tier", "how": "three consecutive failures at different churn paths; isolation redesign; next run green with no retry consumed"},
-    "hot-git-refs-vanish": {"producer": "HOST_OBSERVED", "claim": "a branch rename deleted refs/heads/* between the copier's file-list and copy, failing the backup on .git internals", "how": "rsync error on noodles/.git/refs/heads/ed3c-noodles-159-0-execute immediately after the rename that unblocked the daemon"},
-    "linkdest-inode-verified": {"producer": "scripts/backup_driver.py", "claim": "--link-dest shares the inode for the unchanged file, gives the changed file its own inode, and both days' contents survive", "how": "stat -f %i on day1/day2 in a synthetic two-day run: stable.txt same inode, hot.txt distinct, v1/v2 both grep-verified"},
-    "same-second-quickcheck-hazard": {"producer": "scripts/backup_driver.py", "claim": "same-size same-second writes defeat the mtime quick-check: the changed file was silently hardlinked to stale content in the first synthetic test", "how": "initial test FAILed (shared inode + v2 missing); reproduced then fixed the test with touch -t cross-day mtimes"},
-    "exfat-no-hardlink": {"producer": "HOST_OBSERVED", "claim": "exFAT stores every snapshot at full cost: 2.9G APFS source became 4.4-4.6G per snapshot, no dedup across days", "how": "du -sh on USB daily-* vs local daily-*; disk hit 99% with two snapshots"},
-    "exfat-no-unix-socket": {"producer": "HOST_OBSERVED", "claim": "unix sockets cannot be created on exFAT ('mkstempsock: Operation not supported')", "how": ".codex/ipc/ipc.sock failed the USB copy until sockets were excluded"},
-    "rotation-floor-unattainable-bug": {"producer": "scripts/backup_driver.py", "claim": "a keep-floor of 2 plus a 5G min-free threshold on a 29G disk with 19G foreign usage and 4.6G snapshots is arithmetically unattainable - the next scheduled run was guaranteed to fail; caught at verification, fixed to keep-floor 1 + 4G", "how": "534Mi free after second snapshot; attainable max free ~4.9G < 5G threshold; dry-run green after fix"},
-    "single-writer-race": {"producer": "scripts/backup_driver.py", "claim": "two backup writers raced one destination (interleaved OK/FAIL log pairs at 15:01/15:02); a mkdir lock with owner PID and dead-holder takeover ended the class", "how": "log interleave observed; lock added; kill -9 orphan path covered by PID liveness takeover because SIGKILL bypasses the EXIT trap"},
-    "exclude-protects-leftovers": {"producer": "scripts/backup_driver.py", "claim": "an exclusion added after content landed protects stale destination copies from --delete; 0B socket + 111M sessions + 383M codex-isolation persisted until swept by hand", "how": "post-exclusion runs left the paths in the local snapshot; rm -rf sweep; find -type s returned 0"},
-    "mount-point-guard": {"producer": "scripts/backup_driver.py", "claim": "writing to a /Volumes path without a mount check would create a same-named directory on the boot disk when the USB is absent", "how": "script gates on mount | grep ' on /Volumes/SANDISK ' before any write; SKIP path logged when absent"},
-    "launchd-scheduled-fired": {"producer": "HOST_OBSERVED", "claim": "the launchd agent (StartCalendarInterval 03:30 + StartOnMount) is registered and actually fires", "how": "launchctl print shows program + calendarinterval; the 03:30:27 run's own FAIL log lines prove the trigger fired unattended"},
-    "pipeline-exit-swallowed": {"producer": "HOST_OBSERVED", "claim": "a trailing pipeline consumer (head) returns 0 and lets '&& echo PASS' print on a failed producer - the assertion instrument itself lied twice in one session", "how": "ls failure and a failed mount both printed the success branch through '| head'; assertions rewritten to test file bytes directly"},
-    "tcc-blocks-cloudstorage": {"producer": "HOST_OBSERVED", "claim": "TCC denies terminal processes ~/Library/CloudStorage ('Operation not permitted' on ls; 'mkpath: Permission denied' on user rsync) until Full Disk Access is granted and the app restarted", "how": "both denials observed live; account folder name GoogleDrive-<account> confirms the path-embedded account lock"},
-    "apfs-snapshot-mount-needs-root": {"producer": "HOST_OBSERVED", "claim": "tmutil localsnapshot succeeds unprivileged but mount_apfs -s returns 'Operation not permitted' as a user - APFS snapshots are unusable for unattended agents", "how": "snapshot created and listed; mount attempt denied; snapshot deleted after test"},
-    "mcp-drive-text-lane": {"producer": "HOST_OBSERVED", "claim": "four text manifests (restore map, Brewfile, versions, bootstrap) uploaded via MCP create_file and re-verified by an independent folder listing; owner asserted from returned metadata", "how": "create_file x4 with textContent; search_files parentId listing returned all four; owner field checked"},
-    "mcp-binary-infeasible": {"producer": "HOST_OBSERVED", "claim": "a 5MB tar.gz cannot ride the MCP lane: content transits model context and the base64 exceeds per-call limits by orders of magnitude", "how": "5.0M bundle -> ~6.7M base64 chars; lane restricted to text manifests, bundle stays on physical tiers"},
-    "secrets-cloud-refused": {"producer": "HOST_OBSERVED", "claim": "automated cloud upload of the environment including credentials was refused at the permission layer; final design keeps pem/token/auth material on physically-held tiers only", "how": "two classifier denials on the cloud-tier script; cloud lane redesigned with explicit credential excludes"},
-    "restore-entrypoint-on-medium": {"producer": "HOST_OBSERVED", "claim": "the restore script and restore-kit travel inside every snapshot, so USB alone restores a bare machine; derived indexes are rebuilt not copied", "how": "restore-from-sandisk.sh + restore-kit/ asserted present on USB latest after each green run"}
+    "openrsync-hot-source-fatal": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "macOS openrsync fails the entire transfer on one vanished/changed source file ('unexpected end of file'); three distinct hot paths killed three runs",
+      "how": ".noodle/sessions/*/meta.json vanished mid-USB-copy -> FAIL; receipts/providers/cursor-pstack.json vanished during dry-run; .claude.json EBADF while a live session rewrote it"
+    },
+    "gnu-rsync-exit24": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "GNU rsync 3.5.0 (brew) degrades vanished-source churn to exit 24; wrapper maps 24->0 and the same hot tree that killed openrsync passed first try",
+      "how": "brew install rsync; run_rsync() maps rc 24 to 0; local snapshot OK 21:24:55 on first GNU run"
+    },
+    "freeze-then-replicate-verified": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "USB tier reading live HOME failed twice; replicating from the completed local snapshot (frozen source) succeeded over a 65-minute window",
+      "how": "FAIL 14:55 + 15:01 reading live tree; redesign; OK /Volumes/SANDISK/noodles-backup/daily-2026-08-31 22:29:58"
+    },
+    "volatile-subtree-isolated": {
+      "producer": "HOST_OBSERVED",
+      "claim": "excluding .noodle wholesale and carrying its durable subset in a dedicated seconds-scale rsync with 3 retries ended the vanished-file class at the fast tier",
+      "how": "three consecutive failures at different churn paths; isolation redesign; next run green with no retry consumed"
+    },
+    "hot-git-refs-vanish": {
+      "producer": "HOST_OBSERVED",
+      "claim": "a branch rename deleted refs/heads/* between the copier's file-list and copy, failing the backup on .git internals",
+      "how": "rsync error on noodles/.git/refs/heads/ed3c-noodles-159-0-execute immediately after the rename that unblocked the daemon"
+    },
+    "linkdest-inode-verified": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "--link-dest shares the inode for the unchanged file, gives the changed file its own inode, and both days' contents survive",
+      "how": "stat -f %i on day1/day2 in a synthetic two-day run: stable.txt same inode, hot.txt distinct, v1/v2 both grep-verified"
+    },
+    "same-second-quickcheck-hazard": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "same-size same-second writes defeat the mtime quick-check: the changed file was silently hardlinked to stale content in the first synthetic test",
+      "how": "initial test FAILed (shared inode + v2 missing); reproduced then fixed the test with touch -t cross-day mtimes"
+    },
+    "exfat-no-hardlink": {
+      "producer": "HOST_OBSERVED",
+      "claim": "exFAT stores every snapshot at full cost: 2.9G APFS source became 4.4-4.6G per snapshot, no dedup across days",
+      "how": "du -sh on USB daily-* vs local daily-*; disk hit 99% with two snapshots"
+    },
+    "exfat-no-unix-socket": {
+      "producer": "HOST_OBSERVED",
+      "claim": "unix sockets cannot be created on exFAT ('mkstempsock: Operation not supported')",
+      "how": ".codex/ipc/ipc.sock failed the USB copy until sockets were excluded"
+    },
+    "rotation-floor-unattainable-bug": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "a keep-floor of 2 plus a 5G min-free threshold on a 29G disk with 19G foreign usage and 4.6G snapshots is arithmetically unattainable - the next scheduled run was guaranteed to fail; caught at verification, fixed to keep-floor 1 + 4G",
+      "how": "534Mi free after second snapshot; attainable max free ~4.9G < 5G threshold; dry-run green after fix"
+    },
+    "single-writer-race": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "two backup writers raced one destination (interleaved OK/FAIL log pairs at 15:01/15:02); a mkdir lock with owner PID and dead-holder takeover ended the class",
+      "how": "log interleave observed; lock added; kill -9 orphan path covered by PID liveness takeover because SIGKILL bypasses the EXIT trap"
+    },
+    "exclude-protects-leftovers": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "an exclusion added after content landed protects stale destination copies from --delete; 0B socket + 111M sessions + 383M codex-isolation persisted until swept by hand",
+      "how": "post-exclusion runs left the paths in the local snapshot; rm -rf sweep; find -type s returned 0"
+    },
+    "mount-point-guard": {
+      "producer": "scripts/backup_driver.py",
+      "claim": "writing to a /Volumes path without a mount check would create a same-named directory on the boot disk when the USB is absent",
+      "how": "script gates on mount | grep ' on /Volumes/SANDISK ' before any write; SKIP path logged when absent"
+    },
+    "launchd-scheduled-fired": {
+      "producer": "HOST_OBSERVED",
+      "claim": "the launchd agent (StartCalendarInterval 03:30 + StartOnMount) is registered and actually fires",
+      "how": "launchctl print shows program + calendarinterval; the 03:30:27 run's own FAIL log lines prove the trigger fired unattended"
+    },
+    "pipeline-exit-swallowed": {
+      "producer": "HOST_OBSERVED",
+      "claim": "a trailing pipeline consumer (head) returns 0 and lets '&& echo PASS' print on a failed producer - the assertion instrument itself lied twice in one session",
+      "how": "ls failure and a failed mount both printed the success branch through '| head'; assertions rewritten to test file bytes directly"
+    },
+    "tcc-blocks-cloudstorage": {
+      "producer": "HOST_OBSERVED",
+      "claim": "TCC denies terminal processes ~/Library/CloudStorage ('Operation not permitted' on ls; 'mkpath: Permission denied' on user rsync) until Full Disk Access is granted and the app restarted",
+      "how": "both denials observed live; account folder name GoogleDrive-<account> confirms the path-embedded account lock"
+    },
+    "apfs-snapshot-mount-needs-root": {
+      "producer": "HOST_OBSERVED",
+      "claim": "tmutil localsnapshot succeeds unprivileged but mount_apfs -s returns 'Operation not permitted' as a user - APFS snapshots are unusable for unattended agents",
+      "how": "snapshot created and listed; mount attempt denied; snapshot deleted after test"
+    },
+    "mcp-drive-text-lane": {
+      "producer": "HOST_OBSERVED",
+      "claim": "four text manifests (restore map, Brewfile, versions, bootstrap) uploaded via MCP create_file and re-verified by an independent folder listing; owner asserted from returned metadata",
+      "how": "create_file x4 with textContent; search_files parentId listing returned all four; owner field checked"
+    },
+    "mcp-binary-infeasible": {
+      "producer": "HOST_OBSERVED",
+      "claim": "a 5MB tar.gz cannot ride the MCP lane: content transits model context and the base64 exceeds per-call limits by orders of magnitude",
+      "how": "5.0M bundle -> ~6.7M base64 chars; lane restricted to text manifests, bundle stays on physical tiers"
+    },
+    "secrets-cloud-refused": {
+      "producer": "HOST_OBSERVED",
+      "claim": "automated cloud upload of the environment including credentials was refused at the permission layer; final design keeps pem/token/auth material on physically-held tiers only",
+      "how": "two classifier denials on the cloud-tier script; cloud lane redesigned with explicit credential excludes"
+    },
+    "restore-entrypoint-on-medium": {
+      "producer": "HOST_OBSERVED",
+      "claim": "the restore script and restore-kit travel inside every snapshot, so USB alone restores a bare machine; derived indexes are rebuilt not copied",
+      "how": "restore-from-sandisk.sh + restore-kit/ asserted present on USB latest after each green run"
+    }
   }
 }

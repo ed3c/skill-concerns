@@ -20,6 +20,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_ROOT / "scripts"))
 
 import code_intel_driver  # noqa: E402
+import gen_receipts  # noqa: E402
 from validate_control_code_intel import validate  # noqa: E402
 
 TOPOLOGY = SKILL_ROOT / "domain" / "code-intel-topology.json"
@@ -193,6 +194,58 @@ class ControlCodeIntelEvals(unittest.TestCase):
                 if needle in text:
                     offenders.append(f"{path.relative_to(SKILL_ROOT).as_posix()}:{needle}")
         self.assertEqual([], offenders)
+
+    # ------------------------------------------------------------------
+    # The producer field's author, ed3c/skill-concerns#84. These fields were
+    # right and hand-written; what is asserted here is that they are now a
+    # function of an execution, and that the function refuses rather than
+    # guesses. A generator that only ever ran against a conformant file has
+    # never refused anything.
+
+    def committed(self) -> dict:
+        return json.loads((SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"))
+
+    def test_the_committed_receipts_are_what_the_producer_makes(self) -> None:
+        results = gen_receipts.run_driver()
+        self.assertEqual(
+            (SKILL_ROOT / "receipts.json").read_text(encoding="utf-8"),
+            gen_receipts.render(self.committed(), results),
+        )
+
+    def test_a_receipt_naming_an_assertion_that_does_not_exist_is_refused(self) -> None:
+        results = gen_receipts.run_driver()
+        results.pop("index_populated")
+        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
+            gen_receipts.build(self.committed(), results)
+        self.assertIn("RECEIPT_ASSERTION_ABSENT:last-index-time-gotcha", str(caught.exception))
+
+    def test_a_receipt_whose_assertion_reds_is_refused(self) -> None:
+        results = gen_receipts.run_driver()
+        results["index_populated"] = False
+        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
+            gen_receipts.build(self.committed(), results)
+        self.assertIn("RECEIPT_ASSERTION_RED:last-index-time-gotcha", str(caught.exception))
+
+    def test_an_entry_claiming_the_driver_with_no_correspondence_is_refused(self) -> None:
+        # The exact shape #84 names: a producer field typed by hand for a claim
+        # nothing replays. HOST_OBSERVED is the earned default, and this is the
+        # refusal that keeps it from being an escape hatch in reverse.
+        document = self.committed()
+        document["evidence"]["pgvector-built-pg16"]["producer"] = gen_receipts.DRIVER
+        with self.assertRaises(gen_receipts.ReceiptRefused) as caught:
+            gen_receipts.build(document, gen_receipts.run_driver())
+        self.assertIn("RECEIPT_PRODUCER_UNEARNED:pgvector-built-pg16", str(caught.exception))
+
+    def test_a_hand_edited_receipts_file_reds_the_validator(self) -> None:
+        temp, root = mutated_copy()
+        self.addCleanup(temp.cleanup)
+        path = root / "receipts.json"
+        document = json.loads(path.read_text())
+        document["evidence"]["grepai-mcp-connected"]["producer"] = "scripts/code_intel_driver.py"
+        path.write_text(json.dumps(document, indent=2) + "\n")
+        self.assertTrue(
+            any("RECEIPT_PRODUCER_UNEARNED" in e for e in validate(root)), validate(root)
+        )
 
 
 if __name__ == "__main__":

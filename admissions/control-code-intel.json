@@ -25,11 +25,11 @@
     },
     {
       "path": "skills/control-code-intel/evals/cases.json",
-      "sha256": "7275f24cb0b7faddfd67f2e44255ef85255ca9f8035e5fc67b190816c43e0d5c"
+      "sha256": "abdad79c467a15f98c22f06373e7c8083d3e9f0bf085a98c5acf961b4911e369"
     },
     {
       "path": "skills/control-code-intel/receipts.json",
-      "sha256": "579040d07a5b186ad9d4963a844dbd6a4e9e87bcd5413e7f3ee3430738571423"
+      "sha256": "2f02629c84b9b65fd4a824694829a572a8fb193948e47d7260b0a54c78c712cc"
     },
     {
       "path": "skills/control-code-intel/references/README.md",
@@ -52,12 +52,16 @@
       "sha256": "64d9dd6d8a549bed74e389e02e6af8b0071324bbb9b4f41097d0d2fc3d090b5e"
     },
     {
+      "path": "skills/control-code-intel/scripts/gen_receipts.py",
+      "sha256": "f02f4c37f475424f201753b8d5cd18e5a049e6a73d12f41c5a7220dba2ad6c39"
+    },
+    {
       "path": "skills/control-code-intel/scripts/gen_source_lock.py",
       "sha256": "9847a83cbea05584ef4e81b4379210bb8cef345bb8f8243f6d86130ca870ee8e"
     },
     {
       "path": "skills/control-code-intel/scripts/validate_control_code_intel.py",
-      "sha256": "51c96b92814c1ad90ebf41cf313bd35b38aac11a3a32357e9883d32591b746b2"
+      "sha256": "32208e0cfc3b588aff6bcaef6e7706a9d532ccfe24fc1dd4877dd9075a2cbe34"
     },
     {
       "path": "skills/control-code-intel/skill.json",
@@ -65,10 +69,10 @@
     },
     {
       "path": "skills/control-code-intel/tests/test_control_code_intel.py",
-      "sha256": "2218c76c228698eb20aa74b516a8f84c20fbbb864716440f08fa622b67df09d2"
+      "sha256": "3f5fe7454b84ec8a93f64fea1ac4b627fa95edc3d85f8dd3f81517676adf078b"
     }
   ],
-  "skill_tree_sha256": "1994af97793f1acec586c274c23335beb6e70391cdd3355a43b20cf90fac1ccc",
+  "skill_tree_sha256": "47a88368162e0f7dfdbcd0052ca30b997eb7b21823e5689a185ab3a1cf30a2b7",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -178,6 +182,26 @@
     },
     {
       "id": "host-absolute-path-in-tracked-bytes",
+      "state": "PASS"
+    },
+    {
+      "id": "receipts-are-produced-not-typed",
+      "state": "PASS"
+    },
+    {
+      "id": "producer-for-an-absent-assertion",
+      "state": "PASS"
+    },
+    {
+      "id": "producer-for-a-red-assertion",
+      "state": "PASS"
+    },
+    {
+      "id": "producer-with-no-correspondence",
+      "state": "PASS"
+    },
+    {
+      "id": "hand-edited-receipts",
       "state": "PASS"
     }
   ],

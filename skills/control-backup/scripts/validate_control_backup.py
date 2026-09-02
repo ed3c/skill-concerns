@@ -55,6 +55,7 @@ def validate(root: Path) -> list[str]:
     l1 = need("domain/backup-topology.json")
     l2 = need("scripts/backup_driver.py")
     receipts_p = need("receipts.json")
+    producer = need("scripts/gen_receipts.py")
     need("SKILL.md")
     need("references/procedures.md")
 
@@ -82,10 +83,30 @@ def validate(root: Path) -> list[str]:
                 errors.append(f"receipts.json missing load-bearing receipt {key!r}")
 
     # L2 must be executable and its assertions must hold (including negatives).
+    selftest = None
     if l2:
-        r = subprocess.run([sys.executable, str(l2), "--selftest"], capture_output=True, text=True)
-        if r.returncode != 0:
+        selftest = subprocess.run(
+            [sys.executable, str(l2), "--selftest"], capture_output=True, text=True
+        )
+        if selftest.returncode != 0:
             errors.append("L2 driver selftest failed (assertions or negative controls did not hold)")
+
+    # ed3c/skill-concerns#84: the `producer` fields have one author, and it is
+    # an execution. Re-derive them here so a hand edit of what the producer owns
+    # reds - the generator refuses any key whose assertion is absent or went
+    # red, so a green check means the driver just replayed every claim it
+    # stamps. The selftest bytes are piped in rather than the driver being run a
+    # second time: the receipt is then checked against THE execution this
+    # validator graded, not against a different one that happened to agree.
+    if producer and selftest is not None:
+        checked = subprocess.run(
+            [sys.executable, str(producer), "--check", "--from-stdin"],
+            input=selftest.stdout,
+            capture_output=True,
+            text=True,
+        )
+        if checked.returncode != 0:
+            errors.append(checked.stdout.strip() or "gen_receipts.py --check refused")
 
     return errors
 
