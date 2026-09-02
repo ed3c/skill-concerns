@@ -176,7 +176,7 @@ This ladder is about **what one commit proved**. It is not a bundle's `L0 proced
 | `admissions/<skill>.json` | complete content-bound admission subject and ceiling |
 | `policy/upstream-pins.json` | the upstream facts this repository's method rests on: the canonical pstack commit, the requirement that it stay reachable from that repository's branch, and the files to re-read when the branch moves |
 | `skills/arrival-engineering/domain/capability-topology.json` | the arrival ledger: every declared capability, the exit it is bound to, and the highest arrival level its receipts support. Rows without a resolvable receipt are refused at append |
-| GitHub Actions run | execution arrival for one checked-out commit |
+| GitHub Actions run | execution arrival for the trees `verify.yml` checks out: the candidate head, and the merge result `refs/pull/<n>/merge` that would become `main` (ed3c/skill-concerns#111) |
 
 Markdown may explain these files but cannot override them.
 
