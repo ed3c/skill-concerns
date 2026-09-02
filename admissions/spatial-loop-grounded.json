@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/2026-09-01-ab-control-arm.json",
-      "sha256": "8fd0603d750e71775c10c1a1be4393da4087707059c420bde0350f9e0b6c5efd"
+      "sha256": "994c0122066082537425455abf5bb51390ddda4c900764ad21c8eab4f6ad6cc4"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/behavioral-campaigns/ab/assignment.json",
@@ -609,7 +609,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/cases.json",
-      "sha256": "8ddebc1bee67126e01ef556ef0658d77c767facd4ec75ef80a25ce2329f2e8e8"
+      "sha256": "ba1f1e62cdb2346f68afa8339f933b32a9145c20038015856ee90b4f121b6aa1"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-events-probe/claim.json",
@@ -653,7 +653,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/ab_campaign.py",
-      "sha256": "70e1c63bb3efbcbc0605a6dad063101b600d5248385199e88cc0cebc84e721f6"
+      "sha256": "ed59181f8ff430b6266ef8cbaa6be01d4a270c91dea5fb925f4248c938906ff2"
     },
     {
       "path": "skills/spatial-loop-grounded/scripts/apply_layer_audit.py",
@@ -693,10 +693,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "fb1066b4ad717cc18ed58e47de3dbb08fef7f10f5b140820a7c6a1e01eca8e88"
+      "sha256": "f00ca0f2d4c499cf507f0ecdb62864b9325b3af5b3b254f04df4f50c0441101b"
     }
   ],
-  "skill_tree_sha256": "dd96d646c367d8d36b2f8e617af2bab80e4aa5cd93f28159c48ac06c52ea81f1",
+  "skill_tree_sha256": "cf1c6e90d52b79cdcd391a264afaf32c3d878ddd8cb97d13ad184fd56f0e7152",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -890,6 +890,14 @@
     },
     {
       "id": "ab-receipt-hand-edited",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-manual-anchor-hand-edited",
+      "state": "PASS"
+    },
+    {
+      "id": "ab-manual-anchor-relaid-from-the-live-manual",
       "state": "PASS"
     },
     {

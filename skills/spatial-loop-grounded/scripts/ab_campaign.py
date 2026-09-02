@@ -40,6 +40,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from frozen_anchor import pin, prior  # noqa: E402
+
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CAMPAIGNS = SKILL_ROOT / "evals" / "behavioral-campaigns"
 AB = CAMPAIGNS / "ab"
@@ -480,18 +483,23 @@ def receipt() -> int:
     )
     result["treatment_traces"] = treatment_traces()
     judgments = load(JUDGMENTS_PATH)
-    # skill_tree_sha256_at_run is a historical fact (the tree the actors ran
-    # against), not a live-updating field: once this receipt exists, pin it to
-    # its committed value on every regeneration instead of recapturing the
-    # current tree. Without this, landing the campaign's own files changes the
-    # admitted tree, and a later schema-only re-run (e.g. adding a field)
-    # would silently launder the anchor to a tree the actors never saw. A
-    # genuinely new campaign gets a new RECEIPT_PATH, so it is unaffected.
-    tree_sha256_at_run = load(ADMISSION_PATH)["skill_tree_sha256"]
-    if RECEIPT_PATH.is_file():
-        pinned = load(RECEIPT_PATH).get("skill_tree_sha256_at_run")
-        if pinned:
-            tree_sha256_at_run = pinned
+    # Both anchors below are historical facts (the tree the actors ran against,
+    # and the exact manual bytes they held), not live-updating fields: once
+    # this receipt exists, each is pinned to its committed value on every
+    # regeneration instead of being re-derived from today's tree. Without this,
+    # landing the campaign's own files changes the admitted tree, and any
+    # change to SKILL.md above `## Non-claims` changes the manual slice, so a
+    # later schema-only re-run would silently launder an anchor to bytes the
+    # actors never saw. A genuinely new campaign gets a new RECEIPT_PATH, so
+    # it is unaffected.
+    #
+    # skill_tree_sha256_at_run had this treatment from the start and
+    # manual_sha256 - the one this receipt's own anchor_note calls LOAD-BEARING
+    # - did not, which is the whole of ed3c/skill-concerns#104. Reading the
+    # committed receipt once, through the same frozen_anchor.pin both fields
+    # now use, is what stops a third anchor arriving unpinned: there is one
+    # place to add it to, not one convention to remember.
+    committed = prior(RECEIPT_PATH)
     failures = [
         f"{run['token']}/{run['arm']}:{cid}"
         for run in result["per_run"]
@@ -504,15 +512,21 @@ def receipt() -> int:
         "question": spec["question"],
         "actor_model": spec["actor"]["model"],
         "judge_model": spec["judge"]["model"],
-        "manual_sha256": hashlib.sha256(manual_text().encode("utf-8")).hexdigest(),
-        "skill_tree_sha256_at_run": tree_sha256_at_run,
+        "manual_sha256": pin(
+            committed,
+            "manual_sha256",
+            hashlib.sha256(manual_text().encode("utf-8")).hexdigest(),
+        ),
+        "skill_tree_sha256_at_run": pin(
+            committed, "skill_tree_sha256_at_run", load(ADMISSION_PATH)["skill_tree_sha256"]
+        ),
         "anchor_note": (
             "manual_sha256 is the load-bearing anchor: it is derived from the exact bytes the "
             "actors held. skill_tree_sha256_at_run is the admitted tree as it stood when the "
-            "actors ran, pinned once this file first exists: every later `receipt` regeneration "
-            "carries the committed value forward instead of recapturing the (by-then-different) "
-            "current tree, so landing this campaign's own files does not silently launder the "
-            "anchor."
+            "actors ran. BOTH are pinned once this file first exists: every later `receipt` "
+            "regeneration carries the committed value forward instead of re-deriving it from "
+            "the (by-then-different) current tree, so landing this campaign's own files - or "
+            "amending a clause in SKILL.md - does not silently launder either anchor."
         ),
         "arm_scores": result["arm_scores"],
         "delta": result["delta"],
