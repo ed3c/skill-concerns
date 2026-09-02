@@ -13,6 +13,8 @@ The one thing it may write is its own run ledger (`--ledger`), which is not the
 subject. That is the skill measuring its own effect: known-class recurrence per
 wave must trend to zero as classes gate, and a curve that has not bent after
 three post-admission waves is itself a finding delivered to the dispatcher.
+`--subject` names the station the pass ran at, so the ledger slices by station
+rather than merging two declining curves into one unreadable line.
 
 BUILD half. `--add-class` is the only verb that changes the catalogue, and it
 is behind the repository's cure-authorization refusal
@@ -76,8 +78,18 @@ DIAGNOSTICS = (
     "CATALOGUE_CLASS_GATED_BUT_ACTIVE",
     "DRIVER_SURFACE_FORBIDDEN",
     "DEMONSTRATION_BLOCK_INCOMPLETE",
+    "OBSERVATION_TARGET_UNGROUNDED",
+    "CEILING_WITHOUT_SENSOR",
+    "STATION_ARRIVAL_UNTIED",
     cure_authorization.DIAGNOSTIC,
 )
+
+# The station this pass ran at. It is a string here and a vocabulary in
+# `domain/observation-topology.json`: the driver carries what it was told, and
+# the validator ties every committed record's subject back to a topology row, so
+# a station nobody declared reds at the gate instead of inventing itself in the
+# ledger.
+DEFAULT_SUBJECT = "wave-boundary"
 
 # The probe surfaces that structurally cannot carry the answer they are cited
 # for (ed3c/skill-concerns#83). A claim of absence resting on one of these is
@@ -372,6 +384,7 @@ def run(
     wave: str,
     boundary: str,
     only: str | None = None,
+    subject_kind: str = DEFAULT_SUBJECT,
 ) -> dict[str, Any]:
     """One boundary pass. `only` runs a single class's experiment.
 
@@ -414,6 +427,7 @@ def run(
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "wave": wave,
         "boundary": boundary,
+        "subject": subject_kind,
         "bundle": str(bundle),
         "classes_sampled": classes,
         "hits": hits,
@@ -448,6 +462,7 @@ def ledger_record(report: dict[str, Any]) -> dict[str, Any]:
         "run_id": report["generated_utc"],
         "wave": report["wave"],
         "boundary": report["boundary"],
+        "subject": report["subject"],
         "classes_sampled": report["classes_sampled"],
         "hits": report["hits"],
         "novel_class_candidates": report["novel_class_candidates"],
@@ -589,6 +604,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--wave", default="unnamed-wave")
     parser.add_argument("--boundary", default="stage-close")
     parser.add_argument(
+        "--subject",
+        default=DEFAULT_SUBJECT,
+        help="SHADOW: the station this pass ran at, from domain/observation-topology.json",
+    )
+    parser.add_argument(
         "--class", dest="only", help="SHADOW: run one catalogue class's experiment"
     )
     parser.add_argument("--append-record", action="store_true", help="append this run to the ledger")
@@ -616,7 +636,9 @@ def main(argv: list[str] | None = None) -> int:
     if not args.bundle:
         parser.error("--bundle is required for a SHADOW pass")
     try:
-        report = run(args.bundle, catalogue, args.wave, args.boundary, args.only)
+        report = run(
+            args.bundle, catalogue, args.wave, args.boundary, args.only, args.subject
+        )
     except ValueError as exc:
         parser.error(str(exc))
     print(

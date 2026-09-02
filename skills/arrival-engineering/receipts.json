@@ -5,11 +5,13 @@
   "evidence": {
     "arrival-ledger": {
       "refs": [
-        "ed3c/skill-concerns#73"
+        "ed3c/skill-concerns#73",
+        "ed3c/skill-concerns#95"
       ],
       "claim": "per-capability record of the highest arrival an actual receipt supports; a claim above the recorded level is a finding, and levels rise only by receipt readback",
       "rows": [
-        "arrival-engineering-topology"
+        "arrival-engineering-topology",
+        "sc-red-team-generation-close-station"
       ]
     },
     "cadence-run-denominator": {

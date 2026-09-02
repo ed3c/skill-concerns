@@ -271,6 +271,20 @@
         {"kind": "bytes", "ref": "ed3c/skill-concerns#62"}
       ],
       "note": "SHADOW rides the existing cadence because that sweep already globs skills/*/receipts.json and re-resolves every provider ref in it. No new scheduler is introduced by this bundle."
+    },
+    {
+      "id": "sc-red-team-generation-close-station",
+      "capability": "the resident falsification pass at a supervised generation's close-out seam",
+      "carrier": "skills/red-team/domain/observation-topology.json",
+      "exit": "python3 skills/red-team/scripts/shadow_driver.py --bundle <dir> --subject noodles-generation-close --append-record",
+      "bound_exit": "skills/red-team/domain/generation-close-runbook.md, step red-team-generation-close-shadow",
+      "arrival": "EXERCISED",
+      "evidence": "arrival-ledger",
+      "receipts": [
+        {"kind": "exercise", "ref": "skills/red-team/evals/cases.json"},
+        {"kind": "bytes", "ref": "ed3c/skill-concerns#95"}
+      ],
+      "note": "the fixture generation-close bundle produced this station's first run record, which is a sandbox arrival and nothing more. PRODUCTION needs a run-kind receipt naming a real generation's record in skills/red-team/domain/run-ledger.json; until then this row stays where its receipts put it. The reverse direction is tied too: red-team's own validator reds with STATION_ARRIVAL_UNTIED once a non-fixture record for this station lands in that ledger while this row still carries no run receipt, so the station cannot outgrow the row silently."
     }
   ]
 }

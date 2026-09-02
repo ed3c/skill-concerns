@@ -171,6 +171,66 @@
       "test": "test_red_team.RedTeamEvals.test_unchanged_context_cannot_acquit_an_added_enforcement_shape"
     },
     {
+      "id": "station-record-is-derived",
+      "expected": "PASS",
+      "note": "The fixture generation-close bundle produces one run record with subject kind noodles-generation-close, one finding in the admitted schema, and an unmoved bundle digest; the committed record is exactly what that run produces.",
+      "test": "test_red_team.RedTeamEvals.test_the_station_record_is_what_the_fixture_generation_produces"
+    },
+    {
+      "id": "station-clean-bundle-still-records",
+      "expected": "PASS",
+      "note": "The planted negative arm at the station: a clean bundle yields no findings and still appends its run record, so a silent station is distinguishable from an absent one.",
+      "test": "test_red_team.RedTeamEvals.test_a_clean_bundle_at_the_station_still_appends_its_record"
+    },
+    {
+      "id": "graduated-class-leaves-the-next-runs-sampling",
+      "expected": "PASS",
+      "note": "A class marked gated with its gate reference is absent from the very next run's classes_sampled list, read back off the run record rather than off the filter; the same fixture with the class still active samples it and finds the instance.",
+      "test": "test_red_team.RedTeamEvals.test_a_graduated_class_is_absent_from_the_next_runs_sampled_list"
+    },
+    {
+      "id": "runbook-step-names-its-receipt",
+      "expected": "PASS",
+      "note": "The station's runbook pointer resolves to a document naming the step and the ledger that is its completion receipt; deleting that document reds.",
+      "test": "test_red_team.RedTeamEvals.test_the_stations_runbook_step_names_its_completion_receipt"
+    },
+    {
+      "id": "register-sensors-are-readbacks-that-exist",
+      "expected": "PASS",
+      "note": "Every register row's sensor names bytes this tree can open holding the phrase the row cites, every row carries an escalation trigger and path, and the GATED seed row names its gate.",
+      "test": "test_red_team.RedTeamEvals.test_every_register_sensor_is_a_readback_that_exists"
+    },
+    {
+      "id": "undeclared-station-refused",
+      "expected": "FAIL",
+      "note": "A run record whose subject names a station domain/observation-topology.json does not carry reds; the subject vocabulary is the topology's ids and never a second list.",
+      "test": "test_red_team.RedTeamEvals.test_a_run_record_naming_an_undeclared_station_reds"
+    },
+    {
+      "id": "arrival-row-claiming-an-unrecorded-run-refused",
+      "expected": "FAIL",
+      "note": "An arrival row carrying a run-kind receipt while every record for that station came from a fixture reds; the station reaches production only when the record and the receipt arrive together.",
+      "test": "test_red_team.RedTeamEvals.test_an_arrival_row_claiming_a_run_the_ledger_never_recorded_reds"
+    },
+    {
+      "id": "register-row-missing-a-required-field-refused",
+      "expected": "FAIL",
+      "note": "Each of the four required fields is proven load-bearing on its own: dropping the gap, the honest reason, the sensor or the escalation reds the register.",
+      "test": "test_red_team.RedTeamEvals.test_a_register_row_missing_any_required_field_reds"
+    },
+    {
+      "id": "prose-ceiling-without-a-register-row-refused",
+      "expected": "FAIL",
+      "note": "A ceiling admitted in this bundle's prose - in a document or in a script - with no register row named on the line reds. An admitted gap watched by nothing is an exemption with better manners.",
+      "test": "test_red_team.RedTeamEvals.test_a_prose_ceiling_with_no_register_row_reds"
+    },
+    {
+      "id": "landed-escalation-must-name-where-refused",
+      "expected": "FAIL",
+      "note": "A row whose status says the escalation landed while escalation.landed names no provider ref reds; a status is a claim about a filed tightening, and the ref is what makes it a readback.",
+      "test": "test_red_team.RedTeamEvals.test_a_register_row_landing_a_tightening_names_where_it_landed"
+    },
+    {
       "id": "flat-curve-leaves-through-the-exit-code",
       "expected": "FAIL",
       "note": "R7 exits non-zero. A finding printed on stdout at status 0 is prose no caller consumes; the run itself is clean, so the status can only have come from the curve.",

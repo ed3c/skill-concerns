@@ -11,3 +11,5 @@ decision an agent makes, wherever it is standing.
 - K5 An escalation is a bounded, structured signal to whoever holds stop authority. The urgent classes are enumerated in the contract, and the signal carries no instruction and no patch.
 - K6 A rule set grows only from an adjudicated verdict and shrinks only when a machine takes the class over. Detection is where adjudication begins; a class whose gate has landed leaves active sampling.
 - K7 An instrument measures its own effect and reports the failure to bend the curve. Fewer observations than the declared minimum is not-yet-evidence, never a green.
+- K8 A resident duty runs at a closed boundary, never mid-flight, and its completion is a record in its own ledger naming the station it served. A boundary whose close-out carries no record is incomplete, not clean.
+- K9 Every gap a rule set knows it cannot close carries a sensor that would see it exploited and a trigger that turns one sensor hit into a filed tightening. A limit admitted in prose with nothing watching it is an exemption with better manners.

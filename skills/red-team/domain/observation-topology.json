@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "note": "Where a SHADOW pass is allowed to look, what it may read there, and where its feedback is allowed to go. One row per station. The run ledger's subject field is spelled from these ids, so a run record naming a station this file does not carry reds rather than quietly inventing one.",
+  "access_modes": {
+    "read-only": "the pass reads the artifacts and writes nothing into them; the digest before and after is the proof, not the sentence"
+  },
+  "feedback_paths": {
+    "issues-and-ledger-only": "findings leave as issue-shaped evidence the dispatcher files with, and as one run record in this bundle's own ledger; nothing is written back into the observed system, and nothing reaches a working agent mid-flight"
+  },
+  "targets": [
+    {
+      "id": "wave-boundary",
+      "station": "a wave's close: the artifacts of one wave assembled by the dispatcher into a bundle",
+      "inputs": [
+        "diffs: the wave's landed patches",
+        "reports: the wave's lane reports",
+        "receipts: the receipts files the wave produced or touched",
+        "issues: the issue drafts filed during the wave"
+      ],
+      "access": "read-only",
+      "feedback": "issues-and-ledger-only",
+      "runbook": null,
+      "arrival_row": null,
+      "note": "the station this bundle was admitted with (ed3c/skill-concerns#94). Its record shape is what the generation-close station reuses; there is no second driver."
+    },
+    {
+      "id": "noodles-generation-close",
+      "station": "the supervised generation's close-out seam, at the closed boundary and nowhere earlier: the pass shares the boundary with the slg judge pass and keeps its own verb - the judge issues clause verdicts, this one runs experiments",
+      "inputs": [
+        "diffs: the PR diffs landed during the generation",
+        "receipts: the generation's session receipts, read from a clone or a fixture and never from a live working tree",
+        "issues: every issue filed during the generation"
+      ],
+      "access": "read-only",
+      "feedback": "issues-and-ledger-only",
+      "runbook": {
+        "path": "domain/generation-close-runbook.md",
+        "step": "red-team-generation-close-shadow",
+        "receipt": "domain/run-ledger.json"
+      },
+      "arrival_row": "sc-red-team-generation-close-station",
+      "note": "no mid-generation observation and no daemon-side invocation: the daemon never spawns a monitor, the pass runs under the dispatcher's close-out ceremony, and the zero-injection guarantee is inherited from the admission atom unchanged (ed3c/skill-concerns#95). A catalogue class whose falsification recipe is fully mechanical graduates into a consumer CI gate through an ordinary atom and then leaves active sampling by the existing lifecycle fields, which is why this station's resident cost is expected to fall to the judgement-needing residue."
+    }
+  ]
+}

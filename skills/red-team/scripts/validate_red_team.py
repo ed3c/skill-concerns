@@ -11,6 +11,10 @@ mechanism that is no longer there:
   Diagnostics prose <-> shadow_driver.DIAGNOSTICS (by name, both ways)
   receipts.json <-> gen_receipts.render(catalogue) (byte-identical; hand edits red)
   catalogue lifecycle <-> its own gate and stock-sweep references
+  observation topology <-> the run ledger's subject vocabulary (one declaration)
+  a station's runbook  <-> the document and the completion receipt it names
+  a station's records  <-> the arrival row that tracks it (both directions)
+  register rows        <-> every ceiling this bundle's own prose admits
 
 Three schemas are owned here rather than by the driver that emits them, so the
 thing that JUDGES a record is not the thing that WROTE it: `finding_errors`,
@@ -52,6 +56,8 @@ ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 # file the deletion never touched.
 SKILL_MD_CLAUSES = (
     "The catalogue - pinned bytes, front-loaded as the whole job",
+    "The stations - where a pass is allowed to look",
+    "The residual-sensor register",
     "Clause form",
     "R1. The catalogue is bytes at a commit, never rules improvised into a prompt",
     "R2. A catalogue hit is a hypothesis until its recipe runs",
@@ -60,6 +66,8 @@ SKILL_MD_CLAUSES = (
     "R5. Escalation is one signal to the dispatcher, from a bounded list of classes",
     "R6. The catalogue grows only by adjudicated verdict and shrinks only by a landed gate",
     "R7. The instrument reports its own failure to bend the curve",
+    "R8. A resident station runs at the closed boundary and leaves a record",
+    "R9. Every gap the gates cannot close carries a sensor and a trigger",
     "Diagnostics",
     "Knowledge placement",
     "Non-claims",
@@ -141,6 +149,38 @@ ACCEPTANCE_OBLIGATIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("direct readback", ("readback",)),
     ("zero-residue readback", ("residue", "cleanup")),
 )
+
+# --------------------------------------------------------------------------
+# the stations, the register, and the arrival row the station is tracked in
+#
+# `domain/observation-topology.json` is the vocabulary for BOTH the target rows
+# and the run ledger's `subject` field. One declaration, two readers: a second
+# list of station names in the ledger is the copy that would drift.
+TARGET_FIELDS = ("station", "inputs", "access", "feedback")
+RUNBOOK_FIELDS = ("path", "step", "receipt")
+
+REGISTER_FIELDS = ("gap", "no_mechanical_form", "sensor", "escalation")
+REGISTER_STATUSES = ("OPEN", "SENSOR_FIRED_ESCALATION_LANDED", "GATED")
+SENSOR_FIELDS = ("readback", "phrase", "how")
+ESCALATION_FIELDS = ("trigger", "path")
+PROVIDER_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+$")
+
+# The reflexive rule's marker. A ceiling admitted anywhere in this bundle names
+# the register row that watches it, on the same line, or it is an exemption
+# wearing prose. The scan skips exactly the file that owns it, for the same
+# reason `VERB_SCAN_EXEMPT` does: the scanner necessarily carries the phrase it
+# looks for, and the row it points at is where that limit is registered.
+CEILING_MARKER = re.compile(r"(?i)structural ceiling")  # CEILING:reflexive-marker-discipline
+CEILING_ROW = re.compile(r"CEILING:([a-z0-9-]+)")
+CEILING_SCAN_GLOBS = ("*.md", "references/*.md", "domain/*.md", "domain/*.json", "scripts/*.py")
+
+# The arrival ledger is another bundle's file and stays that way: this reads the
+# row it points at and never writes one, and never restates the arrival levels
+# `skills/arrival-engineering` owns.
+ARRIVAL_TOPOLOGY = "skills/arrival-engineering/domain/capability-topology.json"
+# A record whose boundary ends here was produced against a fixture, so it is
+# sandbox arrival and nothing more. Anything else is a real generation.
+FIXTURE_BOUNDARY = "-fixture"
 
 NEIGHBOURS = {
     "spatial-loop-grounded": "issues clause verdicts over supervised conduct",
@@ -404,7 +444,306 @@ def check_catalogue(catalogue: dict, errors: list[str]) -> None:
             )
 
 
-def check_ledger(skill_root: Path, errors: list[str]) -> None:
+def check_observation_topology(skill_root: Path, errors: list[str]) -> dict[str, Any]:
+    """The stations: what a pass may read, and where its feedback may go.
+
+    Returns `{target id: arrival row it is tracked in}`. The keys are the run
+    ledger's `subject` vocabulary. A station is a row like any other here -
+    inputs enumerated,
+    access mode declared, feedback path declared - so the generation-close
+    station is checked by the same bytes that check the wave one instead of by
+    an author remembering it is different.
+    """
+    path = skill_root / "domain" / "observation-topology.json"
+    if not path.is_file():
+        errors.append(
+            "OBSERVATION_TARGET_UNGROUNDED:domain/observation-topology.json: absent, so "
+            "nothing declares where a pass is allowed to look"
+        )
+        return {}
+    document = json.loads(path.read_text(encoding="utf-8"))
+    modes = document.get("access_modes")
+    feedback_paths = document.get("feedback_paths")
+    targets = document.get("targets")
+    if not isinstance(modes, dict) or not modes:
+        errors.append("OBSERVATION_TARGET_UNGROUNDED:access_modes: not a vocabulary")
+        modes = {}
+    if not isinstance(feedback_paths, dict) or not feedback_paths:
+        errors.append("OBSERVATION_TARGET_UNGROUNDED:feedback_paths: not a vocabulary")
+        feedback_paths = {}
+    if not isinstance(targets, list) or not targets:
+        errors.append("OBSERVATION_TARGET_UNGROUNDED:targets: the topology carries no stations")
+        return {}
+    declared: dict[str, Any] = {}
+    for target in targets:
+        if not isinstance(target, dict):
+            errors.append("OBSERVATION_TARGET_UNGROUNDED:<unidentified>: target is not a record")
+            continue
+        target_id = target.get("id")
+        if not isinstance(target_id, str) or not target_id:
+            errors.append("OBSERVATION_TARGET_UNGROUNDED:<unidentified>: target has no id")
+            continue
+        if target_id in declared:
+            errors.append(f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: id duplicated")
+        declared[target_id] = target.get("arrival_row")
+        for field in TARGET_FIELDS:
+            if not target.get(field):
+                errors.append(f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: no {field}")
+        inputs = target.get("inputs")
+        if not isinstance(inputs, list) or not all(
+            isinstance(item, str) and item.strip() for item in inputs or []
+        ):
+            errors.append(
+                f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: inputs are not enumerated, so "
+                "what the pass reads at this station is whatever it finds"
+            )
+        if target.get("access") not in modes:
+            errors.append(
+                f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: access {target.get('access')!r} "
+                f"is outside {sorted(modes)}"
+            )
+        if target.get("feedback") not in feedback_paths:
+            errors.append(
+                f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: feedback "
+                f"{target.get('feedback')!r} is outside {sorted(feedback_paths)}"
+            )
+        check_runbook(skill_root, target_id, target.get("runbook"), errors)
+    return declared
+
+
+def check_runbook(
+    skill_root: Path, target_id: str, runbook: Any, errors: list[str]
+) -> None:
+    """A station's step exists as a document, and names its completion receipt.
+
+    A runbook pointer that resolves to nothing is the spec-first-lifecycle class
+    this bundle catalogues, aimed at its own procedure: the row would declare a
+    named step in a close-out nobody can read. The receipt is checked as bytes
+    too, because "the record is the completion" is only true while the ledger
+    the step names is the ledger that exists.
+    """
+    if runbook is None:
+        return
+    if not isinstance(runbook, dict):
+        errors.append(f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: runbook is not a record")
+        return
+    for field in RUNBOOK_FIELDS:
+        if not str(runbook.get(field) or "").strip():
+            errors.append(f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: runbook has no {field}")
+            return
+    document = skill_root / runbook["path"]
+    if not document.is_file():
+        errors.append(
+            f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: runbook {runbook['path']} does not "
+            "resolve, so the named close-out step is a declaration with no procedure"
+        )
+        return
+    text = document.read_text(encoding="utf-8")
+    if runbook["step"] not in text:
+        errors.append(
+            f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: runbook {runbook['path']} names no "
+            f"step {runbook['step']!r}"
+        )
+    if runbook["receipt"] not in text:
+        errors.append(
+            f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: runbook {runbook['path']} does not "
+            f"name {runbook['receipt']} as the step's completion receipt"
+        )
+    if not (skill_root / runbook["receipt"]).exists():
+        errors.append(
+            f"OBSERVATION_TARGET_UNGROUNDED:{target_id}: the completion receipt "
+            f"{runbook['receipt']} does not exist"
+        )
+
+
+def check_register(skill_root: Path, repo_root: Path, errors: list[str]) -> set[str]:
+    """Every known gap carries a sensor that would see it, and a trigger.
+
+    Four required fields, and the two that could be prose are checked as
+    references instead: the sensor names a readback this tree can open and a
+    phrase that is actually in it, so a sensor pointing at a duty nobody wrote
+    reds rather than reading as coverage. That is the whole difference between
+    this register and a list of caveats.
+    """
+    path = skill_root / "domain" / "residual-sensor-register.json"
+    if not path.is_file():
+        errors.append(
+            "CEILING_WITHOUT_SENSOR:domain/residual-sensor-register.json: absent, so no "
+            "gap in this bundle has a sensor watching it"
+        )
+        return set()
+    document = json.loads(path.read_text(encoding="utf-8"))
+    rows = document.get("rows")
+    if not isinstance(rows, list) or not rows:
+        errors.append("CEILING_WITHOUT_SENSOR:rows: the register carries no rows")
+        return set()
+    declared: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            errors.append("CEILING_WITHOUT_SENSOR:<unidentified>: row is not a record")
+            continue
+        row_id = row.get("id")
+        if not isinstance(row_id, str) or not row_id:
+            errors.append("CEILING_WITHOUT_SENSOR:<unidentified>: row has no id")
+            continue
+        if row_id in declared:
+            errors.append(f"CEILING_WITHOUT_SENSOR:{row_id}: id duplicated")
+        declared.add(row_id)
+        missing = [field for field in REGISTER_FIELDS if not row.get(field)]
+        if missing:
+            errors.append(
+                f"CEILING_WITHOUT_SENSOR:{row_id}: missing {missing}; a gap without all four "
+                "of gap, no_mechanical_form, sensor and escalation is a caveat, not a row"
+            )
+            continue
+        check_sensor(repo_root, row_id, row["sensor"], errors)
+        escalation = row["escalation"]
+        if not isinstance(escalation, dict):
+            errors.append(f"CEILING_WITHOUT_SENSOR:{row_id}: escalation is not a record")
+            continue
+        for field in ESCALATION_FIELDS:
+            if not str(escalation.get(field) or "").strip():
+                errors.append(f"CEILING_WITHOUT_SENSOR:{row_id}: escalation has no {field}")
+        status = row.get("status")
+        if status not in REGISTER_STATUSES:
+            errors.append(
+                f"CEILING_WITHOUT_SENSOR:{row_id}: status {status!r} is outside "
+                f"{list(REGISTER_STATUSES)}"
+            )
+            continue
+        landed = escalation.get("landed")
+        if status == "GATED" and not str(row.get("gate_ref") or "").strip():
+            errors.append(
+                f"CEILING_WITHOUT_SENSOR:{row_id}: GATED with no gate to point at"
+            )
+        if status == "SENSOR_FIRED_ESCALATION_LANDED" and not (
+            isinstance(landed, str) and PROVIDER_REF.fullmatch(landed)
+        ):
+            errors.append(
+                f"CEILING_WITHOUT_SENSOR:{row_id}: the status says the escalation landed and "
+                f"escalation.landed {landed!r} is not a provider ref that says where"
+            )
+        if status == "OPEN" and landed:
+            errors.append(
+                f"CEILING_WITHOUT_SENSOR:{row_id}: escalation.landed names {landed!r} while "
+                "the row is still OPEN; a landed tightening moves the status"
+            )
+    return declared
+
+
+def check_sensor(repo_root: Path, row_id: str, sensor: Any, errors: list[str]) -> None:
+    """The sensor is a readback that exists, holding the phrase the row cites."""
+    if not isinstance(sensor, dict):
+        errors.append(f"CEILING_WITHOUT_SENSOR:{row_id}: sensor is not a record")
+        return
+    for field in SENSOR_FIELDS:
+        if not str(sensor.get(field) or "").strip():
+            errors.append(f"CEILING_WITHOUT_SENSOR:{row_id}: sensor has no {field}")
+            return
+    readback = repo_root / sensor["readback"]
+    if not readback.is_file():
+        errors.append(
+            f"CEILING_WITHOUT_SENSOR:{row_id}: sensor readback {sensor['readback']} does not "
+            "exist, so nothing is watching this gap"
+        )
+        return
+    if sensor["phrase"] not in readback.read_text(encoding="utf-8"):
+        errors.append(
+            f"CEILING_WITHOUT_SENSOR:{row_id}: sensor readback {sensor['readback']} does not "
+            f"carry {sensor['phrase']!r}, so the row cites a surface that moved"
+        )
+
+
+def check_ceiling_markers(
+    skill_root: Path, register_ids: set[str], errors: list[str]
+) -> None:
+    """A ceiling admitted in this bundle names the row that watches it."""
+    scanned = {
+        path
+        for pattern in CEILING_SCAN_GLOBS
+        for path in skill_root.glob(pattern)
+        if path.is_file() and path.name != VERB_SCAN_EXEMPT
+    }
+    for path in sorted(scanned):
+        relative = path.relative_to(skill_root).as_posix()
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not CEILING_MARKER.search(line):
+                continue
+            named = CEILING_ROW.findall(line)
+            if not named:
+                errors.append(
+                    f"CEILING_WITHOUT_SENSOR:{relative}:{number}: a ceiling is admitted here "
+                    "and no register row is named on the line; an admitted gap with no "
+                    "sensor is an exemption with better manners"
+                )
+                continue
+            for row_id in named:
+                if row_id not in register_ids:
+                    errors.append(
+                        f"CEILING_WITHOUT_SENSOR:{relative}:{number}: names register row "
+                        f"{row_id!r}, which does not exist"
+                    )
+
+
+def check_station_arrival(
+    repo_root: Path, targets: dict, ledger: dict | None, errors: list[str]
+) -> None:
+    """A station's arrival row and this bundle's own ledger say the same thing.
+
+    Pointer, never a copy: the arrival levels and their receipt kinds belong to
+    `skills/arrival-engineering`, and this only reads the row a station names.
+    What it ties is the half that ledger cannot see - whether a real generation
+    has produced a record here yet - so the station cannot quietly outgrow the
+    row that tracks it, and the row cannot claim a run that never happened.
+    """
+    if ledger is None:
+        return
+    records = ledger.get("records") or []
+    path = repo_root / ARRIVAL_TOPOLOGY
+    rows: list = []
+    if path.is_file():
+        rows = json.loads(path.read_text(encoding="utf-8")).get("rows") or []
+    for target_id, row_id in sorted(targets.items()):
+        if not row_id:
+            continue
+        produced = [
+            record
+            for record in records
+            if isinstance(record, dict)
+            and record.get("subject") == target_id
+            and not str(record.get("boundary") or "").endswith(FIXTURE_BOUNDARY)
+        ]
+        if not path.is_file():
+            errors.append(
+                f"STATION_ARRIVAL_UNTIED:{row_id}: {ARRIVAL_TOPOLOGY} is absent, so the "
+                "station's arrival is tracked by nothing"
+            )
+            return
+        row = next((item for item in rows if item.get("id") == row_id), None)
+        if row is None:
+            errors.append(
+                f"STATION_ARRIVAL_UNTIED:{row_id}: station {target_id} names this arrival "
+                f"row and {ARRIVAL_TOPOLOGY} does not carry it"
+            )
+            continue
+        has_run = any(
+            isinstance(receipt, dict) and receipt.get("kind") == "run"
+            for receipt in row.get("receipts") or []
+        )
+        if produced and not has_run:
+            errors.append(
+                f"STATION_ARRIVAL_UNTIED:{row_id}: {len(produced)} record(s) for station "
+                f"{target_id} came from a real boundary while the arrival row still carries "
+                "no run-kind receipt; the station has outgrown the row that tracks it"
+            )
+        if has_run and not produced:
+            errors.append(
+                f"STATION_ARRIVAL_UNTIED:{row_id}: the arrival row carries a run-kind receipt "
+                f"while every record for station {target_id} came from a fixture"
+            )
+
+
+def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict | None:
     """Record shape, and the one append-only property a single file can carry.
 
     A string saying "append_only" is not a check - it is the HOST_OBSERVED exit
@@ -418,12 +757,12 @@ def check_ledger(skill_root: Path, errors: list[str]) -> None:
     path = skill_root / "domain" / "run-ledger.json"
     if not path.is_file():
         errors.append("domain/run-ledger.json missing")
-        return
+        return None
     ledger = json.loads(path.read_text(encoding="utf-8"))
     records = ledger.get("records")
     if not isinstance(records, list):
         errors.append("run ledger carries no records list")
-        return
+        return ledger
     previous: datetime | None = None
     for position, record in enumerate(records):
         if not isinstance(record, dict):
@@ -433,6 +772,7 @@ def check_ledger(skill_root: Path, errors: list[str]) -> None:
             "run_id",
             "wave",
             "boundary",
+            "subject",
             "classes_sampled",
             "hits",
             "novel_class_candidates",
@@ -441,6 +781,12 @@ def check_ledger(skill_root: Path, errors: list[str]) -> None:
         ):
             if field not in record:
                 errors.append(f"run record {position} has no {field!r}")
+        if "subject" in record and record["subject"] not in targets:
+            errors.append(
+                f"OBSERVATION_TARGET_UNGROUNDED:run record {position}: subject "
+                f"{record['subject']!r} is outside the stations "
+                f"domain/observation-topology.json declares {sorted(targets)}"
+            )
         try:
             stamp = datetime.fromisoformat(str(record.get("run_id")))
         except ValueError:
@@ -455,6 +801,7 @@ def check_ledger(skill_root: Path, errors: list[str]) -> None:
                 "before it; an append-only ledger does not go backwards"
             )
         previous = stamp
+    return ledger
 
 
 def check_forbidden_surface(path: Path, errors: list[str]) -> None:
@@ -698,7 +1045,10 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     check_diagnostic_tie(text, errors)
     check_catalogue(catalogue, errors)
     check_method_claims(catalogue, errors)
-    check_ledger(skill_root, errors)
+    targets = check_observation_topology(skill_root, errors)
+    ledger = check_ledger(skill_root, targets, errors)
+    check_station_arrival(repo_root, targets, ledger, errors)
+    check_ceiling_markers(skill_root, check_register(skill_root, repo_root, errors), errors)
     # Every executable in the bundle, not just the driver: the Non-claim is
     # written about the bundle, so the scan that keeps it true has to cover the
     # bundle. A scan over one of five scripts proves the property for one file
@@ -827,6 +1177,96 @@ def selftest() -> int:
             "class_without_a_stock_sweep_reference_reds",
             strip_stock_sweep,
             "no stock-sweep reference",
+        )
+
+        def edit_json(copy: Path, relative: str, change) -> None:
+            path = copy / relative
+            body = json.loads(path.read_text(encoding="utf-8"))
+            change(body)
+            path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+
+        def undeclared_station(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/run-ledger.json",
+                lambda body: body["records"][0].__setitem__("subject", "some-other-seam"),
+            )
+
+        mutate(
+            "run_record_naming_an_undeclared_station_reds",
+            undeclared_station,
+            "OBSERVATION_TARGET_UNGROUNDED:run record 0",
+        )
+
+        def unpointed_runbook(copy: Path) -> None:
+            def change(body):
+                for target in body["targets"]:
+                    if target.get("runbook"):
+                        target["runbook"]["path"] = "domain/a-runbook-nobody-wrote.md"
+
+            edit_json(copy, "domain/observation-topology.json", change)
+
+        mutate(
+            "runbook_pointer_that_resolves_to_nothing_reds",
+            unpointed_runbook,
+            "does not resolve, so the named close-out step",
+        )
+
+        def register_row_missing_a_field(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/residual-sensor-register.json",
+                lambda body: body["rows"][0].pop("sensor"),
+            )
+
+        mutate(
+            "register_row_without_all_four_fields_reds",
+            register_row_missing_a_field,
+            "CEILING_WITHOUT_SENSOR:rubber-stamp-authorization: missing",
+        )
+
+        def sensor_pointing_nowhere(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/residual-sensor-register.json",
+                lambda body: body["rows"][1]["sensor"].__setitem__(
+                    "readback", "skills/red-team/domain/a-readback-nobody-wrote.json"
+                ),
+            )
+
+        mutate(
+            "sensor_readback_that_does_not_exist_reds",
+            sensor_pointing_nowhere,
+            "does not exist, so nothing is watching this gap",
+        )
+
+        def prose_ceiling_with_no_row(copy: Path) -> None:
+            path = copy / "SKILL.md"
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\nThis pass samples by judgement, which is a structural ceiling.\n",
+                encoding="utf-8",
+            )
+
+        mutate(
+            "prose_ceiling_without_a_register_row_reds",
+            prose_ceiling_with_no_row,
+            "a ceiling is admitted here and no register row is named",
+        )
+
+        def station_outgrew_its_row(copy: Path) -> None:
+            def change(body):
+                record = dict(body["records"][-1])
+                record["run_id"] = "2026-12-01T00:00:00+00:00"
+                record["boundary"] = "generation-close"
+                body["records"].append(record)
+
+            edit_json(copy, "domain/run-ledger.json", change)
+
+        mutate(
+            "station_that_outgrew_its_arrival_row_reds",
+            station_outgrew_its_row,
+            "STATION_ARRIVAL_UNTIED",
         )
 
         def plant_a_mutating_call(copy: Path) -> None:
