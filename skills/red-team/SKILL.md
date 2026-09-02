@@ -45,7 +45,8 @@ improvised. Each class carries:
 A gated class drops out of active sampling: a machine catches it now, and the
 steady-state target of this bundle is its own silence. The classes are
 `blind-observer`, `free-exit`, `trusted-current-literal`,
-`duplicate-discovery`, `spec-first-lifecycle` and `shape-copying`.
+`duplicate-discovery`, `spec-first-lifecycle`, `shape-copying` and
+`yielded-non-report`.
 
 ## The stations - where a pass is allowed to look
 
@@ -113,8 +114,8 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 
 - Signal: about to write "finding 3: X looks wrong" into a report.
 - Action: emit a record - catalogue class, subject at an exact sha256, an experiment block carrying the verbatim command sequence with expected and observed, a verdict, and the both-directions status - and let the validator judge it. The block's grammar is fixed so it drops VERBATIM into an issue body's observer-demonstration section and survives that gate's stripping; the monitor manufactures admission-grade evidence and the dispatcher files with it.
-- Why: an observer's silence is evidence only after it has demonstrated both directions, and a finding whose observed half is missing cannot show that it did - the blind probe reported a truthful zero for two waves because nothing in the record's shape demanded the other direction.
-- evidence: blind-observer, trusted-current-literal
+- Why: an observer's silence is evidence only after it has demonstrated both directions, and a finding whose observed half is missing cannot show that it did - the blind probe reported a truthful zero for two waves because nothing in the record's shape demanded the other direction. The same separation is what a lane result needs one level up: a 117-byte payload reading "Still in progress. Yielding now" was counted as one of twelve completed results because the completion signal was trusted instead of judged.
+- evidence: blind-observer, trusted-current-literal, yielded-non-report
 
 ## R5. Escalation is one signal to the dispatcher, from a bounded list of classes
 

@@ -35,8 +35,20 @@
     {
       "id": "run-record-is-derived",
       "expected": "PASS",
-      "note": "The committed run-ledger record is exactly what the fixture run produces, so the curve reads measurements rather than typed numbers.",
+      "note": "The committed run-ledger record is exactly what the fixture run produces under the classes that record itself says were sampled, so the curve reads measurements rather than typed numbers. The pin is the record's own classes_sampled: re-deriving a historical record from whatever the catalogue carries now is the trusted-current-literal class aimed at this bundle's own controls.",
       "test": "test_red_team.RedTeamEvals.test_the_committed_run_record_is_what_the_fixture_run_produces"
+    },
+    {
+      "id": "yielded-non-report-both-directions",
+      "expected": "PASS",
+      "note": "The yielded-non-report class fires on the short payload that declares itself alive and carries none of the report contract's blocks, and does not fire on a full report, on a full report that narrates a yield it recovered from, or on the clean and wave-17 bundles.",
+      "test": "test_red_team.RedTeamEvals.test_a_yielded_payload_recorded_as_a_result_is_reported"
+    },
+    {
+      "id": "yielded-class-fires-only-on-the-conjunction",
+      "expected": "PASS",
+      "note": "Stripping the contract blocks out of the recovered report turns the same self-declaration into a finding, so the second half of the predicate is load-bearing rather than decorative; a detector on the declaration alone would refuse every honest account of a park-and-resume.",
+      "test": "test_red_team.RedTeamEvals.test_the_yielded_class_only_fires_on_the_conjunction"
     },
     {
       "id": "finding-to-issue-round-trip",

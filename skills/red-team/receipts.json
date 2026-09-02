@@ -52,6 +52,14 @@
       "ledger": "slg cross-wave ledger, wave 2026-09-01-machine-gates: 'a mid-wave ratchet was widened by the candidate it blocked (==136 relaxed to >=136, producer-checked equality replaced by an unchecked floor)'",
       "status": "gated"
     },
+    "yielded-non-report": {
+      "refs": [
+        "ed3c/skill-concerns#105"
+      ],
+      "claim": "a 117-byte payload reading 'Still in progress. Yielding now...' was recorded as one of twelve results while the eleven sibling payloads each carried branch@sha, controls and a body-digest ledger. The completion notification everything downstream is instructed to trust fired on a body that declared itself alive in the certificate's own text - fail-open in the forbidden direction, composed-false in the blind-observer shape. Measured consequence of the live case: one lane's land phase silently vanished and its first atom landed a day later by a different actor",
+      "ledger": "slg cross-wave ledger, wave 2026-09-01-wave18-noodles-drain: 'C10 SPLIT - dispatcher conduct passed (no takeover of the yielded lane), but the harness recorded a completed result whose payload declared itself alive'; the same wave's ranked gaps carry it as 'a 117-byte still in progress payload counted as one of twelve results'",
+      "status": "active"
+    },
     "judge-method-strength": {
       "refs": [
         "ed3c/skill-concerns#91",
