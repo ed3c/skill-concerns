@@ -84,6 +84,31 @@
       "novel_class_candidates": [],
       "judge_gaps": 2,
       "duplicate_blocks": 2
+    },
+    {
+      "run_id": "2026-09-02T19:32:00+00:00",
+      "wave": "2026-09-03-wave21-sc-boundary",
+      "boundary": "wave-close",
+      "subject": "wave-boundary",
+      "classes_sampled": [
+        "blind-observer",
+        "free-exit",
+        "trusted-current-literal",
+        "duplicate-discovery",
+        "spec-first-lifecycle",
+        "yielded-non-report"
+      ],
+      "hits": {
+        "blind-observer": 1,
+        "free-exit": 0,
+        "trusted-current-literal": 0,
+        "duplicate-discovery": 10,
+        "spec-first-lifecycle": 12,
+        "yielded-non-report": 0
+      },
+      "novel_class_candidates": [],
+      "judge_gaps": 23,
+      "duplicate_blocks": 10
     }
   ]
 }
