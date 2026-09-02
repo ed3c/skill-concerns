@@ -51,6 +51,11 @@ WORKFLOW_CLAUSES: tuple[tuple[str, str], ...] = (
     ("MERGE_TREE_NEVER_GRADED", "working-directory: .merge"),
     ("MERGEABILITY_NOT_RESOLVED_FROM_TRUSTED_BYTES", ".trusted/scripts/merge_state.py"),
     ("MERGE_RESULT_FAILURE_NOT_REFUSED", "needs.merge-result.result"),
+    # `merge_state.EXITS` splits UNMERGEABLE/UNKNOWN/UNREADABLE into three
+    # codes, but the shell fails the job identically on all three. The refusal
+    # string is the only place that split is ever read, so if it stops naming
+    # the state word the three exits become one silent shape again.
+    ("REFUSAL_DOES_NOT_NAME_THE_MERGEABILITY_STATE", "${MERGE_STATE:-ABSENT}"),
     ("VERIFY_CAN_BE_SKIPPED_INTO_A_PASS", "if: ${{ !cancelled() }}"),
     ("RECEIPT_DOES_NOT_NAME_THE_GRADED_TREE", '"merge_sha": os.environ["MERGE_SHA"]'),
     (
@@ -160,6 +165,44 @@ class MergeStateTests(unittest.TestCase):
     def test_an_unrecognised_shape_is_unknown_not_mergeable(self) -> None:
         self.assertEqual(merge_state.UNKNOWN, merge_state.classify(None, None))
         self.assertEqual(merge_state.UNKNOWN, merge_state.classify("true", "clean"))
+
+    def test_the_state_word_survives_a_failing_exit(self) -> None:
+        """The channel that actually distinguishes 4 from 5, exercised.
+
+        No process branches on the exit integers -- `verify.yml`'s shell fails
+        the job identically on 3, 4 and 5. What tells a conflicting PR from an
+        uncomputed one from an unreachable provider is the state WORD appended
+        to `$GITHUB_OUTPUT`, which `verify` prints in its refusal. That word is
+        only worth naming if it is written on the failing path too, so this
+        asserts both halves together: the non-zero exit AND the word beside it.
+        """
+        original = merge_state.read_pull
+        try:
+            for state in (
+                merge_state.UNMERGEABLE,
+                merge_state.UNKNOWN,
+                merge_state.UNREADABLE,
+            ):
+                with self.subTest(state=state), tempfile.TemporaryDirectory() as tmp:
+                    output = Path(tmp) / "github_output"
+                    merge_state.read_pull = (
+                        lambda _repo, _pull, _state=state: (_state, "stub")
+                    )
+                    code = merge_state.main(
+                        [
+                            "--repository", "ed3c/skill-concerns",
+                            "--pull", "1",
+                            "--attempts", "1",
+                            "--github-output", str(output),
+                        ]
+                    )
+                    self.assertEqual(merge_state.EXITS[state], code)
+                    self.assertNotEqual(0, code)
+                    self.assertEqual(
+                        f"merge_state={state}\n", output.read_text(encoding="utf-8")
+                    )
+        finally:
+            merge_state.read_pull = original
 
 
 class MergeResultFixtureTests(unittest.TestCase):

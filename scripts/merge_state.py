@@ -43,8 +43,23 @@ UNMERGEABLE = "UNMERGEABLE"
 UNKNOWN = "UNKNOWN"
 UNREADABLE = "UNREADABLE"
 
-# The exit code IS the report: land.yml and verify.yml read a process result,
-# not prose. Nothing here may return 0 for a state other than MERGEABLE.
+# The reader is `verify.yml`'s `mergeability` step, and only that: it runs this
+# module and the shell fails the `merge-result` job on any non-zero. `land.yml`
+# does not name this module at all -- it is triggered by `workflow_run` on a
+# COMPLETED verify, so the refusal has already happened upstream of it, and a
+# comment claiming it as a reader would be a reader that does not exist.
+# Nothing here may return 0 for a state other than MERGEABLE.
+#
+# No process branches on 3 vs 4 vs 5; that step fails identically on all three.
+# The distinction that IS read travels as the state WORD this module appends to
+# `--github-output`, which `verify` prints as
+# `MERGE_RESULT_UNGRADED:<result>:<state>` -- that is what makes a conflicting
+# PR, an uncomputed one and an unreachable provider three different refusals
+# instead of one green. The word is written before the exit, so a failing run
+# still names its state (`test_the_state_word_survives_a_failing_exit`).
+# The integers keep the same split for a CLI caller that has no
+# `$GITHUB_OUTPUT` to read; ed3c/skill-concerns#111's absence control is what
+# requires the split to exist at all, in either channel.
 EXITS = {MERGEABLE: 0, UNMERGEABLE: 3, UNKNOWN: 4, UNREADABLE: 5}
 
 # States worth waiting on. Everything else is terminal on the first read.
