@@ -92,11 +92,63 @@ DIAGNOSTICS = (
 DEFAULT_SUBJECT = "wave-boundary"
 
 # The probe surfaces that structurally cannot carry the answer they are cited
-# for (ed3c/skill-concerns#83). A claim of absence resting on one of these is
-# ABSENT, never NEGATIVE.
-BLIND_PROBES = {
-    "rest-events-edited": re.compile(r"issues/\d+/(?:events|timeline)"),
+# for (ed3c/skill-concerns#83), each DISPOSED rather than merely labelled: the
+# blind surface, what it cannot see, the sighted surface that can, and that
+# surface's own ceiling. A claim of absence resting on a blind one is ABSENT,
+# never NEGATIVE.
+#
+# Naming the replacement is the disposition. A refusal that says only what is
+# wrong leaves the next report to re-derive the substitute, and re-deriving it
+# is how this probe reached every lane in the first place -- `land_pr.py`
+# rewrites the referenced issue's body on every land, so every landed PR
+# carries an automation body edit the REST feed reports as zero.
+#
+# The sighted surface is not free of ceilings and its ceiling is carried here
+# rather than assumed, because it is the same absence-read-as-negative shape
+# one level down (ed3c/skill-concerns#102).
+#
+# `pattern` matches the PLACEHOLDER, not just a literal issue number. A lane
+# report writes `issues/N/events` or `issues/<n>/events` far more often than it
+# writes `issues/72/events`, so a probe anchored on `\d+` was structurally
+# silent on the documents this class exists to read -- it matched only the
+# fixture the class was filed from. `sighted` is the acquittal that has to come
+# with that widening: a document naming the GraphQL surface has DISPOSED of the
+# blind one, and firing on it would turn every correct disposition (including
+# this module's own, and every lane report that adopted it) into a hit. The
+# class is "an absence claim RESTS on a blind observer", never "a document
+# mentions one".
+BLIND_PROBES: dict[str, dict[str, Any]] = {
+    "rest-events-edited": {
+        "pattern": re.compile(r"issues/[^/\s`\"']+/(?:events|timeline)"),
+        "sighted": re.compile(r"userContentEdits"),
+        "cannot": (
+            "carry a body revision at all: `edited` in that payload is a COMMENT event"
+        ),
+        "instead": (
+            "gh api graphql -f query='{repository(owner:\"OWNER\",name:\"REPO\")"
+            "{issue(number:N){userContentEdits(first:20)"
+            "{totalCount nodes{editedAt editor{login}}}}}}'"
+        ),
+        "ceiling": (
+            "totalCount counts the ORIGINAL revision once any edit exists, so the "
+            "first edit moves it 0 -> 2 and every later edit by one: subtract one "
+            "when non-zero, and read 0 as ABSENT rather than as NEGATIVE "
+            "(ed3c/skill-concerns#102). Read the editor logins in the same query - "
+            "counted alone, an automation edit and a hand edit are the same number"
+        ),
+    },
 }
+# Still only `body edit`, and NOT yet the `totalCount=0 -> ABSENT` phrasing
+# lanes actually write. That widening is ed3c/skill-concerns#129's other half
+# and is left to it, not declined: with the `sighted` acquittal above in place
+# it would be SAFE, because a report that types the third state names the
+# GraphQL surface in the same breath and is acquitted before the claim is even
+# read. Recording that explicitly because the obvious objection -- "matching
+# ABSENT would fire on the exact discipline #83 asked for" -- was true only
+# while the acquittal did not exist, and a reason that stops holding is worse
+# than no reason. What #129 also asks for and is NOT satisfiable from inside
+# this repository is its last clause: replaying the four wave-21 lane reports
+# through the fixed detector. Those reports never entered the tree.
 ABSENCE_CLAIM = re.compile(
     r"(?i)\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit", re.M
 )
@@ -199,9 +251,14 @@ def experiment_blind_observer(bundle: Path) -> list[dict[str, Any]]:
             claim = ABSENCE_CLAIM.search(text)
             if not claim:
                 continue
-            for probe, pattern in BLIND_PROBES.items():
-                match = pattern.search(text)
+            for probe, blind in BLIND_PROBES.items():
+                match = blind["pattern"].search(text)
                 if not match:
+                    continue
+                # Disposed, not resting: the document already names the surface
+                # that can carry the answer, so citing the blind one is the
+                # contrast rather than the ground.
+                if blind["sighted"].search(text):
                     continue
                 hits.append(
                     _hit(
@@ -209,7 +266,8 @@ def experiment_blind_observer(bundle: Path) -> list[dict[str, Any]]:
                         path,
                         "an absence claim rests on an observer that has demonstrated both directions",
                         f"the claim {claim.group(0)!r} rests on {probe} ({match.group(0)}), "
-                        "a surface that cannot carry a body revision at all",
+                        f"a surface that cannot {blind['cannot']}. Read it instead with "
+                        f"{blind['instead']} -- {blind['ceiling']}",
                     )
                 )
     return hits

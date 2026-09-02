@@ -224,6 +224,121 @@ class RedTeamEvals(unittest.TestCase):
         self.assertEqual([], validator.completeness_reasons(body))
         self.assertIn(block, body)
 
+    def test_every_blind_probe_is_disposed_not_merely_labelled(self) -> None:
+        """ed3c/skill-concerns#83: the refusal names where to look instead.
+
+        A blind surface that is only labelled leaves the next lane to re-derive
+        the substitute, and re-deriving it is how this probe reached every lane
+        of five waves. The sighted surface must be named, must read the editor
+        logins (counted alone, an automation edit and a hand edit are the same
+        number, and `land_pr.py` rewrites the referenced issue's body on every
+        land), and must carry its own ceiling -- GraphQL's counter has the same
+        absence-read-as-negative shape one level down.
+        """
+        self.assertTrue(driver.BLIND_PROBES)
+        for probe, blind in driver.BLIND_PROBES.items():
+            with self.subTest(probe=probe):
+                self.assertTrue(blind["pattern"].search("issues/72/events"))
+                self.assertIn("userContentEdits", blind["instead"])
+                self.assertIn("editor{login}", blind["instead"])
+                self.assertIn("ABSENT", blind["ceiling"])
+                self.assertIn("ed3c/skill-concerns#102", blind["ceiling"])
+
+    def test_the_probe_matches_the_placeholder_a_lane_actually_writes(self) -> None:
+        """A detector anchored on `\\d+` reads the fixture and nothing else.
+
+        Lane reports cite the probe with the issue number left as a
+        placeholder. Measured across wave-21's four lane reports, the forms
+        written were `issues/N/events` and `issues/<n>/events`; the literal
+        `issues/72/events` appears only in the fixture this class was filed
+        from. So the pattern that "detects" this class was structurally silent
+        on every document it was pointed at -- an observer blind to the thing
+        it is cited for, which is the class itself, one level up.
+        """
+        blind = driver.BLIND_PROBES["rest-events-edited"]
+        for citation in (
+            "gh api repos/ed3c/skill-concerns/issues/N/events",
+            "repos/OWNER/REPO/issues/<n>/events",
+            "issues/{number}/timeline",
+            "issues/72/events",
+        ):
+            with self.subTest(citation=citation):
+                self.assertTrue(blind["pattern"].search(citation), citation)
+
+    def test_a_document_naming_the_sighted_surface_is_disposed_not_hit(self) -> None:
+        """The acquittal the widening has to come with.
+
+        Widening the pattern without this fires on every correct disposition --
+        this module's own comment, the catalogue recipe, and every lane report
+        that adopted the GraphQL surface all cite the blind probe in order to
+        refuse it. The class is "an absence claim RESTS on a blind observer",
+        so a document that already names the surface which can carry the answer
+        has grounded its claim, not abandoned it.
+
+        Both arms in one bundle, so the conjunction is shown to be load-bearing
+        rather than asserted.
+        """
+        bundle = self.scratch / "sighted-bundle"
+        (bundle / "reports").mkdir(parents=True)
+        resting = (
+            "Second arrival: `gh api repos/ed3c/skill-concerns/issues/N/events`\n"
+            "-- no body edit by this lane and none by automation.\n"
+        )
+        disposed = resting + (
+            "REST is blind here; read userContentEdits instead, totalCount=0 "
+            "-> ABSENT.\n"
+        )
+        (bundle / "reports" / "lane-report-resting.md").write_text(
+            resting, encoding="utf-8"
+        )
+        (bundle / "reports" / "lane-report-disposed.md").write_text(
+            disposed, encoding="utf-8"
+        )
+        hits = driver.EXPERIMENTS["blind-observer"](bundle)
+        self.assertEqual(
+            ["reports/lane-report-resting.md"],
+            [hit["subject"]["path"] for hit in hits],
+        )
+
+    def test_the_blind_observer_finding_points_at_the_sighted_surface(self) -> None:
+        """Direct readback: a lane reads the finding, not this table.
+
+        The disposition has to reach the artifact a reader actually receives,
+        or it is a comment in a file nobody opens -- which is the defect class
+        this atom is an instance of.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        blind = [
+            finding
+            for finding in report["findings"]
+            if finding["catalogue_class"] == "blind-observer"
+        ]
+        self.assertTrue(blind)
+        observed = blind[0]["experiment"]["observed"]
+        self.assertIn("rest-events-edited", observed)
+        self.assertIn("userContentEdits", observed)
+        self.assertIn("editor{login}", observed)
+        self.assertIn("ed3c/skill-concerns#102", observed)
+        # And it survives the trip into an issue body, fences and all.
+        block = driver.render_demonstration(blind[0])
+        body = TEMPLATE.read_text(encoding="utf-8").replace("{demonstration}", block)
+        self.assertEqual([], validator.completeness_reasons(body))
+        self.assertIn("userContentEdits", body)
+
+    def test_the_catalogue_recipe_reads_the_sighted_surface_with_its_editors(self) -> None:
+        """The recipe an operator RUNS, not only the table the driver reads."""
+        entry = next(
+            item for item in catalogue()["classes"] if item["id"] == "blind-observer"
+        )
+        recipe = entry["falsification"]["recipe"]
+        sighted = [step for step in recipe if "userContentEdits" in step]
+        self.assertEqual(1, len(sighted), recipe)
+        self.assertIn("nodes{editedAt editor{login}}", sighted[0])
+        # The blind step stays: it is the contrast the class is made of, and
+        # the fixture it reproduces is a committed lane report, not an
+        # instrument anyone is being told to use.
+        self.assertTrue([step for step in recipe if "/events" in step])
+
     def test_gen_receipts_is_idempotent_and_authors_the_committed_bytes(self) -> None:
         rendered = gen_receipts.render(catalogue())
         self.assertEqual(
