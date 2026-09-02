@@ -10,7 +10,7 @@
   "rows": [
     {
       "id": "rubber-stamp-authorization",
-      "gap": "the BUILD gate checks that a cure-authorization EXISTS and that its ref carries the form its kind declares; it never checks that the adjudication behind that ref measured anything. A well-formed authorization naming a body with no measurement in it passes.",
+      "gap": "the BUILD gate checks that a cure-authorization RESOLVES - a pinned subject that exists, and an artifact that is either an issue ref the cadence re-resolves or an inline record with an expiry - and it still never reads what that artifact says. An adjudication whose body carries no measurement passes. Narrowed by ed3c/skill-concerns#103 from the earlier and much wider gap, where any date plus any non-empty sentence was admitted forever; what remains is a structural ceiling. CEILING:rubber-stamp-authorization",
       "no_mechanical_form": "whether a named adjudication carries a discriminating measurement is a reading of that body, not a shape. The mechanical form available - assert the ref is mentioned somewhere - would certify the mention and nothing else, which is the performative check this register refuses to pretend is a gate.",
       "sensor": {
         "readback": "skills/red-team/receipts.json",
@@ -19,9 +19,11 @@
       },
       "escalation": {
         "trigger": "one confirmed rubber-stamp instance - an authorization whose named artifact carries no adjudication",
-        "path": "file the authorization-quality tightening as an atom at ed3c/skill-concerns naming the ref and what it failed to carry; the tightening lands through BUILD, and this row's status records that the sensor fired"
+        "path": "file the authorization-quality tightening as an atom at ed3c/skill-concerns naming the ref and what it failed to carry; the tightening lands through the PR ceremony, and this row's status records that the sensor fired",
+        "fired": "the wave-19 judge ran three garbage refs through check_method_claims against the committed catalogue on landed main; all three passed, including operator:2026-09-01:the vibes were good, which named no subject and no artifact at all",
+        "landed": "ed3c/skill-concerns#103"
       },
-      "status": "OPEN"
+      "status": "SENSOR_FIRED_ESCALATION_LANDED"
     },
     {
       "id": "sampling-theater",

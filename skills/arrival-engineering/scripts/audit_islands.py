@@ -476,6 +476,7 @@ def append_row(topology: dict, row: Any, tree: Path) -> dict:
         row_id,
         json.dumps({key: value for key, value in row.items() if key != "cure_authorization"}),
         row.get("cure_authorization"),
+        tree=tree,
     )
     if cure is not None:
         raise AppendRefused(str(cure))

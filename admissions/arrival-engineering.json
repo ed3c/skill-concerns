@@ -181,7 +181,7 @@
     },
     {
       "path": "skills/arrival-engineering/scripts/audit_islands.py",
-      "sha256": "e1f4362db76074c70b330ebf5fa90c2b6c4174a2255e6fe2f205e707cd7accd8"
+      "sha256": "d16e10de4f8e6e8139d0f49d16860f4bfd45393967d7faa03161dbb505145e2b"
     },
     {
       "path": "skills/arrival-engineering/scripts/gen_admission.py",
@@ -208,7 +208,7 @@
       "sha256": "113747186231cddc8738beb03b809b7bff005608e3e65003e6ba9b9f15818272"
     }
   ],
-  "skill_tree_sha256": "17dc8ac96f190656d103931400261fc6bc0f00d4f13d665a868bfa87957f7586",
+  "skill_tree_sha256": "cbf5c0e322164f6fe113f9ad6d04aa0916e3a855cc974ad4793178be44b4966b",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

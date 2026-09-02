@@ -217,10 +217,24 @@ Planted negatives keep all of this falsifiable in `--selftest`: a repository gat
 A BUILD proposal that introduces or alters an **enforcement shape** — a gate, a
 ratchet, a threshold, a refusal, an escape-hatch condition — must name its
 **cure-authorization**: an issue whose body carries the discriminating
-measurement or the falsification, or an explicit operator adjudication
-reference. A proposal without one is refused with `BUILD_CURE_UNAUTHORIZED`
+measurement or the falsification, or an operator adjudication that **resolves**.
+A proposal without one is refused with `BUILD_CURE_UNAUTHORIZED`
 naming this rule, and a SHADOW detection never authorizes — detection is the
 beginning of an adjudication, not a license to cure.
+
+An operator adjudication resolves rather than parses (ed3c/skill-concerns#103).
+The form used to be any date plus any non-empty text, which the wave-19 judge
+falsified by running three garbage refs through the committed catalogue on
+landed main — all three passed, `operator:2026-09-01:the vibes were good`
+included. It must now name a **pinned subject** that exists in the tree and that
+its own ref repeats, and carry **either** an issue reference whose body holds the
+adjudication — a provider ref the cadence sweep re-resolves — **or** an inline
+adjudication record with an expiry or a re-resolution cadence. A lapsed inline
+record is refused *as expired*, which is a different state from malformed, and
+every carrier passes the tree the subject resolves against rather than falling
+back to a weaker shape-only reading. What is still not judged is the QUALITY of
+the adjudication the artifact carries; that residue is registered with a sensor
+and a trigger in `skills/red-team/domain/residual-sensor-register.json`.
 
 The trigger was a lane that copied the nearest successful enforcement precedent
 (a report-only metric plus a monotonic ratchet) into a new debt issue; the

@@ -576,6 +576,7 @@ def add_class(catalogue: dict, entry: Any) -> dict:
         json.dumps({key: value for key, value in entry.items() if key != "cure_authorization"}),
         entry.get("cure_authorization"),
         always=True,
+        tree=SKILL_ROOT.parents[1],
     )
     if cure is not None:
         raise BuildRefused(str(cure))

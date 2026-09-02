@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import copy
 import json
+from datetime import date
 from pathlib import Path
 import shutil
 import sys
@@ -574,6 +576,137 @@ class CureAuthorizationTests(unittest.TestCase):
                         {"kind": kind, "ref": ref},
                     )
                 )
+
+    def test_the_judges_garbage_operator_ref_is_refused(self) -> None:
+        """ed3c/skill-concerns#103, the exact bytes the wave-19 judge ran.
+
+        Three garbage refs passed `check_method_claims` on landed main because
+        the form was any date plus any non-empty text. This is the one the judge
+        recorded, and the refusal has to name what is missing rather than say
+        the record is bad.
+        """
+        refusal = cure_authorization.refuse(
+            "skills/demo",
+            cure_authorization.COPY_NEAREST_RATCHET,
+            {"kind": "operator-adjudication", "ref": cure_authorization.VIBES_REF},
+            tree=ROOT,
+        )
+        self.assertIsNotNone(refusal)
+        self.assertIn("names no pinned subject", refusal.detail)
+        self.assertIn("names no adjudication artifact", refusal.detail)
+
+    def test_an_operator_ref_resolving_to_a_real_artifact_is_admitted(self) -> None:
+        """The planted negative arm: an issue-grounded ref passes.
+
+        Its subject exists in this tree, its own ref repeats that subject, and
+        the artifact is a provider ref the cadence sweep re-resolves. Nothing
+        about the tightening refuses a real adjudication.
+        """
+        self.assertIsNone(
+            cure_authorization.refuse(
+                "skills/demo",
+                cure_authorization.COPY_NEAREST_RATCHET,
+                {
+                    "kind": "operator-adjudication",
+                    "ref": "operator:2026-09-01:scripts/cure_authorization.py - the rule",
+                    "subject": "scripts/cure_authorization.py",
+                    "adjudication": {"issue": "ed3c/skill-concerns#93"},
+                },
+                tree=ROOT,
+            )
+        )
+
+    def test_an_expired_inline_adjudication_is_refused_as_expired(self) -> None:
+        """Lapsed and malformed are different states and must not read alike."""
+        base = {
+            "kind": "operator-adjudication",
+            "ref": "operator:2026-09-01:scripts/cure_authorization.py - the rule",
+            "subject": "scripts/cure_authorization.py",
+        }
+        today = date(2026, 9, 2)
+        expired = cure_authorization.authorization_errors(
+            {**base, "adjudication": {"record": "the operator said so", "expires": "2026-01-01"}},
+            tree=ROOT,
+            today=today,
+        )
+        self.assertTrue(any("expired on 2026-01-01" in error for error in expired))
+        self.assertEqual(
+            [],
+            cure_authorization.authorization_errors(
+                {**base, "adjudication": {"record": "the operator said so", "expires": "2026-12-01"}},
+                tree=ROOT,
+                today=today,
+            ),
+        )
+        self.assertEqual(
+            [],
+            cure_authorization.authorization_errors(
+                {
+                    **base,
+                    "adjudication": {
+                        "record": "the operator said so",
+                        "re_resolve": "every maintain cadence pass",
+                    },
+                },
+                tree=ROOT,
+                today=today,
+            ),
+        )
+        undated = cure_authorization.authorization_errors(
+            {**base, "adjudication": {"record": "the operator said so"}},
+            tree=ROOT,
+            today=today,
+        )
+        self.assertTrue(any("neither an expiry nor a" in error for error in undated))
+        self.assertFalse(any("expired" in error for error in undated))
+
+    def test_an_operator_subject_that_resolves_to_nothing_is_refused(self) -> None:
+        """A pinned subject is pinned to bytes, or it pins nothing."""
+        errors = cure_authorization.authorization_errors(
+            {
+                "kind": "operator-adjudication",
+                "ref": "operator:2026-09-01:scripts/a_file_nobody_wrote.py - the rule",
+                "subject": "scripts/a_file_nobody_wrote.py",
+                "adjudication": {"issue": "ed3c/skill-concerns#93"},
+            },
+            tree=ROOT,
+        )
+        self.assertTrue(any("does not exist in the tree" in error for error in errors))
+
+    def test_every_carrier_passes_the_tree_an_operator_subject_resolves_against(self) -> None:
+        """Absence of a tree is refused, not silently graded shape-only.
+
+        The weaker reading is exactly the free exit this tightening closed, so
+        it must not be reachable by forgetting an argument at a call site.
+        """
+        errors = cure_authorization.authorization_errors(
+            {
+                "kind": "operator-adjudication",
+                "ref": "operator:2026-09-01:scripts/cure_authorization.py - the rule",
+                "subject": "scripts/cure_authorization.py",
+                "adjudication": {"issue": "ed3c/skill-concerns#93"},
+            }
+        )
+        self.assertTrue(any("no tree was given" in error for error in errors))
+        modules = [
+            ROOT / "scripts" / "maintain_skills.py",
+            ROOT / "skills" / "arrival-engineering" / "scripts" / "audit_islands.py",
+            ROOT / "skills" / "red-team" / "scripts" / "shadow_driver.py",
+        ]
+        for path in modules:
+            with self.subTest(carrier=path.name):
+                calls = [
+                    node
+                    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+                    if isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "refuse"
+                ]
+                self.assertTrue(calls)
+                for call in calls:
+                    self.assertIn(
+                        "tree", [keyword.arg for keyword in call.keywords]
+                    )
 
     def test_a_verb_whose_subject_is_the_shape_always_needs_an_authorization(self) -> None:
         """`always=True` is for a carrier whose whole verb legislates."""
