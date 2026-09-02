@@ -28,6 +28,18 @@ exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothin
 is the mechanical reader for that claim). Drift leaves SHADOW as a finding with
 a destination, never as a patch.
 
+Nothing SCHEDULES it either, and "cadence" here names what the sweep re-reads,
+not a clock it runs on. Worth stating rather than leaving a reader to discover:
+`test_sweep_gates_nothing` refuses any file under `.github/workflows/`
+containing the string `maintain_skills`, so a cron whose only job was to run
+this sweep would red the same test that keeps it N-class -- the scan cannot
+presently tell "a workflow that RUNS the sweep" from "a gate that CONSUMES its
+result". Until it can, the cadence is whoever types the command, and the pins
+record what to re-read when they do. Filed as ed3c/skill-concerns#134 rather
+than resolved here: widening the gate a candidate is judged against, in the
+landing that needs the widening, is the move this repository refuses by
+standing rule.
+
 Two modes, and the split is the point (ed3c/skill-concerns#62)
 --------------------------------------------------------------
 
