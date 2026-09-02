@@ -17,11 +17,11 @@
     },
     {
       "path": "skills/dynamic-workflow/SKILL.md",
-      "sha256": "7b895892cabf1382dc32bcb22710cae2e4c2cf5ab24e12079aba957f6664241b"
+      "sha256": "337eed19e1f70b82d8e1dbf8974e77d3e29351a68ad3eb61a968b75a1f9f484f"
     },
     {
       "path": "skills/dynamic-workflow/domain/dispatch-runtime-topology.json",
-      "sha256": "0f0499ec40c6b6d7ddbc7769e37080d6438d2125f73aac0dd8bafa86e93b3fdc"
+      "sha256": "027943caa45b70e292af796c9acaa558419f3a395b554f51f0fbebd2bab6f26d"
     },
     {
       "path": "skills/dynamic-workflow/evals/cases.json",
@@ -121,7 +121,7 @@
     },
     {
       "path": "skills/dynamic-workflow/receipts.json",
-      "sha256": "e234440c5b09f6b006a46d637f2272cceb7ff17b471ccbe7cbd1de92075836bd"
+      "sha256": "9feaea4c037fc22dc56603f192a97dc7bcea16c0b88ee32f4fed56b2f740ba37"
     },
     {
       "path": "skills/dynamic-workflow/references/README.md",
@@ -164,7 +164,7 @@
       "sha256": "87e7bec58495c763435661359ea7b3b0069d76cf0fcda772815e5a420fea8547"
     }
   ],
-  "skill_tree_sha256": "a18da93d574a8567103273c00b22d5218ce5cea2f69afaaca0e86b642b845b94",
+  "skill_tree_sha256": "8bebf481e9333e8893fa4f512ec7f56c7731a11ad0688651d84a9046e0a9bcc1",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

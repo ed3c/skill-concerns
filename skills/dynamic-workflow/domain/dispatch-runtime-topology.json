@@ -53,6 +53,13 @@
       "observed": {
         "when": "2026-09-01",
         "where": "/Users/neon/.claude/projects/-Users-neon-noodles/d4332216-1347-4dc5-8057-7772de22e49c/subagents/workflows",
+        "receipts": [
+          "step-4-real-wave-observation",
+          "step-4-real-wave-with-dead-lanes",
+          "claude-code-workflow-shapes",
+          "max-observed-live-write-gap"
+        ],
+        "receipts_note": "this block IS where those four host observations live (ed3c/skill-concerns#91): each receipt names this file as its carrier and this list names the receipt back, so neither side can be dropped without the other going red",
         "workflows_scanned": 20,
         "lanes_scanned": 196,
         "complete_waves": "14 of 20 had every started lane carrying a result row",
@@ -89,6 +96,13 @@
       ],
       "observed": {
         "when": "2026-09-01",
+        "receipts": [
+          "codex-session-shapes",
+          "falsely-alive-stamp",
+          "liveness-source-is-the-ledger-not-mtime",
+          "terminal-stamp-is-not-a-notification"
+        ],
+        "receipts_note": "this block IS where those four host observations live (ed3c/skill-concerns#91): each receipt names this file as its carrier and this list names the receipt back, so neither side can be dropped without the other going red",
         "sessions_scanned": 599,
         "status_health_alive_stuck_distribution": {
           "exited/yellow/false/false": 563,

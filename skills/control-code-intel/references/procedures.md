@@ -14,6 +14,9 @@ encodes, not a "should work".
 - grepai (single repo, gob): `claude mcp add grepai -s user -- grepai mcp-serve <repo>`.
 - ASSERT: a real query returns results; `Connected` alone is not usable.
 - Note: a running session loads MCP at start; new tools require a restart.
+- Both registrations were watched reaching `Connected` on the operator host once:
+  receipts `grepai-mcp-connected` and `serena-mcp-connected`. Nothing here
+  replays them, which is why each names its observer in `receipts.json`.
 
 ## Enable cross-repo (workspace, Postgres + pgvector)
 
@@ -25,6 +28,11 @@ encodes, not a "should work".
 4. `grepai mcp-serve --workspace <name>` for the MCP; `grepai watch --workspace <name>` to index.
 5. ASSERT: `SELECT count(*) FROM chunks` is nonzero AND a repo-distinctive query
    returns the correct repo. Until both hold, cross-repo is not ready.
+
+Step 2 is the one nothing here replays: the build against the running major and
+the extension's own version string were watched once on the operator host
+(receipt `pgvector-built-pg16`). Treat it as a host observation, not a
+reproduction, and re-do it on any machine whose Postgres major differs.
 
 ## The backend-switch reindex gotcha
 
@@ -53,13 +61,18 @@ a landed change missed because the local clone was days behind, and a
   workspace watcher if `pgrep` finds none.
 - ASSERT freshness end-to-end, not by proxy: after a land, a query distinctive
   to the landed change must return it. A running watcher pid is not freshness.
+- Both failure modes and the cure were observed on the operator host in one
+  session (receipt `freshness-needs-an-owner`); the service and its schedule
+  live on that host, so nothing in this bundle replays them.
 
 ## The status tool is not workspace-aware (verified 2026-08-31)
 
 `grepai_index_status` (and `grepai status`) reads the per-project context and
 reports 0 files while the workspace store is populated and serving results.
 Never judge workspace health from status: use a canary search with a known
-answer, or `SELECT count(*) FROM chunks` on the workspace store.
+answer, or `SELECT count(*) FROM chunks` on the workspace store. The
+disagreement between the two readings was seen once, live, on the operator host
+(receipt `status-not-workspace-aware`) and is not reproduced by anything here.
 
 ## Scoped vs cross-repo search
 

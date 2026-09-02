@@ -29,7 +29,7 @@
     },
     {
       "path": "skills/control-code-intel/receipts.json",
-      "sha256": "2f02629c84b9b65fd4a824694829a572a8fb193948e47d7260b0a54c78c712cc"
+      "sha256": "051220bc616b17c6714564fa04ae2b70b1da42dc214cdd92c251c8a315d7e4be"
     },
     {
       "path": "skills/control-code-intel/references/README.md",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/control-code-intel/references/procedures.md",
-      "sha256": "d25bc635083fa7de95816661520fc565d79ebcebb17ba977713fb99f6126eab8"
+      "sha256": "8908291c0b8d4885b756dc4dacad6e28be8186d9ad44cb300895795e4a784bc8"
     },
     {
       "path": "skills/control-code-intel/scripts/code_intel_driver.py",
@@ -72,7 +72,7 @@
       "sha256": "3f5fe7454b84ec8a93f64fea1ac4b627fa95edc3d85f8dd3f81517676adf078b"
     }
   ],
-  "skill_tree_sha256": "47a88368162e0f7dfdbcd0052ca30b997eb7b21823e5689a185ab3a1cf30a2b7",
+  "skill_tree_sha256": "b96142b5f8324e2bb160589f30b82ea5fc905367fc4e725ddef4a3ee2114dc2b",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

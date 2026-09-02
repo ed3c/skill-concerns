@@ -97,6 +97,16 @@ the drift a single-owner discipline exists to prevent.
   change ceremony. Trigger automation keeps every gate; application automation
   does not — a reader that rewrites its own lens until a finding disappears is
   self-laundering.
+- **One unexercised layer, named rather than receipted.** A wave script that
+  references [`references/prompts/monitor-prompt.md`](references/prompts/monitor-prompt.md)
+  and [`references/prompts/judge-prompt.md`](references/prompts/judge-prompt.md)
+  by path instead of inlining them, with its judge citing those bytes, is NOT
+  EXERCISED at admission: that byte lives in the dispatcher's harness, outside
+  this repository, and is filed for the dispatcher's ledger append. It used to
+  sit in `receipts.json` under the host-observation exit, which was the wrong
+  shelf — nothing observed it, so no observer could ever be named for it
+  (ed3c/skill-concerns#91 retired the entry). This admission claims
+  `L3_HERMETIC` and no higher.
 
 ## Knowledge placement
 
