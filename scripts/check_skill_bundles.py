@@ -813,6 +813,16 @@ def scan_producer_module_collisions(root: Path) -> list[str]:
 
     `admission_stamp.unittest_path` refuses this same shape one level up, for the
     TEST modules `MANDATORY_PRODUCERS` names. This is the producer half.
+
+    This reds naming both paths and picks neither -- resolving a collision is a
+    rename, and the tie-break is recorded here so the next author does not have
+    to re-decide it: the EARLIER arrival keeps the name, read by
+    `git log --diff-filter=A --format=%aI -- <path> | tail -1` (oldest commit
+    that added the path) on each colliding path, and every later arrival
+    renames. Wave-21 landed `gen_receipts.py`'s four-way collision and
+    `shadow_driver.py`'s two-way collision by this rule before it was written
+    down anywhere but a lane report; a tie-break only a lane's memory can read
+    is the same defect one level up from the one this scan refuses.
     """
     owners: dict[str, list[str]] = {}
     for path in sorted((root / "skills").glob("*/scripts/*.py")):
