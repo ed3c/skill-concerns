@@ -65,6 +65,18 @@ from common import REPO_ROOT, load_json, print_result, safe_repo_path
 # reproduces exactly as before, and a receipt that carries it must name the argv
 # this execution actually selected. Landing two emits the field in
 # `build_receipt`, regenerates the receipts, and narrows back down.
+#
+# Landing two is ed3c/skill-concerns#133, filed BEFORE this landed and not
+# inside this comment, because `land_pr.py` closes the `Refs` issue on merge:
+# #81 goes closed the moment this lands, and a plan that lives only in a
+# comment on the closed half is a plan no process re-reads. Between now and
+# then this constant is a field no producer writes -- the `unread-field`
+# precedent, entered deliberately and with an exit filed, rather than by
+# oversight. Its reader is already committed:
+# `tests/test_receipt_provenance.py::test_landing_one_moved_no_receipt_data`
+# requires the field to be all-or-nothing across the receipt set, which passes
+# today only because the set is uniformly absent, and is the assertion landing
+# two has to satisfy from the other side.
 GRADED_BY = "graded_by"
 
 
