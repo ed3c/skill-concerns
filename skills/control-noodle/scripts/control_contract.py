@@ -7,7 +7,6 @@ mutates a provider, or discovers mutable upstream state.
 from __future__ import annotations
 
 from pathlib import Path
-import re
 import sys
 from typing import Any
 
@@ -16,6 +15,7 @@ PROCEDURE_SCRIPTS = (
     Path(__file__).resolve().parents[2] / "feature-map-engineering" / "scripts"
 )
 sys.path.insert(0, str(PROCEDURE_SCRIPTS))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
 from feature_map import (  # noqa: E402
     ContractError,
@@ -23,17 +23,11 @@ from feature_map import (  # noqa: E402
     validate_verification_plan,
 )
 
-
-HEX40 = re.compile(r"^[0-9a-f]{40}$")
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
-EVIDENCE_LEVELS = [
-    "L0_SOURCE_FREEZE",
-    "L1_STRUCTURAL",
-    "L2_EXECUTABLE_CONTRACT",
-    "L3_HERMETIC",
-    "L4_MATCHED_LIVE_RUNTIME",
-    "L5_DELIVERY_AND_PRODUCTION",
-]
+# The two identity shapes and the evidence ladder are declared once, above
+# `skills/` (ed3c/skill-concerns#112). This module carried a private literal of
+# all three; `skill.json` names `../../scripts/common.py` in `shared_contracts`,
+# so the receipt binds the bytes these names come from.
+from common import EVIDENCE_LEVELS, HEX40, HEX64  # noqa: E402
 
 
 def _string(value: Any) -> bool:

@@ -40,14 +40,20 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
+# P3 is this bundle's own clause -- "a second literal of a set that already
+# exists" -- and this file carried two of them: a private `HEX40` mirror of the
+# commit identity and a fourth copy of the role vocabulary. Both are declared
+# once in `scripts/common.py` (ed3c/skill-concerns#112). `skill.json` names
+# `../../scripts/common.py` in `shared_contracts`, so the receipt binds the bytes
+# these names come from.
+from common import HEX40, ROLE_TOKENS, roles_block  # noqa: E402
+
 CLAUSE_RE = re.compile(r"^## (P\d+)\. ", re.M)
 KERNEL_RE = re.compile(r"^- (K\d+) ", re.M)
 REQUIRED_FIELDS = ("- Signal:", "- Action:", "- Why:", "- provenance:", "- evidence:")
 BACKTICKED = re.compile(r"`([^`]+)`")
-HEX40 = re.compile(r"^[0-9a-f]{40}$")
 PROVIDER_REF = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+$")
 MONITOR_RECORD = re.compile(r"^(?:commit:[0-9a-f]{40}|ledger:[0-9a-z][0-9a-z-]*)$")
-ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
 
 # The entry document's `## ` headings, in order. `scripts/check_skill_bundles.py`
 # reads this tuple out of these bytes (parsed, never imported) and compares it to
@@ -339,17 +345,7 @@ def check_roles(skill_root: Path, errors: list[str]) -> None:
         if not path.is_file():
             errors.append(f"{relative} missing")
             continue
-        lines = path.read_text(encoding="utf-8").splitlines()
-        block = ""
-        for index, line in enumerate(lines):
-            if "Roles:" in line:
-                collected = [line]
-                for following in lines[index + 1 :]:
-                    if not following.strip():
-                        break
-                    collected.append(following)
-                block = "\n".join(collected)
-                break
+        block = roles_block(path.read_text(encoding="utf-8"))
         if not block:
             errors.append(f"{relative} has no Roles: declaration block")
             continue
@@ -379,6 +375,23 @@ def check_answer_key_blindness(path: Path, errors: list[str]) -> None:
 
 
 def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
+    """NOT shared with red-team's, and ed3c/skill-concerns#112 records why.
+
+    #112 read this and red-team's `check_boundaries` as one mechanism copied
+    twice. On the landed tree they are not: red-team's scans only the Non-claims
+    SECTION, this one scans the whole document, and red-team's carries a
+    docstring explaining the narrowing as deliberate. Sharing them means picking
+    one, and picking the narrow one silently TIGHTENS this bundle's gate --
+    which is an enforcement-shape change with no discriminating measurement
+    behind it, exactly what `scripts/cure_authorization.py` exists to refuse.
+    `NEIGHBOURS` itself is out of scope for the same reason #112 already
+    recorded: membership is a per-bundle judgement about which differentials
+    this bundle's Non-claims must state.
+
+    So: two readers of one set, not one mechanism with two copies. If they are
+    ever to converge, the measurement that says which scope is right comes
+    first.
+    """
     for name in NEIGHBOURS:
         if name not in text:
             errors.append(f"Non-claims does not name the neighbour it is not: {name}")

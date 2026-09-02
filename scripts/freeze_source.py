@@ -10,12 +10,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import re
 
-from common import digest_entries, regular_files
-
-
-HEX40 = re.compile(r"^[0-9a-f]{40}$")
+from common import HEX40, digest_entries, regular_files
 
 
 def build_lock(

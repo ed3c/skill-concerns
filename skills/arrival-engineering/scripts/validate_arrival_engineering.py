@@ -27,6 +27,14 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+
+# The role vocabulary is declared once, above `skills/` (ed3c/skill-concerns#112);
+# this file carried the third of four copies. The path is resolved from THIS
+# file, so under `check_receipt_provenance.py --root <candidate>` it lands in the
+# candidate tree; `skill.json` names `../../scripts/common.py` in
+# `shared_contracts`, so the receipt binds the bytes the name comes from.
+from common import ROLE_TOKENS, roles_block  # noqa: E402
 from audit_islands import (  # noqa: E402
     DIAGNOSTICS,
     LEVELS,
@@ -41,8 +49,7 @@ KERNEL_RE = re.compile(r"^- (K\d+) ", re.M)
 REQUIRED_FIELDS = ("- Signal:", "- Action:", "- Why:", "- evidence:")
 BACKTICKED = re.compile(r"`([^`]+)`")
 LAW_RE = re.compile(r"\bLAW-[A-Z-]+\b")
-ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
-CLOSURE_OWNER = "../context-closure-engineering/references/portable-context-closure-policy.md"
+CLOSURE_OWNER ="../context-closure-engineering/references/portable-context-closure-policy.md"
 POINTED_LAWS = {"LAW-TRACE-GAP", "LAW-NO-PROMOTION"}
 RUN_SHAPED = ("chore.txt", "calls.log", "terminal-state.txt", "actor-final-message.txt")
 # The numbering this axis used to carry. Scoped to topology row notes: SKILL.md
@@ -199,18 +206,7 @@ def check_roles(skill_root: Path, errors: list[str]) -> None:
         if not path.is_file():
             errors.append(f"{relative} missing")
             continue
-        text = path.read_text(encoding="utf-8")
-        lines = text.splitlines()
-        block = ""
-        for index, line in enumerate(lines):
-            if "Roles:" in line:
-                collected = [line]
-                for following in lines[index + 1 :]:
-                    if not following.strip():
-                        break
-                    collected.append(following)
-                block = "\n".join(collected)
-                break
+        block = roles_block(path.read_text(encoding="utf-8"))
         if not block:
             errors.append(f"{relative} has no Roles: declaration block")
             continue

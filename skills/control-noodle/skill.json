@@ -46,6 +46,7 @@
     "../../contracts/feature-map.schema.json",
     "../../contracts/domain-adapter.schema.json",
     "../../contracts/code-map.schema.json",
-    "../../contracts/feature-code-map.schema.json"
+    "../../contracts/feature-code-map.schema.json",
+    "../../scripts/common.py"
   ]
 }

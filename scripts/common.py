@@ -15,6 +15,34 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 # different shapes of the same identity.
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+# The maintain loop's role vocabulary (ed3c/skill-concerns#62): the two halves,
+# the reader-only clause, and the three severities. One declaration for the same
+# reason the two identity patterns above have one -- it is a single vocabulary
+# four readers check documents against (`check_skill_bundles` and three bundle
+# validators), and four literals of it can drift into four different ideas of
+# what a Roles block must say.
+#
+# It lives HERE, above `skills/`, and ed3c/skill-concerns#112 settled that by
+# execution rather than by argument. The worry was the trust boundary: under
+# `check_receipt_provenance.py --root <candidate>` the trusted checkout and the
+# candidate are two different trees, so which `scripts/common.py` does a
+# candidate's bundle validator resolve? The candidate's own. Every bundle
+# validator inserts `Path(__file__).resolve().parents[3] / "scripts"`, and under
+# that gate `__file__` IS the candidate's validator, so the path resolves inside
+# the candidate. Trusted code never lends its declaration to a graded tree, and
+# a candidate that weakened this file would be weakening bytes it already fully
+# controls -- the same bytes as its own validator, which is candidate code by
+# construction.
+#
+# What that argument does not give for free is a PIN: `scripts/common.py` is in
+# no bundle's `skill_tree_sha256`. So every bundle importing from here names
+# `../../scripts/common.py` in its `shared_contracts`, which carries the shared
+# declaration's digest into that Skill's receipt through the mechanism that
+# already exists for exactly this shape -- a file outside the bundle whose bytes
+# the receipt binds.
+ROLE_TOKENS = ("BUILD", "SHADOW", "reader-only", "S0", "S1", "S2")
+
 EVIDENCE_LEVELS = [
     "L0_SOURCE_FREEZE",
     "L1_STRUCTURAL",
@@ -23,6 +51,33 @@ EVIDENCE_LEVELS = [
     "L4_MATCHED_LIVE_RUNTIME",
     "L5_DELIVERY_AND_PRODUCTION",
 ]
+
+
+def roles_block(text: str) -> str | None:
+    """The paragraph opened by a `Roles:` line, or None when there is none.
+
+    Paragraph-scoped rather than whole-document: a document-wide token search
+    would be satisfied by `BUILD` in one section and `S1` in an unrelated one,
+    which is not a declaration of anything.
+
+    One implementation, four callers: this exact paragraph walk was written out
+    four times -- once in `check_skill_bundles` and once inside each of three
+    bundle validators' `check_roles` (ed3c/skill-concerns#112). The DIAGNOSTICS
+    stay with the callers, because a repository gate naming a skill and a
+    bundle validator naming its own document are two different messages; what is
+    shared is the reading, which is one mechanism.
+    """
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if "Roles:" not in line:
+            continue
+        block = [line]
+        for following in lines[index + 1 :]:
+            if not following.strip():
+                break
+            block.append(following)
+        return "\n".join(block)
+    return None
 
 
 def load_json(path: Path) -> Any:

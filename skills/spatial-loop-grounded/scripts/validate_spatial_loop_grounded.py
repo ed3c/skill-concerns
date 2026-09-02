@@ -15,7 +15,16 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from ab_campaign import blind_scan, terminal_state_text  # noqa: E402
+
+# The content-digest identity is declared once, above `skills/`
+# (ed3c/skill-concerns#112). This file carried it under a private name -- an
+# unanchored `HEX64_RE` used with `.fullmatch`, which is the same identity
+# spelled differently, and a rename is exactly how a second literal survives a
+# grep for the first. `skill.json` names `../../scripts/common.py` in
+# `shared_contracts`, so the receipt binds the bytes the name comes from.
+from common import HEX64  # noqa: E402
 
 CLAUSE_RE = re.compile(r"^## (C\d+)\. ", re.M)
 REQUIRED_FIELDS = ("- Signal:", "- Action:", "- Why:", "- evidence:")
@@ -55,7 +64,6 @@ PROTOCOL_ANCHORS = (
 # ABOUT, and its verdict is computed from its own bytes below - so an amendment
 # that reads well and decides nothing fails closed here.
 CLAUSE_FIXTURES = "evals/clause-fixtures"
-HEX64_RE = re.compile(r"[0-9a-f]{64}")
 # The shape every refusal in this repository prints, e.g.
 # ADMISSION_STAMP_REFUSED:dynamic-workflow:NO_DECLARED_CHECKS. Quoting the gate's
 # own string is what makes the escalation checkable by its owner; a paraphrase
@@ -274,7 +282,7 @@ def judge_c7(root: Path) -> list[str]:
         failures.append("structural-reason-absent")
     if not str(receipt.get("unavailability_probed") or "").strip():
         failures.append("unavailability-assumed-not-proved")
-    if not HEX64_RE.fullmatch(str(authorization.get("subject_sha256") or "")):
+    if not HEX64.fullmatch(str(authorization.get("subject_sha256") or "")):
         failures.append("authorization-not-byte-pinned")
     if not str(authorization.get("retired_by") or "").strip():
         failures.append("authorization-never-retired")

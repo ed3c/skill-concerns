@@ -43,6 +43,7 @@
   "shared_contracts": [
     "../../contracts/skill-manifest.schema.json",
     "../../contracts/source-lock.schema.json",
-    "../../contracts/admission.schema.json"
+    "../../contracts/admission.schema.json",
+    "../../scripts/common.py"
   ]
 }
