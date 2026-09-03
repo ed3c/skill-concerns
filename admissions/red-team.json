@@ -13,11 +13,11 @@
     },
     {
       "path": "skills/red-team/README.md",
-      "sha256": "1997868107ed1f47e0f206f37933471c4caf193498b9ae8956116c0eea9f7075"
+      "sha256": "44157b7cb444a5b1621cf3874425007bfd3cb43a77b7ea5f40feb26583815dce"
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "183fd6d286364821e75367ef55269c5d4ce5390b8b6ed9bb7a9c6c00c472c5e5"
+      "sha256": "d764ae6c2f3620bb7037140f321d7dd8a7144da4ac6dee39491db830b613b72c"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "cd139051d035ba6d11a2b2746bffb5e11da18b0a149e8bf5f8cd59b97ab69029"
+      "sha256": "ef9053d9d9008eb1abc8f48f42a99d825e1f5917fe4a1f6f1a3b455dcf599927"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -133,11 +133,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "c9f73defc0b4b79e730d56a5556eaa76101f3b1ee96f44217b9bc06481d89c98"
+      "sha256": "a23b69198ec76f2832327477749db975039929b11c06324fa09a580b7bc64451"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "5b811dd2270601ba4b5089f49bcb6a47b914ce35f224b9d4514cc3f02ff435d0"
+      "sha256": "c7b546a3c3a5ac6eba9c8beaad3c8c2dc126ed2528bf65cf7bd9b07f7b62592f"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -145,10 +145,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "45af234631aa357f8afc37e4ba6940722555535ef9d2099845bb3e3cf4a750c1"
+      "sha256": "dcabe9d2b32165ccc4faa27d73d062d1f04bca112b13e5f68056d12db66b6e05"
     }
   ],
-  "skill_tree_sha256": "c8d90acee3e14bc9a9218200b7c3fd462ff71b85fc41620c32cc4d5ae113f3e2",
+  "skill_tree_sha256": "22accf8ed7007d1b2164b84d0bb7b160e3e7c748928d103c6ed53007f9fe4986",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -273,7 +273,15 @@
       "state": "PASS"
     },
     {
-      "id": "fenced-demonstration-block-refused",
+      "id": "demonstration-graded-fence-preserving",
+      "state": "PASS"
+    },
+    {
+      "id": "fenced-required-section-refused",
+      "state": "PASS"
+    },
+    {
+      "id": "undeclared-evidence-markers-fail-closed",
       "state": "PASS"
     },
     {

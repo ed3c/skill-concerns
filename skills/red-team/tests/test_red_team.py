@@ -34,6 +34,15 @@ YIELDED = FIXTURES / "yielded-non-report"
 TEMPLATE = FIXTURES / "issue-round-trip" / "body-template.md"
 STATION = "noodles-generation-close"
 
+# The dispatcher's evidence-marker block, and it is an ARGUMENT because upstream
+# takes it as one: the values are parsed from the issue's marker block by a
+# producer that is not in `issue_contract.py`, so the mirror declines to invent a
+# parser for bytes it never read. `none` here is the honest declaration for a
+# template whose demonstration is a fixture block and whose acceptance prescribes
+# no external tool behavior. A finding that DOES claim an observation owes the
+# invocation and two discriminating directions -- ed3c/skill-concerns#148.
+HONEST_NONE = {"observer": "none", "capability-probe": "none"}
+
 
 def catalogue() -> dict:
     return json.loads((SKILL_ROOT / "domain" / "catalogue.json").read_text(encoding="utf-8"))
@@ -221,8 +230,112 @@ class RedTeamEvals(unittest.TestCase):
         report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
         block = driver.render_demonstration(report["findings"][0])
         body = TEMPLATE.read_text(encoding="utf-8").replace("{demonstration}", block)
-        self.assertEqual([], validator.completeness_reasons(body))
+        self.assertEqual([], validator.completeness_reasons(body, HONEST_NONE))
         self.assertIn(block, body)
+
+    def test_an_undeclared_marker_block_fails_closed(self) -> None:
+        """ed3c/skill-concerns#137: no declaration is a refusal, never a pass.
+
+        `declared` cannot be read off a body -- upstream takes it as an argument
+        too -- so the mirror's default is "nothing declared". A default that
+        skipped the evidence half would make this dry run quieter than the gate
+        it mirrors, which is the one direction a dry run must never fail in.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        block = driver.render_demonstration(report["findings"][0])
+        body = TEMPLATE.read_text(encoding="utf-8").replace("{demonstration}", block)
+        reasons = validator.completeness_reasons(body)
+        for marker in ("observer", "capability-probe"):
+            self.assertTrue(
+                any(f"declares no noodles-{marker} marker" in reason for reason in reasons),
+                reasons,
+            )
+
+    def test_the_demonstration_is_graded_by_the_reader_that_keeps_fences(self) -> None:
+        """The drift ed3c/skill-concerns#137 cures, as a fixture.
+
+        Before ed3c/noodles#317 every reader stripped fences, so this bundle
+        concluded a fenced demonstration reached the gate as an empty section and
+        shaped `render_demonstration` around it. Upstream now routes exactly that
+        section through `sections(body, keep_fences=True)`. Fenced or not, the
+        demonstration reader sees the same text -- and the pre-#317 mirror REDS
+        this case, which is what makes it a fixture for the drift rather than a
+        restatement of the cure.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        block = driver.render_demonstration(report["findings"][0])
+        template = TEMPLATE.read_text(encoding="utf-8")
+        plain = template.replace("{demonstration}", block)
+        fenced = template.replace("{demonstration}", f"```\n{block}\n```")
+        self.assertEqual(
+            validator.sections(plain, keep_fences=True)["observer_demonstration"].strip("`\n "),
+            validator.sections(fenced, keep_fences=True)["observer_demonstration"].strip("`\n "),
+        )
+        self.assertEqual([], validator.completeness_reasons(fenced, HONEST_NONE))
+        # The reader that still strips is unchanged: the fenced content is gone.
+        self.assertEqual("", validator.sections(fenced).get("observer_demonstration", ""))
+
+    def test_a_fenced_required_section_still_reds_the_reader_that_strips(self) -> None:
+        """The negative control keeps its subject: the readers that DO strip.
+
+        `observer_demonstration` left the stripping reader; REQUIRED_SECTIONS did
+        not. A required section whose only content is a fence still arrives empty
+        and is still refused by name.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        block = driver.render_demonstration(report["findings"][0])
+        body = TEMPLATE.read_text(encoding="utf-8").replace("{demonstration}", block)
+        goal = validator.sections(body)["goal"]
+        fenced_goal = body.replace(goal, f"```\n{goal}\n```")
+        self.assertNotEqual(body, fenced_goal)
+        reasons = validator.completeness_reasons(fenced_goal, HONEST_NONE)
+        # Lowercased because upstream builds the reason from the SECTION KEY, not
+        # from the heading it read; the mirror reproduces that verbatim.
+        self.assertIn("issue body has no '## goal' section", reasons)
+
+    def test_a_declared_observer_marker_owes_two_discriminating_directions(self) -> None:
+        """The evidence half ed3c/noodles#317 added, mirrored and measured.
+
+        Declaring the invocation instead of `none` buys the whole gate: both
+        direction labels, the identical invocation inside each, an output under
+        it, and outputs that actually differ. The monitor's block records one
+        transcript and declares the second direction in prose
+        (`falsification.both_directions`), so it cannot satisfy this. That gap is
+        ed3c/skill-concerns#148 -- measured here, not papered over here.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        finding = report["findings"][0]
+        invocation = finding["experiment"]["commands"][0]
+        template = TEMPLATE.read_text(encoding="utf-8")
+        declared = {"observer": invocation, "capability-probe": "none"}
+
+        block = driver.render_demonstration(finding)
+        reasons = validator.completeness_reasons(
+            template.replace("{demonstration}", block), declared
+        )
+        for label in ("GREEN", "RED"):
+            self.assertTrue(
+                any(f"carries no {label} direction" in reason for reason in reasons), reasons
+            )
+
+        def transcript(green: str, red: str) -> str:
+            return (
+                f"GREEN (clean subject)\n\n{invocation}\n{green}\n\n"
+                f"RED (planted violation)\n\n{invocation}\n{red}\n"
+            )
+
+        self.assertEqual(
+            [],
+            validator.completeness_reasons(
+                template.replace("{demonstration}", transcript("0", "3")), declared
+            ),
+        )
+        identical = validator.completeness_reasons(
+            template.replace("{demonstration}", transcript("0", "0")), declared
+        )
+        self.assertTrue(
+            any("did not discriminate" in reason for reason in identical), identical
+        )
 
     def test_every_blind_probe_is_disposed_not_merely_labelled(self) -> None:
         """ed3c/skill-concerns#83: the refusal names where to look instead.
@@ -420,7 +533,7 @@ class RedTeamEvals(unittest.TestCase):
         # And it survives the trip into an issue body, fences and all.
         block = driver.render_demonstration(blind[0])
         body = TEMPLATE.read_text(encoding="utf-8").replace("{demonstration}", block)
-        self.assertEqual([], validator.completeness_reasons(body))
+        self.assertEqual([], validator.completeness_reasons(body, HONEST_NONE))
         self.assertIn("userContentEdits", body)
 
     def test_the_catalogue_recipe_reads_the_sighted_surface_with_its_editors(self) -> None:
@@ -492,20 +605,36 @@ class RedTeamEvals(unittest.TestCase):
             any("prose where a command belongs" in e for e in validator.finding_errors(prose))
         )
 
-    def test_a_fenced_demonstration_block_fails_the_admission_dry_run(self) -> None:
-        """Why the grammar has no fence, proven rather than asserted.
+    def test_the_dropped_assertion_would_have_survived_its_own_falsification(self) -> None:
+        """ed3c/skill-concerns#137: why the old fenced-block control was DELETED.
 
-        The consumer's gate strips fenced blocks before it decides whether a
-        section carries an authored assertion, so the identical content inside
-        a fence arrives there as an empty section.
+        It read `any("Observer demonstration" in reason for reason in
+        completeness_reasons(fenced))` and called that "a fenced demonstration is
+        refused". After ed3c/noodles#317 the fence-preserving reader admits that
+        body -- but the missing-MARKER reason names the same heading verbatim, so
+        the substring still matches and the assertion still passes. A control
+        that survives the removal of the property it tests is not a control, and
+        rewriting it in place would have left the false green standing.
+
+        Its subject is now split across two tests that name their reader:
+        `..._graded_by_the_reader_that_keeps_fences` and
+        `..._fenced_required_section_still_reds_the_reader_that_strips`.
         """
         report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
         block = driver.render_demonstration(report["findings"][0])
         fenced = TEMPLATE.read_text(encoding="utf-8").replace(
             "{demonstration}", f"```\n{block}\n```"
         )
+        undeclared = validator.completeness_reasons(fenced)
         self.assertTrue(
-            any("Observer demonstration" in reason for reason in validator.completeness_reasons(fenced))
+            any("Observer demonstration" in reason for reason in undeclared),
+            "the old assertion's exact expression -- still true, for a reason it "
+            "was never about",
+        )
+        self.assertTrue(
+            all("carries no authored assertion" not in reason for reason in undeclared),
+            "and the refusal it MEANT is gone: nothing grades that section with "
+            "fences stripped any more",
         )
 
     def test_a_signal_outside_the_urgent_list_is_a_validator_error(self) -> None:
