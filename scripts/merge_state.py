@@ -51,6 +51,12 @@ since ed3c/skill-concerns#111 landed as PR136
         merge-result=success, verify=failure, verify job 100439109014 step 7
         "Run trusted validators against the candidate tree"
 
+The one disagreement runs a single direction: verify caught what merge-result
+missed, never the reverse -- no run in this sample shows merge-result refusing
+a tree verify admitted. The 29 billed minutes are not bought back by a measured
+catch merge-result alone made; the case for keeping it is the structural one
+below, which does not depend on catch-rate symmetry.
+
 So the two are not one gate seen twice, and the reason is structural rather than
 incidental: `merge-result` grades the merge tree with the CANDIDATE's own
 `run_all.py`, while `verify` step 7 runs `.trusted/scripts/*` from the default
@@ -80,10 +86,18 @@ The three exits #139 offered, and why this is exit 1:
      gate bytes -- the cook self-approving, which the trust split above forbids.
   3. Drop this job and record `strict` as the mechanism, with a reader that
      reds if it is disabled. REFUSED HERE, not on merit: it needs a cadence
-     reader for a provider setting, which is ed3c/skill-concerns#134's subject.
-     Until that lands, `strict` has no reader, and a guarantee nobody
-     re-resolves is the `arrival-engineering` A4 shape this repository files
-     against elsewhere.
+     reader for THIS repository's own `branches/main/protection`.
+     ed3c/skill-concerns#134 landed in this same wave and was expected to be
+     that reader; read, it turned out narrower -- `maintain.yml`'s cron drives
+     the upstream-pins cadence sweep (N-class by design; naming its script
+     here would be the consumption its own isolation test refuses), which
+     re-checks `policy/upstream-pins.json`'s `watched_files[].blob_sha` in
+     OTHER repositories and never calls `branches/main/protection` in this
+     one. `strict` and `enforce_admins`
+     are exactly as unread today as before #134 landed; the reader #134 was
+     conflated with is re-filed as ed3c/skill-concerns#162, and a guarantee
+     nobody re-resolves is the `arrival-engineering` A4 shape this repository
+     files against elsewhere.
 """
 
 from __future__ import annotations
