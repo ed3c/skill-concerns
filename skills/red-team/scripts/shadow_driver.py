@@ -117,10 +117,31 @@ DEFAULT_SUBJECT = "wave-boundary"
 # this module's own, and every lane report that adopted it) into a hit. The
 # class is "an absence claim RESTS on a blind observer", never "a document
 # mentions one".
+#
+# The acquittal has to survive the ceiling below becoming MANDATORY. Keyed on
+# the bare token `userContentEdits`, it was satisfied by the very sentence
+# `scripts/check_second_arrival_ceiling.py` orders every carrier in this tree
+# to paste -- a document could be acquitted by quoting the compliance string it
+# was told to quote, which acquits boilerplate and measurement alike. So the
+# acquittal takes two forms and neither is the compliance string:
+#
+#   - the SURFACE, `graphql`. Measured across wave 24's four lane reports,
+#     that is what a consultation actually writes: twelve groundings read "via
+#     authenticated gh api graphql". The ceiling sentence has no `graphql` in
+#     it. Keying on the field alone also RED-ED those twelve, because the
+#     widened claim half matches their `totalCount=0 -> ABSENT` -- correct
+#     dispositions reported as the class they had disposed of.
+#   - the CONNECTION, `userContentEdits` other than as the field path
+#     `userContentEdits.totalCount`. A document that read the connection names
+#     it (`userContentEdits(first:20)`, or bare, as wave 21's L2 wrote it); the
+#     ceiling spells the field path, and that spelling is the one every carrier
+#     is ordered to carry. The lookahead binds to the path rather than to the
+#     sentence's prose on purpose: rewording the ceiling must not silently
+#     loosen this.
 BLIND_PROBES: dict[str, dict[str, Any]] = {
     "rest-events-edited": {
         "pattern": re.compile(r"issues/[^/\s`\"']+/(?:events|timeline)"),
-        "sighted": re.compile(r"userContentEdits"),
+        "sighted": re.compile(r"(?i)graphql|userContentEdits(?!\.totalCount)"),
         "cannot": (
             "carry a body revision at all: `edited` in that payload is a COMMENT event"
         ),

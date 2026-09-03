@@ -285,19 +285,45 @@ class RedTeamEvals(unittest.TestCase):
             "-- no body edit by this lane and none by automation.\n"
         )
         disposed = resting + (
-            "REST is blind here; read userContentEdits instead, totalCount=0 "
-            "-> ABSENT.\n"
+            "REST is blind here; read it via authenticated gh api graphql "
+            "instead, totalCount=0 -> ABSENT.\n"
         )
-        (bundle / "reports" / "lane-report-resting.md").write_text(
-            resting, encoding="utf-8"
+        # The third arm is the one the mandatory ceiling created. It carries
+        # the sentence `scripts/check_second_arrival_ceiling.py` orders every
+        # carrier in this tree to paste, verbatim and complete, and nothing
+        # else -- so an acquittal keyed on the bare token `userContentEdits`
+        # would be free for exactly the documents most likely to have pasted
+        # it without reading anything. The vacuity guards below are what make
+        # this arm mean that: it really does contain the token, and really
+        # does not name the surface.
+        boilerplate = resting + (
+            "userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, "
+            "the first edit moves it 0 -> 2, and every later edit by one "
+            "(ed3c/skill-concerns#102).\n"
         )
-        (bundle / "reports" / "lane-report-disposed.md").write_text(
-            disposed, encoding="utf-8"
+        # Wave 21's L2 disposal line, quoted from ed3c/skill-concerns#129's
+        # body: it names the CONNECTION and not the surface, and it is a
+        # correct disposition. The acquittal has to keep taking it, or the
+        # boilerplate cure would red the real reports this atom exists for.
+        connection = resting + (
+            "REST is structurally blind here and was not consulted; second "
+            "arrival is `userContentEdits` totalCount=0 -> ABSENT.\n"
         )
+        for name, text in (
+            ("lane-report-resting.md", resting),
+            ("lane-report-disposed.md", disposed),
+            ("lane-report-boilerplate.md", boilerplate),
+            ("lane-report-connection.md", connection),
+        ):
+            (bundle / "reports" / name).write_text(text, encoding="utf-8")
+        self.assertNotIn("graphql", boilerplate.lower(), "the arm is vacuous")
+        self.assertIn("userContentEdits", boilerplate)
+        self.assertNotIn("graphql", connection.lower(), "the arm is vacuous")
+        self.assertIn("userContentEdits", connection)
         hits = driver.EXPERIMENTS["blind-observer"](bundle)
         self.assertEqual(
-            ["reports/lane-report-resting.md"],
-            [hit["subject"]["path"] for hit in hits],
+            ["reports/lane-report-boilerplate.md", "reports/lane-report-resting.md"],
+            sorted(hit["subject"]["path"] for hit in hits),
         )
 
     def test_the_claim_half_reads_the_words_wave_21_lanes_actually_wrote(self) -> None:
