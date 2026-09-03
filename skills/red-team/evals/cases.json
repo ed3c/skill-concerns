@@ -271,6 +271,54 @@
       "expected": "FAIL",
       "note": "R7 exits non-zero. A finding printed on stdout at status 0 is prose no caller consumes; the run itself is clean, so the status can only have come from the curve.",
       "test": "test_red_team.RedTeamEvals.test_a_flat_curve_leaves_through_the_exit_code"
+    },
+    {
+      "id": "unadjudicated-hit-reaches-confirmed",
+      "expected": "PASS",
+      "note": "The default branch of the verdict producer, and the record says it took the default: ed3c/skill-concerns#152 makes no claim any committed CONFIRMED was wrong, only that CONFIRMED was the one string the code could write.",
+      "test": "test_red_team.RedTeamEvals.test_an_unadjudicated_hit_reaches_confirmed_and_says_it_was_unadjudicated"
+    },
+    {
+      "id": "refuted-reached-by-a-run",
+      "expected": "PASS",
+      "note": "The second declared state, reached by a RUN whose report carries it and counted in that report's verdict tally. A test constructing a REFUTED record would pass against a mono-state instrument, which is the defect this arm exists to measure.",
+      "test": "test_red_team.RedTeamEvals.test_a_refuted_disposition_reaches_refuted_in_a_run"
+    },
+    {
+      "id": "inconclusive-reached-by-a-run",
+      "expected": "PASS",
+      "note": "The third declared state, produced through the same seam and tallied separately, so the two non-default states are not one arm counted twice.",
+      "test": "test_red_team.RedTeamEvals.test_an_inconclusive_disposition_reaches_inconclusive_in_a_run"
+    },
+    {
+      "id": "demonstration-carries-verdict-ground",
+      "expected": "PASS",
+      "note": "The handoff block names the ground the verdict was produced from; a state name a reader cannot trace to a disposition is prose wearing a verdict.",
+      "test": "test_red_team.RedTeamEvals.test_the_demonstration_block_carries_the_verdict_and_its_ground"
+    },
+    {
+      "id": "stale-disposition-blocks",
+      "expected": "FAIL",
+      "note": "A triage bound to bytes this pass did not read blocks the whole pass. Re-triaging is the honest form of a re-reading, the same shape the append-only ledger takes.",
+      "test": "test_red_team.RedTeamEvals.test_a_disposition_bound_to_other_bytes_blocks_the_pass"
+    },
+    {
+      "id": "ungrounded-verdict-blocks",
+      "expected": "FAIL",
+      "note": "A bare state name with no ground is the typed-not-produced number one level up, aimed at this bundle's own verdict field.",
+      "test": "test_red_team.RedTeamEvals.test_a_verdict_with_no_ground_blocks_the_pass"
+    },
+    {
+      "id": "verdict-outside-the-declared-states-blocks",
+      "expected": "FAIL",
+      "note": "The declared states are the vocabulary for the input as well as the output; a disposition naming a fourth state is refused rather than widening the tuple by arrival.",
+      "test": "test_red_team.RedTeamEvals.test_a_verdict_outside_the_declared_states_blocks_the_pass"
+    },
+    {
+      "id": "two-dispositions-of-one-hit-refused",
+      "expected": "FAIL",
+      "note": "Two dispositions of one hit is a disagreement; resolving it silently is how a verdict nobody adjudicated enters the record.",
+      "test": "test_red_team.RedTeamEvals.test_two_dispositions_of_one_hit_are_refused_rather_than_resolved"
     }
   ]
 }

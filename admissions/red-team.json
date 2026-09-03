@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "d764ae6c2f3620bb7037140f321d7dd8a7144da4ac6dee39491db830b613b72c"
+      "sha256": "117adbb210e4a15135e9775f8d68a88ac58b44f1b63f776decebb5463e20b4bf"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -41,7 +41,7 @@
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "ef9053d9d9008eb1abc8f48f42a99d825e1f5917fe4a1f6f1a3b455dcf599927"
+      "sha256": "ad2287189dcdb824f1ff944e16f52697542f2e27cd73e3a8a6e123e1f41c5de8"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -133,11 +133,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "a23b69198ec76f2832327477749db975039929b11c06324fa09a580b7bc64451"
+      "sha256": "6fe708571659fc90c699f77b119e90e41f5d0d72aac3f099e775d3a7048ee015"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "c7b546a3c3a5ac6eba9c8beaad3c8c2dc126ed2528bf65cf7bd9b07f7b62592f"
+      "sha256": "a2de19250cb2fa9658d96aa489ad15a97c1172bd9c26619c6fe01e9d675b8a67"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -145,10 +145,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "dcabe9d2b32165ccc4faa27d73d062d1f04bca112b13e5f68056d12db66b6e05"
+      "sha256": "139e151770d145fc11df5bd5c3f5dd50af7d2fd5a20d47c29fe28d66f472fae8"
     }
   ],
-  "skill_tree_sha256": "22accf8ed7007d1b2164b84d0bb7b160e3e7c748928d103c6ed53007f9fe4986",
+  "skill_tree_sha256": "de62f45e8a7280ffd7e6d7315f91fc4ea600ee34ef2de5ab54bb4d3df9169c77",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -394,6 +394,38 @@
     },
     {
       "id": "flat-curve-leaves-through-the-exit-code",
+      "state": "PASS"
+    },
+    {
+      "id": "unadjudicated-hit-reaches-confirmed",
+      "state": "PASS"
+    },
+    {
+      "id": "refuted-reached-by-a-run",
+      "state": "PASS"
+    },
+    {
+      "id": "inconclusive-reached-by-a-run",
+      "state": "PASS"
+    },
+    {
+      "id": "demonstration-carries-verdict-ground",
+      "state": "PASS"
+    },
+    {
+      "id": "stale-disposition-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "ungrounded-verdict-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "verdict-outside-the-declared-states-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "two-dispositions-of-one-hit-refused",
       "state": "PASS"
     }
   ],

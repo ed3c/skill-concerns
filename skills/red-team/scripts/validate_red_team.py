@@ -90,9 +90,29 @@ FINDING_FIELDS = (
     "subject",
     "experiment",
     "verdict",
+    "adjudication",
     "both_directions",
 )
 VERDICTS = ("CONFIRMED", "REFUTED", "INCONCLUSIVE")
+
+# ed3c/skill-concerns#152. The tuple above declared three states while
+# `shadow_driver.build_finding` assigned one of them as a literal, so the field
+# was a tri-state declaration in front of a mono-state instrument. The verdict
+# is now computed from a filed adjudication, and this is the regression pin on
+# that: a literal verdict assignment anywhere in the driver's bytes reds.
+#
+# A byte scan is the honest form here. It cannot prove the other two states are
+# REACHABLE - only a run can, and `tests/test_red_team.py` runs the driver until
+# each state comes back in a report - but it CAN prove the collapsed path is
+# gone, and that is the half a static reader can own. The scan targets the
+# driver by name and never itself: this module carries the pattern and a
+# well-formed fixture by construction, which is the same self-exemption
+# `VERB_SCAN_EXEMPT` takes and for the same reason.
+VERDICT_PRODUCER = "shadow_driver.py"
+VERDICT_PRODUCER_COLLAPSED = "VERDICT_PRODUCER_COLLAPSED"
+VERDICT_LITERAL = re.compile(
+    r"[\"']verdict[\"']\s*:\s*[\"'](?:" + "|".join(VERDICTS) + r")[\"']"
+)
 # A command is a command. Prose in the slot where a command belongs is the
 # exact malformity ed3c/skill-concerns#94 names, so the grammar is a closed
 # list of verbs rather than "a non-empty string".
@@ -307,6 +327,11 @@ def finding_errors(record: Any) -> list[str]:
             errors.append(f"experiment block has no {field}")
     if record["verdict"] not in VERDICTS:
         errors.append(f"verdict {record['verdict']!r} is outside {list(VERDICTS)}")
+    if not str(record["adjudication"] or "").strip():
+        errors.append(
+            f"a {record['verdict']} verdict states no ground; the field the verdict was "
+            "produced from is what separates a disposition from a number that was typed"
+        )
     if not str(record["both_directions"] or "").strip():
         errors.append("both-directions status is absent")
     return errors
@@ -1150,6 +1175,23 @@ def check_forbidden_surface(path: Path, errors: list[str]) -> None:
             )
 
 
+def check_verdict_producer(skill_root: Path, errors: list[str]) -> None:
+    """The driver's verdict is computed, never a literal (ed3c/skill-concerns#152)."""
+    path = skill_root / "scripts" / VERDICT_PRODUCER
+    if not path.is_file():
+        errors.append(f"{VERDICT_PRODUCER_COLLAPSED}:{VERDICT_PRODUCER}: driver absent")
+        return
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        match = VERDICT_LITERAL.search(line)
+        if match:
+            errors.append(
+                f"{VERDICT_PRODUCER_COLLAPSED}:{VERDICT_PRODUCER}:{number}: "
+                f"{match.group(0)!r} assigns a verdict as a literal. A three-valued "
+                "declaration in front of a one-valued producer is what #152 filed; the "
+                "verdict comes from `adjudicate()` or the states have no producer again"
+            )
+
+
 def check_method_claims(catalogue: dict, repo_root: Path, errors: list[str]) -> None:
     """A method claim is grounded the same way a cure is, or it is not evidence.
 
@@ -1380,6 +1422,7 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
         check_no_reach(script, errors)
         if script.name != VERB_SCAN_EXEMPT:
             check_forbidden_surface(script, errors)
+    check_verdict_producer(skill_root, errors)
     check_recipes_parse(catalogue, errors)
     check_roles(skill_root, errors)
     check_boundaries(repo_root, text, errors)
@@ -1746,6 +1789,27 @@ def selftest() -> int:
             "does not name the neighbour it is not: arrival-engineering",
         )
 
+        def restore_the_verdict_literal(copy: Path) -> None:
+            """Put the collapsed producer back and require the pin to catch it.
+
+            The pre-#152 line verbatim, in the slot it occupied: the finding
+            record's own dict. A pin nobody has watched catch the exact shape it
+            was written for is a sentence.
+            """
+            path = copy / "scripts" / "shadow_driver.py"
+            text = path.read_text(encoding="utf-8")
+            needle = '        "verdict": verdict,\n'
+            assert text.count(needle) == 1, "the line this mutation replaces moved"
+            path.write_text(
+                text.replace(needle, '        "verdict": "CONFIRMED",\n'), encoding="utf-8"
+            )
+
+        mutate(
+            "a_literal_verdict_in_the_driver_reds",
+            restore_the_verdict_literal,
+            "VERDICT_PRODUCER_COLLAPSED:shadow_driver.py",
+        )
+
         # Schema controls: a malformed finding, an out-of-list signal, and a
         # demonstration block that the consumer's gate would read as empty.
         good = {
@@ -1758,9 +1822,18 @@ def selftest() -> int:
                 "observed": "all entries take the exit",
             },
             "verdict": "CONFIRMED",
+            "adjudication": "no adjudication filed; the catalogue match stands",
             "both_directions": "positive: the all-exit fixture; negative: a grounded file",
         }
         record("well_formed_finding_passes_the_schema", not finding_errors(good), "")
+        record(
+            "verdict_without_a_ground_reds",
+            any(
+                "states no ground" in error
+                for error in finding_errors({**good, "verdict": "REFUTED", "adjudication": ""})
+            ),
+            "",
+        )
         record(
             "finding_without_observed_reds",
             any(
