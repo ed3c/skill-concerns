@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "c1ac9f7e4ecd1f0507874c7d8a4df4f510cf355a88b0128427380331dd0ea4f3"
+      "sha256": "bcbde9dc0b8f48d7a5ee7933b7480d7c7917dd23788cddfb733a39dcf88e67b0"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -37,11 +37,11 @@
     },
     {
       "path": "skills/red-team/domain/residual-sensor-register.json",
-      "sha256": "45672d1f197c7caf9f04a2a8859ff71742b7cf2e821e96d0bb7c022c7f62fa8a"
+      "sha256": "ab5faa3c42dcce92cb3add6dfb1af744dfc47a2e87ae5be49e4429336b4abece"
     },
     {
       "path": "skills/red-team/domain/run-ledger.json",
-      "sha256": "4e1d5e89c972488284f8e1d5bfeb19e2b9f9c1aceb46da73bf69fd2d643cc096"
+      "sha256": "95bd115b319b91ba93c9e6ecee4b852f8e42ba7551c6754e04599a57c72efcec"
     },
     {
       "path": "skills/red-team/domain/unpersistable-runs.json",
@@ -141,11 +141,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "261c8386a59d29a17081c0f6a7136e745f90e9193a94f6fef8efe49606ce4692"
+      "sha256": "f8a51e2a43e2849a53da38103cf8766365d7f2ae397faf9381e2a50673d1051e"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "28cf6e79d359381a84fd05e2b9493f698af5bf6522ac69c507c7e702169731b8"
+      "sha256": "908e5e602808439bb5620baf057c5981c02c6fabb9f51f641077436a12c0ca33"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -153,10 +153,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "04e0b56079c9320f4d0e08a17a4c83091a64eee1d76fbe48686d4ece357d0e0c"
+      "sha256": "d8af0807909a162372e03949c13cf428fbcfd0d84190969d3e396791e304f70f"
     }
   ],
-  "skill_tree_sha256": "c58a8cc57fe929b36c84a0497e639625bcd739e039feafd37aaa293b0b36f44b",
+  "skill_tree_sha256": "e454e4685fdd071dd5909fc2243bcf7979b31aea4151caef3fc5537ce64d4981",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

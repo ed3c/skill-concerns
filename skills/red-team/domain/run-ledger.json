@@ -9,10 +9,13 @@
     "subject",
     "classes_sampled",
     "hits",
+    "artifacts_swept",
     "novel_class_candidates",
     "judge_gaps",
     "duplicate_blocks"
   ],
+  "denominator": "artifacts_swept is the number of files the pass walked, summed over the four artifact kinds, filled by scripts/shadow_driver.py from its own walk and available on no flag - a denominator a caller could supply is a denominator that can be typed. curve() stays the raw series and curve_rates() divides by this, because a raw sum reads a bigger wave as a regression and wave size varies at every wave (ed3c/skill-concerns#167).",
+  "undenominated": "records taken before ed3c/skill-concerns#167 carry no artifacts_swept and never will. Adding one now would be a guess wearing a measurement, so curve_rates() returns UNDENOMINATED for those waves rather than a number, and a wave with even one undenominated record is UNDENOMINATED whole - dividing a wave's entire recurrence by part of its sweep reads as a rate and is an artefact.",
   "append_only": "records are appended by scripts/shadow_driver.py --append-record and never rewritten. What one file state can carry is checked: scripts/validate_red_team.py requires every run_id to be the producer's ISO-8601 instant and to not go backwards, so a typed label or a record inserted before an existing one reds. The rest of append-only is carried by git history and branch protection, not by this sentence.",
   "persisted_report": "domain/persisted-reports/<wave>.json holds the producer's own report object, written by --save-report at the pass. --from-report derives the row from one of those through the same ledger_record(), so a record no longer has to be appended before the wave lands - which it did have to be, because landing mutates the bundle the producer would otherwise have to re-measure (ed3c/skill-concerns#158; #131's acceptance clause is what detects that). run_id is still the instant OF THE PASS, carried in the artifact. The artifact is committed at the boundary and git history is what says when it appeared; the hand-authored-report-artifact row of domain/residual-sensor-register.json is where the rest of that is registered.",
   "unpersistable": "a pass whose report was never persisted, and whose bundle has since landed, cannot produce a record at all. Those runs are listed with their reason in domain/unpersistable-runs.json rather than dropped, and they are never typed in: the numbers are exactly what was lost.",

@@ -81,6 +81,12 @@ FINDING_MALFORMED = "FINDING_MALFORMED"
 SIGNAL_CLASS_UNBOUNDED = "SIGNAL_CLASS_UNBOUNDED"
 SAVED_REPORT_UNGROUNDED = "SAVED_REPORT_UNGROUNDED"
 
+# What a rate reads when the record it would divide carries no sweep size. It is
+# a value in a series, never a diagnostic: a record that predates
+# ed3c/skill-concerns#167 is not a defect, and the honest report of it is the
+# absence itself rather than a number nobody measured.
+UNDENOMINATED = "UNDENOMINATED"
+
 DIAGNOSTICS = (
     CATALOGUE_CLASS_HIT,
     CURVE_NOT_DECLINING,
@@ -576,6 +582,12 @@ def run(
     """
     bundle = bundle.resolve()
     before = fingerprint(bundle)
+    # The denominator, counted HERE and accepted from nowhere: the sweep size is
+    # a fact about the walk this pass performed, so the only party that can know
+    # it is the party that walked (ed3c/skill-concerns#167). There is no flag
+    # for it on purpose - a denominator a caller could supply is a denominator
+    # that can be typed, which is the record shape this ledger already refuses.
+    swept = sum(len(bundle_files(bundle, kind)) for kind in ARTIFACT_KINDS)
     entries = {
         entry["id"]: entry
         for entry in catalogue.get("classes", [])
@@ -612,6 +624,7 @@ def run(
         "bundle": named(bundle),
         "classes_sampled": classes,
         "hits": hits,
+        "artifacts_swept": swept,
         "novel_class_candidates": novel,
         "findings": findings,
         "read_only": {"before": before, "after": after, "held": before == after},
@@ -651,7 +664,7 @@ def ledger_record(report: dict[str, Any]) -> dict[str, Any]:
     on a record whose columns disagree with its own hits, so a hand-triaged
     number typed into a committed record cannot pass as a produced one.
     """
-    return {
+    record = {
         "run_id": report["generated_utc"],
         "wave": report["wave"],
         "boundary": report["boundary"],
@@ -662,6 +675,13 @@ def ledger_record(report: dict[str, Any]) -> dict[str, Any]:
         "judge_gaps": len(report["findings"]),
         "duplicate_blocks": report["hits"].get("duplicate-discovery", 0),
     }
+    # Carried only when the pass measured it. Records taken before
+    # ed3c/skill-concerns#167 have no sweep size and never will: a denominator
+    # added to a committed record afterwards would be a guess wearing a
+    # measurement, so those rows stay UNDENOMINATED and the curve says so.
+    if "artifacts_swept" in report:
+        record["artifacts_swept"] = report["artifacts_swept"]
+    return record
 
 
 # The fields `ledger_record()` reads. Named once so the artifact gate and the
@@ -767,6 +787,19 @@ def saved_report_errors(report: Any) -> list[str]:
     unsampled = sorted(set(hits) - set(report["classes_sampled"] or []))
     if unsampled:
         errors.append(f"hits carries {unsampled}, which classes_sampled does not name")
+    swept = report.get("artifacts_swept")
+    if swept is not None:
+        walked = {
+            finding["subject"].get("path")
+            for finding in findings
+            if isinstance(finding.get("subject"), dict)
+        }
+        if not isinstance(swept, int) or isinstance(swept, bool) or swept < len(walked):
+            errors.append(
+                f"artifacts_swept {swept!r} is under the {len(walked)} distinct artifacts "
+                "this report's own findings name; the denominator is the producer's walk "
+                "and cannot be smaller than a subset of what it walked"
+            )
     return errors
 
 
@@ -798,6 +831,11 @@ def curve(ledger: dict[str, Any], station: str) -> list[tuple[str, int]]:
     stopped gating hides inside a bigger one that did, and the blended series
     then declines with nothing to report. The planted control in
     `tests/test_red_team.py` is exactly that arm.
+
+    The RAW series, and it stays raw. `curve_rates()` is the sibling that
+    divides by the sweep the producer measured; this one is what R7's decision
+    reads, so records that predate the denominator keep their meaning
+    (ed3c/skill-concerns#167).
     """
     per_wave: dict[str, int] = {}
     order: list[str] = []
@@ -810,6 +848,54 @@ def curve(ledger: dict[str, Any], station: str) -> list[tuple[str, int]]:
             order.append(wave)
         per_wave[wave] += sum(record.get("hits", {}).values())
     return [(wave, per_wave[wave]) for wave in order]
+
+
+def curve_rates(
+    ledger: dict[str, Any], station: str
+) -> list[tuple[str, float | None]]:
+    """Known-class recurrence PER ARTIFACT SWEPT at one station, oldest first.
+
+    The sibling of `curve()`, not a replacement for it. A raw sum conflates
+    "more defects" with "more artifacts sampled": wave 21's 23 against wave
+    20's 2 is uninterpretable without knowing how big each pass's sweep was,
+    and wave size varies at every wave (ed3c/skill-concerns#167). The
+    denominator is the producer's own walk - `run()` counts the files
+    `bundle_files()` handed it - which is what keeps it out of reach of the
+    hand-typed-record path `check_ledger` and `derived_column_errors` refuse.
+
+    `None` is UNDENOMINATED and is returned instead of a guess, on the wave and
+    not on the record: a wave whose records do not ALL carry the field would
+    otherwise have its whole recurrence divided by part of its sweep, which
+    reads as a rate and is an artefact. Zero swept is UNDENOMINATED for the
+    same reason - a pass with nothing to walk has no rate, and reporting one
+    would be a division nobody performed.
+
+    The decision R7 makes is still made on the RAW series in `curve_findings`.
+    Historical rows stay raw and the rate rides beside them; reinterpreting a
+    committed curve through a denominator its records never carried is exactly
+    what ed3c/skill-concerns#167 does not ask for.
+    """
+    hits: dict[str, int] = {}
+    swept: dict[str, int | None] = {}
+    order: list[str] = []
+    for record in ledger.get("records", []):
+        if record.get("subject") != station:
+            continue
+        wave = record.get("wave")
+        if wave not in hits:
+            hits[wave] = 0
+            swept[wave] = 0
+            order.append(wave)
+        hits[wave] += sum(record.get("hits", {}).values())
+        size = record.get("artifacts_swept")
+        if swept[wave] is None or not isinstance(size, int) or isinstance(size, bool):
+            swept[wave] = None
+        else:
+            swept[wave] += size
+    return [
+        (wave, None if not swept[wave] else hits[wave] / swept[wave])
+        for wave in order
+    ]
 
 
 def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
@@ -846,11 +932,18 @@ def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
         recent = [count for _, count in points[-waves:]]
         if recent[-1] < recent[0] or recent[-1] == 0:
             continue
+        rates = dict(curve_rates(ledger, station))
+        beside = [
+            UNDENOMINATED if rates.get(wave) is None else round(rates[wave], 3)
+            for wave, _ in points[-waves:]
+        ]
         findings.append(
             f"{CURVE_NOT_DECLINING}:{station}:{points[-waves][0]}..{points[-1][0]}: "
             f"known-class recurrence {recent} has not declined across {waves} waves at "
             "this station; the classes are not gating there and the architecture, not "
-            "the sampling, is what this reports on"
+            f"the sampling, is what this reports on. Per artifact swept: {beside} - a "
+            "raw sum reads a bigger wave as a regression, so the rate rides beside the "
+            "series and the decision above is still the series'"
         )
     return findings
 
