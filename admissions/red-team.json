@@ -17,7 +17,7 @@
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "cf9386841b8e7d099b402b9a012413ece3b21c943937f5f636069ff91769a21c"
+      "sha256": "183fd6d286364821e75367ef55269c5d4ce5390b8b6ed9bb7a9c6c00c472c5e5"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -133,11 +133,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "932b11bfe7048fc2a1b960cac37ecb9d4282c1230ce8f040b194a5aec7e74910"
+      "sha256": "7a26583d8adec11ae605573ee2cce43b5ccd4a2bc3d7410b946157c284fb0348"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "2328ff8df2a1348e8c7b6a5c11717cef01f322ab1fb262c36c52cb8ae8bbbdca"
+      "sha256": "5b811dd2270601ba4b5089f49bcb6a47b914ce35f224b9d4514cc3f02ff435d0"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -145,10 +145,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "18629fa800669b51130c14293ae7910be056795dde39ed7bb3e25fac92b6aa1d"
+      "sha256": "bb0c50a57598efbe1ade75b08517bbbb436fc738ce615f5bbc63a36a196a4d24"
     }
   ],
-  "skill_tree_sha256": "7f459926bb1a424b303e0174edf0002b88da1e1f2350d88dd0c3688f3e2691f3",
+  "skill_tree_sha256": "75a6b1cce5c9fb2b3f7c4ae2ffb045f131c3fb140f4cebec527db6c38a21e733",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",

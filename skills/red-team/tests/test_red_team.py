@@ -510,20 +510,151 @@ class RedTeamEvals(unittest.TestCase):
     def test_a_flat_curve_after_three_waves_is_itself_a_finding(self) -> None:
         flat = {
             "records": [
-                {"wave": f"wave-{index}", "hits": {"blind-observer": 2}}
+                {"subject": STATION, "wave": f"wave-{index}", "hits": {"blind-observer": 2}}
                 for index in (17, 18, 19)
             ]
         }
-        self.assertIn("CURVE_NOT_DECLINING", driver.curve_finding(flat))
+        self.assertIn("CURVE_NOT_DECLINING", "\n".join(driver.curve_findings(flat)))
         bending = {
             "records": [
-                {"wave": "wave-17", "hits": {"blind-observer": 3}},
-                {"wave": "wave-18", "hits": {"blind-observer": 2}},
-                {"wave": "wave-19", "hits": {"blind-observer": 1}},
+                {"subject": STATION, "wave": "wave-17", "hits": {"blind-observer": 3}},
+                {"subject": STATION, "wave": "wave-18", "hits": {"blind-observer": 2}},
+                {"subject": STATION, "wave": "wave-19", "hits": {"blind-observer": 1}},
             ]
         }
-        self.assertIsNone(driver.curve_finding(bending))
-        self.assertIsNone(driver.curve_finding({"records": flat["records"][:2]}))
+        self.assertEqual([], driver.curve_findings(bending))
+        self.assertEqual([], driver.curve_findings({"records": flat["records"][:2]}))
+
+    def test_a_station_resting_at_zero_is_the_success_state_not_a_finding(self) -> None:
+        """The floor guard, and the pair that makes it discriminating.
+
+        `[0, 0, 0]` is a station whose classes ARE gating - this bundle's
+        declared steady state - and a strict `recent[-1] < recent[0]` reads it
+        as never having bent, so R7 would fire on success forever once the
+        classes did their job. The negative arm is the same station one point
+        later at `[0, 0, 1]`: recurrence coming back off the floor still
+        reports, so the guard is a floor and not a mute.
+        """
+        floor = {
+            "records": [
+                {"subject": STATION, "wave": f"wave-{index}", "hits": {"blind-observer": 0}}
+                for index in (17, 18, 19)
+            ]
+        }
+        self.assertEqual(
+            [("wave-17", 0), ("wave-18", 0), ("wave-19", 0)],
+            driver.curve(floor, STATION),
+        )
+        self.assertEqual([], driver.curve_findings(floor))
+
+        off_the_floor = {
+            "records": [
+                *floor["records"][:2],
+                {"subject": STATION, "wave": "wave-19", "hits": {"blind-observer": 1}},
+            ]
+        }
+        self.assertIn("[0, 0, 1]", "\n".join(driver.curve_findings(off_the_floor)))
+
+    def test_every_non_declining_station_reaches_the_dispatcher(self) -> None:
+        """Two stations stopped bending; a first-match readback reported one.
+
+        The station that never printed is indistinguishable from a station
+        that declined - the hides-inside-a-bigger-one shape one level up from
+        the blend this atom replaced. Both are asserted by name, and the third,
+        which IS declining, is asserted absent so the arm is not merely
+        counting lines.
+        """
+        ledger = {
+            "records": [
+                {"subject": station, "wave": f"wave-{wave}", "hits": {"blind-observer": count}}
+                for station, counts in (
+                    ("station-a", (1, 1, 1)),
+                    ("station-b", (2, 3, 4)),
+                    ("station-c", (9, 5, 1)),
+                )
+                for wave, count in zip((17, 18, 19), counts)
+            ]
+        }
+        findings = driver.curve_findings(ledger)
+        self.assertEqual(2, len(findings), findings)
+        self.assertEqual(
+            ["station-a", "station-b"],
+            [finding.split(":")[1] for finding in findings],
+        )
+        self.assertNotIn("station-c", "\n".join(findings))
+
+    def test_the_curve_is_sliced_by_station_and_the_blend_hides_one(self) -> None:
+        """ed3c/skill-concerns#130's planted control: two stations, one hidden.
+
+        `wave-boundary` is gating - 10, 5, 1. `noodles-generation-close` is
+        not - 1, 2, 3. Summed by wave the series is 11, 7, 4, which DECLINES,
+        so the blended readback the ledger shipped with returns nothing at all
+        while a station that stopped gating sits inside it. The blend is
+        computed here in the reading this atom replaces, so the arm measures
+        the difference rather than asserting it.
+        """
+        ledger = {
+            "records": [
+                {"subject": station, "wave": f"wave-{wave}", "hits": {"blind-observer": count}}
+                for station, counts in (
+                    ("wave-boundary", (10, 5, 1)),
+                    (STATION, (1, 2, 3)),
+                )
+                for wave, count in zip((17, 18, 19), counts)
+            ]
+        }
+        self.assertEqual(["wave-boundary", STATION], driver.stations(ledger))
+        self.assertEqual(
+            [("wave-17", 10), ("wave-18", 5), ("wave-19", 1)],
+            driver.curve(ledger, "wave-boundary"),
+        )
+        self.assertEqual(
+            [("wave-17", 1), ("wave-18", 2), ("wave-19", 3)],
+            driver.curve(ledger, STATION),
+        )
+
+        blended: dict[str, int] = {}
+        for record in ledger["records"]:
+            blended[record["wave"]] = blended.get(record["wave"], 0) + sum(
+                record["hits"].values()
+            )
+        self.assertEqual([11, 7, 4], list(blended.values()))
+        self.assertLess(
+            list(blended.values())[-1],
+            list(blended.values())[0],
+            "the arm is vacuous unless the blended series looks green",
+        )
+
+        finding = "\n".join(driver.curve_findings(ledger))
+        self.assertIn("CURVE_NOT_DECLINING", finding)
+        self.assertIn(STATION, finding)
+        self.assertIn("[1, 2, 3]", finding)
+        self.assertNotIn("wave-boundary", finding)
+
+    def test_a_ledger_column_that_disagrees_with_its_own_hits_reds(self) -> None:
+        """`judge_gaps` and `duplicate_blocks` are views, never measurements.
+
+        Both derive from the record's own `hits`, so a hand-triaged number
+        typed into a committed record is the one thing a single file state can
+        refuse (ed3c/skill-concerns#130). Positive arm first: every committed
+        record's columns already reconcile, so the negative arm is not passing
+        on a ledger that never agreed.
+        """
+        for position, record in enumerate(domain("run-ledger.json")["records"]):
+            with self.subTest(record=position):
+                self.assertEqual([], validator.derived_column_errors(position, record))
+
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["records"][-1]["judge_gaps"] = 4
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "judge_gaps=4 disagrees with its own hits" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
 
     def test_a_flat_curve_leaves_through_the_exit_code(self) -> None:
         """R7 is a finding, so it does not exit 0 as stdout prose.
@@ -531,6 +662,16 @@ class RedTeamEvals(unittest.TestCase):
         A finding that leaves the process at status 0 is consumed by nobody:
         the caller that would act on it reads the exit code. The run itself is
         clean here, so a non-zero status can only have come from the curve.
+
+        The standing curve is `[1, 1, 1]` at `wave-boundary` and the clean run
+        is appended at ANOTHER station, which is the honest shape twice over.
+        A clean run at the reported station puts a zero on the end of its own
+        series, and a series ending at the floor is the success state rather
+        than a flat one (the guard in `curve_findings`) - so the old form of
+        this arm, three empty records at one station, measured the defect it
+        would now be asserting. And a station that stopped bending must not be
+        silenced by a clean pass somewhere else, which is what per-station
+        slicing buys.
         """
         ledger = self.scratch / "ledger.json"
         ledger.write_text(
@@ -541,13 +682,14 @@ class RedTeamEvals(unittest.TestCase):
                             "run_id": f"2026-08-{day:02d}T00:00:00+00:00",
                             "wave": f"wave-{day}",
                             "boundary": "b",
+                            "subject": driver.DEFAULT_SUBJECT,
                             "classes_sampled": [],
-                            "hits": {},
+                            "hits": {"blind-observer": 1},
                             "novel_class_candidates": [],
-                            "judge_gaps": 0,
+                            "judge_gaps": 1,
                             "duplicate_blocks": 0,
                         }
-                        for day in (10, 11)
+                        for day in (10, 11, 12)
                     ]
                 }
             ),
@@ -556,16 +698,23 @@ class RedTeamEvals(unittest.TestCase):
         status = driver.main(
             [
                 "--bundle", str(CLEAN),
-                "--wave", "wave-12",
+                "--wave", "wave-13",
+                "--subject", STATION,
                 "--ledger", str(ledger),
                 "--append-record",
             ]
         )
         self.assertEqual(
             "clean",
-            driver.run(CLEAN, catalogue(), "wave-12", "stage-close")["outcome"],
+            driver.run(CLEAN, catalogue(), "wave-13", "stage-close")["outcome"],
         )
         self.assertNotEqual(0, status)
+        appended = json.loads(ledger.read_text(encoding="utf-8"))
+        self.assertEqual(STATION, appended["records"][-1]["subject"])
+        self.assertEqual(
+            [driver.DEFAULT_SUBJECT],
+            [finding.split(":")[1] for finding in driver.curve_findings(appended)],
+        )
 
     def test_every_recipe_runs_through_the_drivers_own_parser(self) -> None:
         """A recipe naming a flag the driver has not got is not runnable.

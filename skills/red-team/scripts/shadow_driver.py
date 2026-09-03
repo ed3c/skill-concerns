@@ -570,6 +570,18 @@ def run(
 
 
 def ledger_record(report: dict[str, Any]) -> dict[str, Any]:
+    """One run as a record. `hits` is the measurement; two columns are views.
+
+    `judge_gaps` and `duplicate_blocks` are DERIVED from this record's own
+    `hits` - one finding is built per hit, so `judge_gaps` is
+    `sum(hits.values())`, and `duplicate_blocks` is the
+    `duplicate-discovery` entry under another name. They are kept because the
+    ledger is append-only and every committed record carries them, and they are
+    named as views here because a reader takes three numbers for three facts
+    otherwise (ed3c/skill-concerns#130). `validate_red_team.check_ledger` reds
+    on a record whose columns disagree with its own hits, so a hand-triaged
+    number typed into a committed record cannot pass as a produced one.
+    """
     return {
         "run_id": report["generated_utc"],
         "wave": report["wave"],
@@ -589,11 +601,34 @@ def append_record(ledger: dict[str, Any], record: dict[str, Any]) -> dict[str, A
     return appended
 
 
-def curve(ledger: dict[str, Any]) -> list[tuple[str, int]]:
-    """Known-class recurrence per wave, oldest first - the mandated readback."""
+def stations(ledger: dict[str, Any]) -> list[str]:
+    """The stations this ledger carries, in first-appearance order."""
+    found: list[str] = []
+    for record in ledger.get("records", []):
+        station = record.get("subject")
+        if station not in found:
+            found.append(station)
+    return found
+
+
+def curve(ledger: dict[str, Any], station: str) -> list[tuple[str, int]]:
+    """Known-class recurrence per wave AT ONE STATION, oldest first.
+
+    Sliced, never blended, and the slice is the whole point of the `subject`
+    field. Two carriers already declared it - this module's docstring and
+    `domain/run-ledger.json`'s `subject_kinds` - while the readback grouped by
+    `wave` alone and never opened `subject`, so what R7 reported was
+    which-stations-happened-to-run per wave wearing a recurrence label
+    (ed3c/skill-concerns#130). Blending is not merely noisy: a station that
+    stopped gating hides inside a bigger one that did, and the blended series
+    then declines with nothing to report. The planted control in
+    `tests/test_red_team.py` is exactly that arm.
+    """
     per_wave: dict[str, int] = {}
     order: list[str] = []
     for record in ledger.get("records", []):
+        if record.get("subject") != station:
+            continue
         wave = record.get("wave")
         if wave not in per_wave:
             per_wave[wave] = 0
@@ -602,25 +637,47 @@ def curve(ledger: dict[str, Any]) -> list[tuple[str, int]]:
     return [(wave, per_wave[wave]) for wave in order]
 
 
-def curve_finding(ledger: dict[str, Any], waves: int = 3) -> str | None:
+def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
     """The instrument reporting its own failure to bend the curve.
 
     Reported rather than presumed: three post-admission waves whose recurrence
     never falls is a finding ABOUT THE ARCHITECTURE, delivered to the
-    dispatcher. Fewer than three waves is not evidence in either direction, so
-    it returns None rather than a reassuring green.
+    dispatcher. Fewer than three waves AT A STATION is not evidence in either
+    direction, so that station is skipped rather than answered with a
+    reassuring green - and a station with too few points can no longer borrow
+    another station's decline to look answered.
+
+    EVERY non-declining station is returned, never the first one found. A
+    single-string readback left the second station's silence
+    indistinguishable from its absence: the dispatcher saw one diagnostic and
+    had nothing telling it another station had been skipped, which is the
+    hides-inside-a-bigger-one shape the slicing exists to end, one level up.
+
+    The floor is the DECLARED success state and a strict decline cannot read
+    it. `[0, 0, 0]` is a station whose classes are gating; `recent[-1] <
+    recent[0]` calls it non-declining forever, so the bundle's own steady
+    state ("'No findings' is the honest and expected steady state",
+    `AGENTS.md`) would be reported as an architecture failure permanently,
+    and per-station slicing multiplies that rather than causing it. A last
+    point of zero is a decline to the floor whatever preceded it. `[0, 0, 1]`
+    still reports: recurrence coming back off the floor is the event this
+    finding exists for.
     """
-    points = curve(ledger)
-    if len(points) < waves:
-        return None
-    recent = [count for _, count in points[-waves:]]
-    if recent[-1] < recent[0]:
-        return None
-    return (
-        f"{CURVE_NOT_DECLINING}:{points[-waves][0]}..{points[-1][0]}: known-class recurrence "
-        f"{recent} has not declined across {waves} waves; the classes are not gating and "
-        "the architecture, not the sampling, is what this reports on"
-    )
+    findings: list[str] = []
+    for station in stations(ledger):
+        points = curve(ledger, station)
+        if len(points) < waves:
+            continue
+        recent = [count for _, count in points[-waves:]]
+        if recent[-1] < recent[0] or recent[-1] == 0:
+            continue
+        findings.append(
+            f"{CURVE_NOT_DECLINING}:{station}:{points[-waves][0]}..{points[-1][0]}: "
+            f"known-class recurrence {recent} has not declined across {waves} waves at "
+            "this station; the classes are not gating there and the architecture, not "
+            "the sampling, is what this reports on"
+        )
+    return findings
 
 
 # --------------------------------------------------------------------------
@@ -769,13 +826,16 @@ def main(argv: list[str] | None = None) -> int:
         ledger = append_record(ledger, ledger_record(report))
         args.ledger.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
         print(f"  appended run record -> {args.ledger}")
-        bend = curve_finding(ledger)
-        if bend:
+        bends = curve_findings(ledger)
+        for bend in bends:
             # R7 is a finding, so it leaves through the exit code like every
             # other finding. Printed on stdout at status 0 it would be prose
             # no caller consumes - the mention-is-not-execution shape the
-            # architecture clause exists to refuse.
+            # architecture clause exists to refuse. One line PER station: a
+            # second non-declining station that never printed is a station
+            # the dispatcher was never told about.
             print(f"  {bend}")
+        if bends:
             status = max(status, 1)
     return status
 
