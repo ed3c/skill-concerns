@@ -27,6 +27,63 @@ for every provider read (the cadence sweep's `ref_state` draws the same line).
 `classify()` is a pure function of the provider's two fields and `resolve()`
 takes its reader as an argument, so both directions are falsifiable with no
 network at all -- `--selftest` is that falsifier.
+
+WHY THIS JOB IS KEPT ALONGSIDE BRANCH PROTECTION (ed3c/skill-concerns#139)
+-------------------------------------------------------------------------
+The other mechanism, named here because nothing else in this repository names
+it: `main` is protected with `required_status_checks.strict = true` --
+"Require branches to be up to date before merging" -- with `enforce_admins`
+enabled. Read, not inferred, 2026-09-03:
+
+    $ gh api repos/ed3c/skill-concerns/branches/main/protection
+    "required_status_checks": {"strict": true, "contexts": ["verify"]}
+    "enforce_admins": {"enabled": true}
+
+While `strict` holds, a head that merges already contains `main`'s tip, so
+`refs/pull/<n>/merge` fast-forwards and the merge tree IS the head tree. #139
+asked whether that makes this job redundant. Measured across every `verify` run
+since ed3c/skill-concerns#111 landed as PR136
+(`e96f4daf65dde684146756c1ab70031fba323f94`), 10 runs:
+
+    merge-result concluded success        10/10
+    merge-result agreed with verify        9/10
+    disagreement: run 33687272813 (head 52c10f4159b9)
+        merge-result=success, verify=failure, verify job 100439109014 step 7
+        "Run trusted validators against the candidate tree"
+
+So the two are not one gate seen twice, and the reason is structural rather than
+incidental: `merge-result` grades the merge tree with the CANDIDATE's own
+`run_all.py`, while `verify` step 7 runs `.trusted/scripts/*` from the default
+branch against the candidate as data. A green merge-result is the candidate's
+gate agreeing with itself on a third tree; it can never stand in for the
+trusted-bytes pass. `test_the_two_mechanisms_are_not_one_gate_seen_twice` is
+where that split is read off the workflow rather than asserted here.
+
+Cost, measured over the same 10 runs rather than estimated: this job averaged
+148.4s (29 billed runner-minutes total), against 147.6s for
+`candidate-self-tests`. It is very nearly a second full gate run, and it is
+spent knowingly.
+
+The three exits #139 offered, and why this is exit 1:
+
+  1. KEEP BOTH, say why here.  TAKEN. `strict` is branch-protection state:
+     outside the repo, unversioned, changeable without a commit or a review. If
+     it is ever turned off, this job is what remains in bytes.
+  2. Promote `merge-result` to the required context and turn `strict` off.
+     REFUSED, and not on taste. `verify.yml` triggers on
+     `pull_request_target: [opened, synchronize, reopened, ready_for_review]` --
+     no event there fires when the BASE moves. A check run is attached to
+     `head.sha`, so a green `merge-result` stays green after `main` advances
+     while `refs/pull/<n>/merge` silently becomes a different tree. Dropping
+     `strict` would reopen the exact stale-base hole #111 exists to close, one
+     level up, and it would move the required context onto candidate-supplied
+     gate bytes -- the cook self-approving, which the trust split above forbids.
+  3. Drop this job and record `strict` as the mechanism, with a reader that
+     reds if it is disabled. REFUSED HERE, not on merit: it needs a cadence
+     reader for a provider setting, which is ed3c/skill-concerns#134's subject.
+     Until that lands, `strict` has no reader, and a guarantee nobody
+     re-resolves is the `arrival-engineering` A4 shape this repository files
+     against elsewhere.
 """
 
 from __future__ import annotations

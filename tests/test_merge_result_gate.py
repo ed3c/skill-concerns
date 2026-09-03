@@ -62,6 +62,15 @@ WORKFLOW_CLAUSES: tuple[tuple[str, str], ...] = (
         "RECEIPT_DOES_NOT_NAME_THE_MERGEABILITY_STATE",
         '"merge_state": os.environ["MERGE_STATE"]',
     ),
+    # ed3c/skill-concerns#139. The adjudication for keeping this job alongside
+    # branch protection's `strict: true` rests on the two jobs grading with
+    # DIFFERENT code: `merge-result` runs the merge tree's own `run_all.py`,
+    # `verify` runs `.trusted/scripts/*` against the candidate as data. Erase
+    # that split -- point either job at the other's bytes -- and `merge-result`
+    # becomes a second look at one gate, which is the redundancy #139 tested for
+    # and measured against. The needle is the trusted half, because it is the
+    # half a "simplification" would delete.
+    ("VERIFY_STOPS_GRADING_WITH_TRUSTED_BYTES", '".trusted/scripts/$gate.py" --root'),
 )
 
 GIT_IDENTITY = ("-c", "user.name=fixture", "-c", "user.email=fixture@invalid")
@@ -308,6 +317,46 @@ class VerifyWorkflowTests(unittest.TestCase):
         self.assertIn("python3 .trusted/scripts/merge_state.py", self.text)
         self.assertNotIn("python3 .merge/scripts/merge_state.py", self.text)
         self.assertNotIn("python3 .candidate/scripts/merge_state.py", self.text)
+
+    def test_the_two_mechanisms_are_not_one_gate_seen_twice(self) -> None:
+        """ed3c/skill-concerns#139: read the non-subsumption off the workflow.
+
+        Branch protection's `strict: true` and this job overlap in what they
+        guarantee but not in how they grade, and that is the whole adjudication
+        for paying for both. `merge-result` grades the merge tree with the
+        CANDIDATE's `run_all.py`; `verify` grades the candidate with
+        `.trusted/scripts/*` from the default branch. Measured: on run
+        33687272813 the first was green and the second refused at exactly that
+        step, so one has never been able to stand in for the other.
+        """
+        self.assertIn("working-directory: .merge", self.text)
+        self.assertIn('".trusted/scripts/$gate.py" --root', self.text)
+        # And the split is only real while `merge-result` does NOT reach for the
+        # trusted tree to grade with: that would make it the same gate twice.
+        self.assertNotIn("working-directory: .trusted", self.text)
+
+    def test_the_docstring_names_the_mechanism_outside_the_repo(self) -> None:
+        """ed3c/skill-concerns#139's acceptance clause, as a reader.
+
+        "No exit leaves both mechanisms in place with neither docstring naming
+        the other." `strict` is provider state -- unversioned, changeable
+        without a commit -- so the only place it can be named in bytes is here,
+        and a name with no reader goes stale the first time someone rewrites
+        this docstring. Each needle is a load-bearing half of the adjudication:
+        the setting, its access path, the run that measured the disagreement,
+        and the issue that owns the exit this one refused.
+        """
+        doc = merge_state.__doc__ or ""
+        for needle in (
+            "strict",
+            "enforce_admins",
+            "gh api repos/ed3c/skill-concerns/branches/main/protection",
+            "33687272813",
+            "ed3c/skill-concerns#139",
+            "ed3c/skill-concerns#134",
+        ):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, doc)
 
 
 if __name__ == "__main__":
