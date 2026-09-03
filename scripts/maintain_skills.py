@@ -21,7 +21,9 @@ feature map, so "drive" means: re-run each Skill's own declared checks
 (`run_all.SKILL_CHECKS`, i.e. its validator plus the executable selftests those
 validators shell out to) and the repository gates that recompute every pinned
 path and digest, then re-check the pins no gate can see - receipt refs that
-must still resolve at the provider, and `policy/upstream-pins.json`.
+must still resolve at the provider, `policy/upstream-pins.json`, and every
+admitted Skill's `intake/<skill>/source-lock.json` `method_references`
+(ed3c/skill-concerns#54; `source_lock_pins` carries the why).
 
 N-class: this sweep gates nothing. No admission, stamp, or CI path reads its
 exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothing`
@@ -224,7 +226,16 @@ PIN_HOLDER_GLOBS = (
     "registry.json",
 )
 
-PROVIDER_REF = re.compile(r"^(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?P<number>\d+)$")
+# One character class for GitHub's `owner/name` identity, quoted twice below
+# rather than hand-copied twice: `PROVIDER_REF` and `PROVIDER_SLUG` read the
+# same slug shape out of two different surroundings (an issue reference, a
+# clone URL), and a third caller wanting that shape composes `_SLUG_SEGMENT`
+# instead of re-typing the character class a third time.
+_SLUG_SEGMENT = r"[A-Za-z0-9_.-]+"
+PROVIDER_REF = re.compile(rf"^(?P<repo>{_SLUG_SEGMENT}/{_SLUG_SEGMENT})#(?P<number>\d+)$")
+PROVIDER_SLUG = re.compile(
+    rf"^(?:https?://github\.com/)?(?P<slug>{_SLUG_SEGMENT}/{_SLUG_SEGMENT}?)(?:\.git)?/?$"
+)
 GATE_ERROR = re.compile(r"^(?P<diagnostic>[A-Z][A-Z0-9_]*):(?P<subject>.+)$")
 
 
@@ -545,6 +556,108 @@ def check_refs(
     return results, findings, unreachable
 
 
+def provider_slug(repository: Any) -> str | None:
+    """`owner/name` addressable by `gh api repos/...`, or None if this is not one.
+
+    `method_references[].repository` says the same fact three ways, because the
+    producers that wrote it were authored at three different times: a bare slug
+    (`cursor/plugins`), a clone URL (`https://github.com/ed3c/noodles`), and a
+    clone URL keeping its suffix (`https://github.com/ed3c/skills-shared.git`).
+    Normalising on read rather than rewriting the locks matters: those bytes are
+    hashed into `source_lock.sha256` in every admission receipt, so editing them
+    to suit this reader would invalidate the receipts it exists to protect.
+
+    None rather than a best guess. A value this cannot address is reported with
+    its prerequisite (`check_upstream`), never dropped into a silence that reads
+    exactly like a file with nothing to watch.
+    """
+    match = PROVIDER_SLUG.match(repository.strip()) if isinstance(repository, str) else None
+    return match.group("slug") if match else None
+
+
+def source_lock_pins(root: Path) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Every admitted Skill's source-locked method references, shaped as pins.
+
+    ed3c/skill-concerns#54: `policy/upstream-pins.json` was the only registry
+    this sweep re-resolved, and not one Skill's `intake/<skill>/source-lock.json`
+    `method_references` row was on it. `check_admissions.py` proves those
+    `blob_sha` values are forty hex characters; nothing proved they are still
+    what the provider serves. An upstream document a Skill's portable laws were
+    generalized from could therefore change and no script here would notice --
+    the exact decay `maintain_skills.py` + `upstream-pins.json` already exist to
+    catch for the pstack pin.
+
+    Derived from the locks rather than copied into the policy file: that is the
+    issue's "uniform mechanism, no new registry" exit. One copy of the fact, no
+    second write for `gen_source_lock.py` to keep in step, and a Skill admitted
+    tomorrow is watched without anybody remembering to register it.
+
+    ADMITTED only, and the gate is the receipt. `intake/` also holds candidates
+    whose admission has not landed (`agent-friendly-architecture-compiler`,
+    ed3c/skill-concerns#19); this sweep's subject is admitted Skill content, and
+    a candidate's provider is not yet a fact this repository rests on.
+
+    That candidate is also the worked example of why the gate is not merely
+    tidy. `ed3c/ai-content-notes` resolves, is public, and its pinned commit
+    `c461dd5e` still serves both frozen blobs -- but neither
+    `templates/agent-friendly-architecture.md` nor
+    `schemas/architecture-context-pack.schema.json` is on its default branch any
+    more (`HTTP 404` on both `contents` reads, 2026-09-03). Watching a candidate
+    would park this sweep on `changed` forever over bytes no receipt binds, for
+    a Skill nobody has admitted. That is a fact for #19 to weigh, not drift in
+    this repository's own subject.
+
+    No `pinned_commit` and no `branch`. The lock's own `commit` is immutable, so
+    re-reading a blob at it can only ever come back identical; the question
+    worth a provider call is whether the file has moved on since, which the
+    provider's default branch answers without this file guessing its name.
+    """
+    pins: list[dict[str, Any]] = []
+    unreadable: list[dict[str, str]] = []
+    for lock_path in sorted(root.glob("intake/*/source-lock.json")):
+        skill = lock_path.parent.name
+        if not (root / "admissions" / f"{skill}.json").is_file():
+            continue
+        document = json.loads(lock_path.read_text(encoding="utf-8"))
+        grouped: dict[str, list[dict[str, str]]] = {}
+        for reference in document.get("method_references", []):
+            slug = provider_slug(reference.get("repository"))
+            if slug is None:
+                unreadable.append(
+                    {
+                        "pin": str(reference.get("path") or lock_path.name),
+                        "skill": skill,
+                        "prerequisite": (
+                            "a GitHub owner/name this sweep can address: "
+                            f"method_references[].repository is {reference.get('repository')!r}"
+                        ),
+                        "destination": locate_destination(
+                            root, str(reference.get("blob_sha") or reference.get("path") or "")
+                        ),
+                    }
+                )
+                continue
+            grouped.setdefault(slug, []).append(
+                {"path": reference["path"], "blob_sha": reference["blob_sha"]}
+            )
+        for slug, watched in sorted(grouped.items()):
+            pins.append(
+                {
+                    "id": f"source-lock:{skill}",
+                    "repository": slug,
+                    "watched_files": watched,
+                    "action_on_drift": (
+                        f"re-read the provider's copy and decide whether {skill}'s portable "
+                        f"laws still follow from it. If they do, re-freeze "
+                        f"intake/{skill}/source-lock.json through that Skill's producer and "
+                        f"re-stamp its receipt; if they do not, the Skill is the thing that "
+                        f"has to change, and the pin is telling the truth"
+                    ),
+                }
+            )
+    return pins, unreadable
+
+
 def check_upstream(
     root: Path, online: bool
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]]]:
@@ -552,7 +665,30 @@ def check_upstream(
     findings: list[dict[str, str]] = []
     unreachable: list[dict[str, str]] = []
     document = json.loads((root / "policy" / "upstream-pins.json").read_text(encoding="utf-8"))
-    for pin in document.get("pins", []):
+    lock_pins, lock_unreadable = source_lock_pins(root)
+    unreachable.extend(lock_unreadable)
+
+    # One provider call per (repository, path), and the policy file wins ties.
+    # Three Skills generalize from the same two pstack files that
+    # `policy/upstream-pins.json` already watches: without this, the same blob
+    # is fetched four times, and one drift is filed four times at four
+    # destinations. The policy pin goes first because it is the copy carrying
+    # `mirror` and a hand-written `action_on_drift`; the derived pin has neither.
+    claimed: set[tuple[str, str]] = set()
+    ordered: list[dict[str, Any]] = []
+    for pin in [*document.get("pins", []), *lock_pins]:
+        watched: list[dict[str, str]] = []
+        for entry in pin.get("watched_files", []):
+            key = (pin["repository"], entry["path"])
+            if key in claimed:
+                continue
+            claimed.add(key)
+            watched.append(entry)
+        if not watched and not pin.get("pinned_commit"):
+            continue
+        ordered.append({**pin, "watched_files": watched})
+
+    for pin in ordered:
         repository = pin["repository"]
         branch = pin.get("branch", "main")
         # A pin may watch FILE identity without pinning a commit
@@ -649,17 +785,15 @@ def check_upstream(
 
         for watched in pin.get("watched_files", []):
             destination = mirror_destination(root, watched.get("mirror"))
-            blob = _run(
-                [
-                    "gh",
-                    "api",
-                    f"repos/{repository}/contents/{watched['path']}?ref={branch}",
-                    "--jq",
-                    ".sha",
-                ],
-                root,
-                60,
-            )
+            # `?ref=` only when the pin names a branch. A pin derived from a
+            # source lock names none on purpose (`source_lock_pins`), and
+            # omitting the parameter makes the provider serve its own default
+            # branch -- strictly better than this file guessing "main" and
+            # reporting the guess's 404 as if the watched file had vanished.
+            query = f"repos/{repository}/contents/{watched['path']}"
+            if pin.get("branch"):
+                query += f"?ref={pin['branch']}"
+            blob = _run(["gh", "api", query, "--jq", ".sha"], root, 60)
             if blob["returncode"] != 0:
                 unreachable.append(
                     {

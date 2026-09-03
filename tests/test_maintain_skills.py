@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 import plistlib
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -307,6 +309,15 @@ class MaintainSkillsTests(unittest.TestCase):
         re-derived.
         """
 
+        # Every source-lock-derived watch answers with its own pinned blob, so
+        # the ONE drift in this pass is the mirrored consumer file and the
+        # count assertion below stays a real count (ed3c/skill-concerns#54).
+        pinned = {
+            f"repos/{pin['repository']}/contents/{watched['path']}": watched["blob_sha"]
+            for pin in maintain_skills.source_lock_pins(ROOT)[0]
+            for watched in pin["watched_files"]
+        }
+
         def fake_run(command, cwd, timeout=900):
             joined = " ".join(command)
             if "cursor/plugins" in joined:  # the neighbouring pin, unchanged
@@ -327,6 +338,9 @@ class MaintainSkillsTests(unittest.TestCase):
                 }
             if "issue_contract.py" in joined:  # the consumer moved
                 return {"returncode": 0, "stdout": "f" * 40, "tail": ""}
+            for token, sha in pinned.items():
+                if token in joined:
+                    return {"returncode": 0, "stdout": sha, "tail": ""}
             raise AssertionError(f"unexpected command: {command}")
 
         with mock.patch.object(maintain_skills, "_run", side_effect=fake_run):
@@ -401,9 +415,14 @@ class MaintainSkillsTests(unittest.TestCase):
         document = json.loads(
             (ROOT / "policy" / "upstream-pins.json").read_text(encoding="utf-8")
         )
+        # Keyed by the whole `repos/<slug>/contents/<path>` token the sweep
+        # actually issues, not by path alone: once the source locks are watched
+        # too (ed3c/skill-concerns#54), four different providers serve a file
+        # called AGENTS.md and a bare-path match answers with whichever one the
+        # dict happened to yield first.
         blobs = {
-            watched["path"]: watched["blob_sha"]
-            for pin in document["pins"]
+            f"repos/{pin['repository']}/contents/{watched['path']}": watched["blob_sha"]
+            for pin in document["pins"] + maintain_skills.source_lock_pins(ROOT)[0]
             for watched in pin.get("watched_files", [])
         }
         heads = {
@@ -419,8 +438,8 @@ class MaintainSkillsTests(unittest.TestCase):
             for repository, sha in heads.items():
                 if f"{repository}/commits/" in joined:
                     return {"returncode": 0, "stdout": sha, "tail": ""}
-            for path, sha in blobs.items():
-                if path in joined:
+            for token, sha in blobs.items():
+                if token in joined:
                     return {"returncode": 0, "stdout": sha, "tail": ""}
             raise AssertionError(f"unexpected command: {command}")
 
@@ -489,6 +508,171 @@ class MaintainSkillsTests(unittest.TestCase):
         self.assertTrue(SWEEP.is_file())
         self.assertIn("--report-dir", arguments)
         self.assertIn("StartCalendarInterval", plist)
+
+
+class SourceLockPinTests(unittest.TestCase):
+    """ed3c/skill-concerns#54: an admitted Skill's method references get re-read.
+
+    The claim under test is about the WIRE, not the parse. Asserting that
+    `source_lock_pins()` returns what the locks contain would be a tautology -
+    it reads them. What is falsifiable is that `check_upstream` issues a
+    provider call for each one, that a moved blob comes back as a finding filed
+    at the lock line, and that the two documented exits (a candidate, and a
+    repository token this sweep cannot address) behave as written rather than
+    disappearing into the same silence as "nothing to watch".
+    """
+
+    def locked_references(self) -> list[tuple[str, str, str]]:
+        """(skill, repository, path) straight from the lock bytes, not the pins."""
+        rows: list[tuple[str, str, str]] = []
+        for lock in sorted(ROOT.glob("intake/*/source-lock.json")):
+            skill = lock.parent.name
+            if not (ROOT / "admissions" / f"{skill}.json").is_file():
+                continue
+            document = json.loads(lock.read_text(encoding="utf-8"))
+            for reference in document.get("method_references", []):
+                rows.append((skill, reference["repository"], reference["path"]))
+        return rows
+
+    def test_every_admitted_method_reference_reaches_the_provider(self) -> None:
+        """The gap #54 names: these were pinned at admission and never re-read."""
+        asked: list[str] = []
+
+        def fake_run(command, cwd, timeout=900):
+            asked.append(" ".join(command))
+            if "compare/" in " ".join(command):
+                return {"returncode": 0, "stdout": "identical", "tail": ""}
+            return {"returncode": 0, "stdout": "0" * 40, "tail": ""}
+
+        with mock.patch.object(maintain_skills, "_run", side_effect=fake_run):
+            maintain_skills.check_upstream(ROOT, online=True)
+
+        rows = self.locked_references()
+        self.assertTrue(rows, "no admitted Skill carries method_references at all")
+        for skill, repository, path in rows:
+            with self.subTest(skill=skill, path=path):
+                slug = maintain_skills.provider_slug(repository)
+                self.assertIsNotNone(slug, repository)
+                self.assertTrue(
+                    any(f"repos/{slug}/contents/{path}" in call for call in asked),
+                    f"{skill} pins {slug}:{path} and no provider call names it",
+                )
+
+        # One call per FILE, not one per Skill that cites it: three Skills and
+        # `policy/upstream-pins.json` all name the same two pstack documents.
+        # Counted on the addressed file rather than the raw argv, because the
+        # policy pin asks `?ref=main` and a derived pin asks the default branch
+        # -- two different strings naming one blob, which a raw-string count
+        # would report as two legitimate calls.
+        fetched = [
+            call.split("/contents/", 1)[1].split("?")[0].split(" ")[0]
+            + "@"
+            + call.split("repos/", 1)[1].split("/contents/")[0]
+            for call in asked
+            if "/contents/" in call
+        ]
+        self.assertEqual(sorted(set(fetched)), sorted(fetched), fetched)
+
+    def test_a_moved_method_reference_blob_files_drift_at_its_source_lock(self) -> None:
+        """Prove it reds: this branch was never reachable before #54."""
+        subject = json.loads(
+            (ROOT / "intake" / "context-closure-engineering" / "source-lock.json").read_text(
+                encoding="utf-8"
+            )
+        )["method_references"][0]
+        moved = subject["blob_sha"]
+
+        def fake_run(command, cwd, timeout=900):
+            joined = " ".join(command)
+            if "compare/" in joined:
+                return {"returncode": 0, "stdout": "identical", "tail": ""}
+            if "commits/" in joined:
+                return {
+                    "returncode": 0,
+                    "stdout": "b9ddc83c32972210b8a94d389130713e8eed346e",
+                    "tail": "",
+                }
+            if f"repos/ed3c/noodles/contents/{subject['path']}" in joined:
+                return {"returncode": 0, "stdout": "e" * 40, "tail": ""}
+            document = json.loads(
+                (ROOT / "policy" / "upstream-pins.json").read_text(encoding="utf-8")
+            )
+            everything = document["pins"] + maintain_skills.source_lock_pins(ROOT)[0]
+            for pin in everything:
+                for watched in pin.get("watched_files", []):
+                    token = f"repos/{pin['repository']}/contents/{watched['path']}"
+                    if token in joined:
+                        return {"returncode": 0, "stdout": watched["blob_sha"], "tail": ""}
+            raise AssertionError(f"unexpected command: {command}")
+
+        with mock.patch.object(maintain_skills, "_run", side_effect=fake_run):
+            _, findings, unreachable = maintain_skills.check_upstream(ROOT, online=True)
+
+        self.assertEqual([], unreachable)
+        drift = [f for f in findings if f["diagnostic"] == "UPSTREAM_WATCHED_FILE_CHANGED"]
+        self.assertEqual(1, len(drift), findings)
+        self.assertEqual(moved, drift[0]["subject"])
+
+        # Readback: the destination must be the lock line carrying that blob,
+        # not a plausible-looking path:1.
+        relative, number = drift[0]["destination"].rsplit(":", 1)
+        line = (ROOT / relative).read_text(encoding="utf-8").splitlines()[int(number) - 1]
+        self.assertIn(moved, line)
+        self.assertTrue(relative.startswith("intake/"), relative)
+
+    def test_a_candidate_without_a_receipt_is_not_yet_the_subject(self) -> None:
+        """The ADMITTED gate is the receipt, and it is load-bearing.
+
+        `intake/agent-friendly-architecture-compiler` is a candidate on an
+        unlanded PR (ed3c/skill-concerns#19). Its provider resolves and its
+        pinned commit still serves both frozen blobs, but neither watched path
+        is on that provider's default branch any more, so watching it would park
+        the sweep on `changed` forever over bytes no receipt binds.
+        """
+        candidates = [
+            lock.parent.name
+            for lock in sorted(ROOT.glob("intake/*/source-lock.json"))
+            if not (ROOT / "admissions" / f"{lock.parent.name}.json").is_file()
+        ]
+        self.assertIn("agent-friendly-architecture-compiler", candidates)
+        watched = {pin["id"] for pin in maintain_skills.source_lock_pins(ROOT)[0]}
+        for skill in candidates:
+            self.assertNotIn(f"source-lock:{skill}", watched)
+
+    def test_a_repository_this_sweep_cannot_address_is_reported_not_dropped(self) -> None:
+        """Absence and unreadability never look alike (the check_refs precedent)."""
+        for token in ("cursor/plugins", "https://github.com/ed3c/noodles"):
+            with self.subTest(token=token):
+                self.assertIsNotNone(maintain_skills.provider_slug(token))
+        for token in ("https://github.com/ed3c/skills-shared.git",):
+            self.assertEqual("ed3c/skills-shared", maintain_skills.provider_slug(token))
+        for token in (None, "", "/Users/neon/github_projects/plugins", "not a repo at all"):
+            with self.subTest(token=token):
+                self.assertIsNone(maintain_skills.provider_slug(token))
+
+        root = Path(tempfile.mkdtemp(prefix="source-lock-pins-"))
+        self.addCleanup(shutil.rmtree, root, True)
+        (root / "admissions").mkdir()
+        (root / "admissions" / "demo.json").write_text("{}\n", encoding="utf-8")
+        (root / "intake" / "demo").mkdir(parents=True)
+        (root / "intake" / "demo" / "source-lock.json").write_text(
+            json.dumps(
+                {
+                    "method_references": [
+                        {
+                            "repository": "/Users/neon/github_projects/plugins",
+                            "path": "pstack/skills/create-verification-skill/SKILL.md",
+                            "blob_sha": "f869e26122991252373d5b8f6357e5b9ff195a00",
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        pins, unreadable = maintain_skills.source_lock_pins(root)
+        self.assertEqual([], pins)
+        self.assertEqual(1, len(unreadable), unreadable)
+        self.assertIn("/Users/neon/github_projects/plugins", unreadable[0]["prerequisite"])
 
 
 if __name__ == "__main__":
