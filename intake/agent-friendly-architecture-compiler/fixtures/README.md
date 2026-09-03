@@ -41,10 +41,18 @@ either the template stopped being the pre-guard artifact or the guard stopped re
 `validate_rendered_contract.py` — that script lives only on the un-merged draft branch
 `agent/agent-friendly-architecture-compiler` (head `4d27bfa4edc34b32b4b088fd3df0b40ab2a420c0`
 at the time this fixture material was frozen). Nothing in this repository today would go red
-if the template above were edited to pass. The guard becomes self-enforcing only once issue
-#19 lands the compiler and its guard under `skills/`; until then the `exit=1, 22 findings`
-receipt above is a one-time snapshot, reproducible only by re-running that script against that
-branch while it still exists at that SHA, not a standing check.
+if the template above were edited to pass. Until then the `exit=1, 22 findings` receipt above
+is a one-time snapshot, reproducible only by re-running that script against that branch while
+it still exists at that SHA, not a standing check.
+
+Landing the bundle under `skills/` is **not** the condition that ends that. A bundle can land
+with a `run_all.SKILL_CHECKS` row that never names this file, and this paragraph would read as
+satisfied while nothing re-ran the guard against this corpus — the executable-route-hollow
+shape `scripts/check_skill_bundles.py` exists to refuse, one directory over. The guard becomes
+self-enforcing when that row **executes `validate_rendered_contract.py` against this template
+and expects a non-zero exit**. Under ed3c/skill-concerns#72 that row cannot arrive in one
+landing either: a first-ever admission is two, a `policy/bootstrap-admissions.json` entry
+first and the bundle plus its permanent row second. Issue #19 owns both.
 
 ## Non-claims
 
