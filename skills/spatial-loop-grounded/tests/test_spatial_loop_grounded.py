@@ -285,6 +285,36 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
             judge_c12(SKILL_ROOT / self.C7_FIXTURES / "c12-demonstrated-observer"), []
         )
 
+    def test_the_c12_blind_probe_fixture_states_the_sighted_surface_ceiling(self) -> None:
+        """ed3c/skill-concerns#135: a totalCount quoted without #102's arithmetic.
+
+        The fixture named the sighted surface and quoted its count, and stopped
+        there. `totalCount 2` is not two edits - the connection materialises the
+        ORIGINAL revision as a node once any edit exists (#102) - so a reader
+        who took the 2 at face value counted an edit that is the issue's own
+        creation, inside the fixture for the clause about observers whose zero
+        has two meanings.
+
+        Asserted on the fixture's own bytes rather than through the judge,
+        because `judge_c12` decides on the demonstration fields and never opens
+        this one: the fixture's verdict is unchanged and deliberately so, and
+        this arm is what stops the sentence being dropped again.
+        """
+        claim = json.loads(
+            self.c12_claim(SKILL_ROOT, "c12-blind-events-probe").read_text(
+                encoding="utf-8"
+            )
+        )
+        happened = claim["what_actually_happened"]
+        for token in (
+            "0 is ABSENT",
+            "the first edit moves it 0 -> 2",
+            "every later edit by one",
+            "ed3c/skill-concerns#102",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, happened)
+
     def test_hollow_c12_undemonstrated_silence_accepted_fails(self) -> None:
         """The blind-fixture arm, planted into the fixture the clause certifies:
         strip the demonstration off the compliant claim and its silence is the

@@ -613,7 +613,7 @@
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-events-probe/claim.json",
-      "sha256": "3fbc427417bb6abce3ef1306c3b90ea3aef968f312ca34d1f0c3aeeafc74e8fd"
+      "sha256": "c20dbe6a71afce93ce860f65eab69880cbd7d084200db0ada59d8aea2c277595"
     },
     {
       "path": "skills/spatial-loop-grounded/evals/clause-fixtures/c12-blind-residue-claim/claim.json",
@@ -693,10 +693,10 @@
     },
     {
       "path": "skills/spatial-loop-grounded/tests/test_spatial_loop_grounded.py",
-      "sha256": "a5185b7e9f450b34d9e00497adbf7b649c4546f4e6821ccfdf86f74cf34d2186"
+      "sha256": "d20539ae39e7e6f45a564b3ec59169b7f7c2d7535f1b52aff9e9a6ada135d60b"
     }
   ],
-  "skill_tree_sha256": "a9ca994ea89721fe22213de1e15f56fa55397bee63e579e0855a0ca4e3d4aad6",
+  "skill_tree_sha256": "a918ba35959cdc882e3f42678d259fbe64ab8b29a588db8984ffc6e09e22da0b",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
