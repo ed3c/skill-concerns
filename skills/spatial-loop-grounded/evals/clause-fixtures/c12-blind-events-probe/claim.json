@@ -11,5 +11,5 @@
       "argv": null
     }
   },
-  "what_actually_happened": "`edited` in the REST events payload is a COMMENT event; a body revision is exposed only through the GraphQL userContentEdits connection. The same issue that returns 0 here returns totalCount 2 there, one of the two written by the landing machine, which rewrites the referenced issue's body on every land. So this probe returns 0 for every issue in the repository, edited or not."
+  "what_actually_happened": "`edited` in the REST events payload is a COMMENT event; a body revision is exposed only through the GraphQL userContentEdits connection. The same issue that returns 0 here returns totalCount 2 there. That 2 is ONE edit, not two: userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102). The one edit is the landing machine's, which rewrites the referenced issue's body on every land. So this REST probe returns 0 for every issue in the repository, edited or not - and the sighted surface is not free of the same shape one level down, because its own 0 is ABSENT rather than NEGATIVE and a reader who takes the 2 at face value counts an edit that is the issue's creation."
 }
