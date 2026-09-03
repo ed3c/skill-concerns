@@ -43,6 +43,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      # Three exits, not two (ed3c/skill-concerns#141). 0 landed; 3 landed and
+      # the provider misreported one of its own writes, which is a red run and
+      # NOT a failed landing; anything else is a refusal with the provider's
+      # own reason in it. A run interrupted after the merge is re-entered with
+      # the same receipt and `--resume`, never finished by hand: the anchor is
+      # the artifact a third party recomputes the landing from, so a hand-typed
+      # one in the machine's format would be indistinguishable from a real one.
       - name: Exact-head merge, Issue closure and marker stamp with readback
         env:
           GH_TOKEN: ${{ github.token }}

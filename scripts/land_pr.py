@@ -4,6 +4,37 @@
 Trust split: the receipt (produced by the trusted verify job) names *which*
 commit was verified; policy/github.json on the default branch names the
 repository, base branch and merge method. Nothing is taken from the candidate.
+
+Everything after the merge is re-enterable (ed3c/skill-concerns#141)
+-------------------------------------------------------------------
+
+The merge is the one irreversible step, so every step after it is written to
+survive being interrupted and re-run:
+
+  1. the anchor is posted immediately after the merge readback, before
+     anything that can fail non-atomically. It used to be last, so a refusal on
+     the issue PATCH took it out and the merged pull request ended with no
+     artifact a third party could check the landing against;
+  2. `patch_issue()` treats a non-2xx whose effect may have applied as a state
+     to re-read rather than as a fatal, because a provider can be wrong about
+     its own effect. `PROVIDER_MISREPORTED` is the exit for that: the landing
+     completed and the provider misreported, which must not share a report
+     shape with the landing failing;
+  3. `--resume` re-enters after the merge instead of exiting `PULL_NOT_OPEN`,
+     so an interrupted landing is finished by the mechanism that owns the
+     artifact rather than by hand.
+
+The instance this was found on is `ed3c/skill-concerns` PR 140
+(`Refs ed3c/skill-concerns#81`, merge commit
+`4428d757c127f79194153f46b34e091b267b8a57`, merged 2026-09-02T20:55:11Z). Its
+issue PATCH answered 422 with an empty `errors` array *after applying in full*
+-- body stamped, state closed, timeline recording the close in the same second
+-- and the anchor was never written. It is still an anchorless merged pull
+request; `tests/test_land_pr.py::ResumeAfterMergeTests` replays its recorded
+shape (merged pull request, zero comments, issue already closed and stamped)
+through `main(["--resume", ...])`, which is the path that backfills it. No
+anchor was hand-written for it: a hand-typed line in the machine's format is
+indistinguishable from the machine's, and the gap is the finding.
 """
 
 from __future__ import annotations
@@ -21,6 +52,13 @@ from typing import Any
 
 API = "https://api.github.com"
 REFS_LINE = re.compile(r"^Refs\s+([A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#(\d+)$")
+
+# The landing completed and the provider misreported one of its own writes.
+# Distinct from 0 (nothing to report) and from the SystemExit refusals (the
+# landing did not complete), because a run that says only "failed" sends the
+# next operator looking for damage there is none of, and a run that says only
+# "landed" hides a provider answering 422 about a write it performed.
+PROVIDER_MISREPORTED = 3
 
 
 def body_digest(body: str | None) -> str:
@@ -93,10 +131,16 @@ def post_receipt_anchor(
 ) -> str:
     """Post the physical-receipt anchor on the merged PR, once.
 
-    N-class: runs only after merge + issue-closure readback and can never gate
-    a land - every failure path returns 'failed' instead of raising. The Drive
-    index is appended by the periodic batch reconcile, not here.
+    N-class: runs after the merge readback and can never gate a land - every
+    failure path returns 'failed' instead of raising. The Drive index is
+    appended by the periodic batch reconcile, not here.
     Returns 'exists' | 'posted' | 'failed'.
+
+    It runs BEFORE the issue PATCH rather than after the issue-closure readback
+    (ed3c/skill-concerns#141). Being N-class stopped it gating a land; it did
+    not stop a land from gating it, and a step that only ever ran last was
+    unreachable the moment any earlier post-merge step raised. Ordering is what
+    fixes that: this call depends on the merge and on nothing after it.
 
     Anchor format (ed3c/skill-concerns#77 appends the last field; the first
     three are unchanged, so existing consumers keep parsing what they parsed):
@@ -154,10 +198,49 @@ body-sha256=<64-hex>
         return "failed"
 
 
-def main(argv: list[str] | None = None) -> int:
+def patch_issue(
+    repository: str, issue: int, payload: dict[str, Any], call: Any = None
+) -> str:
+    """Stamp and close the Issue; re-read a refusal before believing it.
+
+    Returns 'applied' when the provider accepted, 'misreported' when it refused
+    an effect the readback shows it performed. Re-raises the provider's own
+    refusal when the readback shows it did NOT perform it.
+
+    `api()` turns every non-2xx into a `SystemExit`, which is right for a
+    request that did nothing and wrong for one that did everything: PR 140's
+    PATCH answered 422 with an empty `errors` array and the write had landed --
+    body stamped, state closed, timeline recording the close in the same
+    second. Nothing here explains why; the claim is only that a provider's
+    answer about its own effect is a hypothesis and the readback is the fact.
+
+    The comparison is against what was SENT, not against "looks plausible": a
+    422 that genuinely did not apply leaves the issue disagreeing with the
+    payload, and that still fails the run.
+    """
+    call = api if call is None else call
+    try:
+        call("PATCH", f"/repos/{repository}/issues/{issue}", payload)
+        return "applied"
+    except SystemExit:
+        after = call("GET", f"/repos/{repository}/issues/{issue}")
+        if any(after.get(field) != value for field, value in payload.items()):
+            raise
+        return "misreported"
+
+
+def main(argv: list[str] | None = None, call: Any = None) -> int:
+    call = api if call is None else call
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--policy", type=Path, default=Path("policy/github.json"))
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="the merge already happened: re-enter the steps after it instead "
+        "of exiting PULL_NOT_OPEN. The receipt still names the head, and the "
+        "merge is asserted rather than assumed.",
+    )
     args = parser.parse_args(argv)
 
     receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
@@ -169,32 +252,46 @@ def main(argv: list[str] | None = None) -> int:
     number = int(receipt["pull_request"])
     head = receipt["head_sha"]
 
-    pull = api("GET", f"/repos/{repository}/pulls/{number}")
-    if pull["state"] != "open":
-        raise SystemExit(f"PULL_NOT_OPEN:{number}:{pull['state']}")
+    pull = call("GET", f"/repos/{repository}/pulls/{number}")
+    # Identity before state: `--resume` must be as exact about WHICH tree it is
+    # finishing as the first attempt was about which tree it merged.
     if pull["head"]["sha"] != head:
         raise SystemExit(f"HEAD_MOVED:{number}:{pull['head']['sha']}:{head}")
     if pull["base"]["ref"] != policy["default_branch"]:
         raise SystemExit(f"BASE_NOT_DEFAULT_BRANCH:{number}:{pull['base']['ref']}")
     issue = parse_refs(pull.get("body"), repository)
 
-    merged = api(
-        "PUT",
-        f"/repos/{repository}/pulls/{number}/merge",
-        {"sha": head, "merge_method": policy["merge_method"]},
-    )
-    if not merged.get("merged"):
-        raise SystemExit(f"MERGE_REFUSED:{number}:{merged.get('message')}")
-    merge_sha = merged["sha"]
+    if args.resume:
+        # Re-entry, not a second merge: the provider's own `merged` flag is the
+        # only thing that may supply the merge commit here.
+        if not pull.get("merged"):
+            raise SystemExit(f"RESUME_NOT_MERGED:{number}:{pull['state']}")
+        merge_sha = pull["merge_commit_sha"]
+    else:
+        if pull["state"] != "open":
+            raise SystemExit(f"PULL_NOT_OPEN:{number}:{pull['state']}")
+        merged = call(
+            "PUT",
+            f"/repos/{repository}/pulls/{number}/merge",
+            {"sha": head, "merge_method": policy["merge_method"]},
+        )
+        if not merged.get("merged"):
+            raise SystemExit(f"MERGE_REFUSED:{number}:{merged.get('message')}")
+        merge_sha = merged["sha"]
 
-    readback = api("GET", f"/repos/{repository}/pulls/{number}")
-    if not readback.get("merged"):
-        raise SystemExit(f"MERGE_READBACK_ABSENT:{number}")
+        readback = call("GET", f"/repos/{repository}/pulls/{number}")
+        if not readback.get("merged"):
+            raise SystemExit(f"MERGE_READBACK_ABSENT:{number}")
 
-    body = api("GET", f"/repos/{repository}/issues/{issue}").get("body")
-    api(
-        "PATCH",
-        f"/repos/{repository}/issues/{issue}",
+    # Before the Issue PATCH, not after the closure readback: the merge is
+    # irreversible and this is the only artifact that makes it checkable by a
+    # third party, so it must not sit behind a step that can fail.
+    anchor = post_receipt_anchor(repository, number, merge_sha, call=call)
+
+    body = call("GET", f"/repos/{repository}/issues/{issue}").get("body")
+    patched = patch_issue(
+        repository,
+        issue,
         {
             "body": stamp(
                 body,
@@ -208,12 +305,11 @@ def main(argv: list[str] | None = None) -> int:
             "state": "closed",
             "state_reason": "completed",
         },
+        call=call,
     )
-    closed = api("GET", f"/repos/{repository}/issues/{issue}")
+    closed = call("GET", f"/repos/{repository}/issues/{issue}")
     if closed["state"] != "closed":
         raise SystemExit(f"ISSUE_CLOSE_READBACK_ABSENT:{issue}:{closed['state']}")
-
-    anchor = post_receipt_anchor(repository, number, merge_sha)
 
     print(
         json.dumps(
@@ -222,13 +318,15 @@ def main(argv: list[str] | None = None) -> int:
                 "head_sha": head,
                 "merge_sha": merge_sha,
                 "closed_issue": issue,
+                "issue_patch": patched,
                 "receipt_anchor": anchor,
+                "resumed": args.resume,
             },
             indent=2,
             sort_keys=True,
         )
     )
-    return 0
+    return 0 if patched == "applied" else PROVIDER_MISREPORTED
 
 
 if __name__ == "__main__":
