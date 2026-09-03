@@ -16,6 +16,15 @@ Split any such change into two landings: first loosen this file to accept both
 the old and new value, with no data change, so the trusted copy on the default
 branch accepts either; then change the data and narrow back down. The
 `authoring_command` check below is currently mid-split -- it accepts both.
+
+Loosening THIS file is not sufficient on its own, and that cost a landing to
+learn (ed3c/skill-concerns#150). `check_receipt_provenance.py` also runs from the
+default branch and rebuilds the whole receipt through the TRUSTED
+`admission_stamp.build_receipt`, then compares bytes: a field's value cannot be
+"accepted either way" against a byte-exact reproduction, because there is no
+accepted set to widen, only one function's output. Any receipt-content split
+therefore has to loosen both gates, which is why `authoring_commands()` below is
+the single declaration both of them read.
 """
 
 from __future__ import annotations
@@ -55,7 +64,12 @@ def authoring_commands(name: str) -> set[str]:
     `run_all.py` never calls `gen_admission.py`. The honest value is the
     per-Skill delegate. Both are accepted during the split described in this
     module's docstring; the second landing drops the run_all value and
-    regenerates the five receipts (ed3c/skill-concerns#44).
+    regenerates the receipts (ed3c/skill-concerns#61).
+
+    This function is the SINGLE declaration of that set. `check_receipt_provenance`
+    reads it too rather than demanding byte-equality on the field, so the two
+    trusted gates cannot hold different opinions about which producer strings a
+    receipt may claim (ed3c/skill-concerns#150).
     """
     return {
         "python3 scripts/run_all.py",

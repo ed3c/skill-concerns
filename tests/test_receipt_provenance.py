@@ -303,5 +303,99 @@ class GradedByTraceTests(unittest.TestCase):
         self.assertEqual(len(receipts), len(carrying), carrying)
 
 
+class AuthoringCommandWideningTests(unittest.TestCase):
+    """ed3c/skill-concerns#150: the gate that made #61 unlandable.
+
+    ed3c/skill-concerns#44 split the honest `authoring_command` into two
+    landings and PR #60 landed the first, loosening
+    `check_admissions.authoring_commands()` to accept either value. Measured
+    against a tree carrying the whole of #61, that was not enough: THIS gate
+    rebuilds the receipt through the trusted `build_receipt` and compares bytes,
+    so all ten receipts red with
+    `RECEIPT_NOT_REPRODUCED:<skill>:authoring_command` while trusted still emits
+    the run_all string. A field being migrated cannot be accepted either way
+    against a reproduction -- there is no set to widen, only one function's
+    output.
+
+    The fix reads the one declaration instead of re-deriving it. Three arms,
+    because fewer would not separate WIDENED from WAIVED, and the third is the
+    one that matters: this must not become a licence for the field to say
+    anything at all.
+    """
+
+    def write(self, root: Path, skill: str, command: str) -> None:
+        path = root / "admissions" / f"{skill}.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt["authoring_command"] = command
+        path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+
+    def test_the_value_61_will_emit_reproduces_against_a_gate_that_emits_the_old_one(
+        self,
+    ) -> None:
+        """The whole point: this is the arm that reds on `main` today."""
+        root = scratch_copy(self)
+        honest = f"python3 skills/{FORGED_SKILL}/scripts/gen_admission.py"
+        self.write(root, FORGED_SKILL, honest)
+
+        # The gate under test still PRODUCES the old string -- otherwise this
+        # arm would prove nothing about the trusted/candidate split.
+        self.assertEqual(
+            "python3 scripts/run_all.py",
+            admission_stamp.build_receipt(
+                FORGED_SKILL, root, admission_stamp.run_checks(FORGED_SKILL, root)
+            )["authoring_command"],
+        )
+        self.assertEqual([], check_receipt_provenance.check(root, only={FORGED_SKILL}))
+        self.assertEqual([], check_admissions.check(root))
+
+    def test_a_command_outside_the_declaration_is_still_refused_by_name(self) -> None:
+        root = scratch_copy(self)
+        self.write(root, FORGED_SKILL, "python3 scripts/make_it_green.py")
+        self.assertEqual(
+            [f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:authoring_command"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+        # Another Skill's producer is in no way this Skill's producer, and the
+        # declaration is per-name for exactly that reason.
+        self.write(root, FORGED_SKILL, "python3 skills/red-team/scripts/gen_admission.py")
+        self.assertEqual(
+            [f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:authoring_command"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+
+    def test_an_accepted_command_is_not_a_licence_to_drift_elsewhere(self) -> None:
+        """Widening one field must not widen the reproduction around it."""
+        root = scratch_copy(self)
+        path = root / "admissions" / f"{FORGED_SKILL}.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        receipt["authoring_command"] = (
+            f"python3 skills/{FORGED_SKILL}/scripts/gen_admission.py"
+        )
+        receipt["controls"].append({"id": FORGED_CASE_ID, "state": "PASS"})
+        path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(
+            [f"RECEIPT_NOT_REPRODUCED:{FORGED_SKILL}:controls"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+
+    def test_this_landing_moved_no_receipt_data(self) -> None:
+        """No `admissions/*.json` byte moves here; #61 is what moves them."""
+        receipts = sorted((ROOT / "admissions").glob("*.json"))
+        self.assertTrue(receipts)
+        for path in receipts:
+            with self.subTest(receipt=path.name):
+                self.assertEqual(
+                    "python3 scripts/run_all.py",
+                    json.loads(path.read_text(encoding="utf-8"))["authoring_command"],
+                )
+
+    def test_the_two_trusted_gates_read_one_declaration(self) -> None:
+        """The second-declaration shape #82 and #112 were filed about."""
+        self.assertIs(
+            check_receipt_provenance.authoring_commands,
+            check_admissions.authoring_commands,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

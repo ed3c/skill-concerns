@@ -19,11 +19,26 @@ produces, which means the execution happened.
 
 Trust boundary, matching `verify.yml`'s "the candidate is only ever data": the
 declaration of what to run (`run_all.SKILL_CHECKS`), the producer table, the
-receipt shape and the comparison all come from *this* file's tree, which in CI
-is the default branch checkout. Only the subject scripts under `skills/` execute
-from the candidate, which is unavoidable -- they are what is being admitted --
-and they can only make the gate red, never green: a candidate `run_all.py` or
-`admission_stamp.py` is never imported or executed here.
+receipt shape, the accepted `authoring_command` set
+(`check_admissions.authoring_commands`) and the comparison all come from *this*
+file's tree, which in CI is the default branch checkout. Only the subject scripts
+under `skills/` execute from the candidate, which is unavoidable -- they are what
+is being admitted -- and they can only make the gate red, never green: a
+candidate `run_all.py`, `admission_stamp.py` or `check_admissions.py` is never
+imported or executed here.
+
+That the comparison is byte-exact is what makes this gate strictly stronger than
+`check_admissions.py`, and also what makes it the one that blocks most change to
+receipt CONTENT: a field whose value is being migrated cannot be "accepted
+either way" against a reproduction, because there is no accepted set, only one
+function's output -- for every field but two. `GRADED_BY` above is popped from
+both sides and held to its own strict, unconditional comparison instead of the
+byte diff; it tolerates nothing, it is just reported under a name that says
+which field. `AUTHORING_COMMAND` below is the one field that genuinely
+tolerates a small accepted set in place of the byte-exact rule, and
+ed3c/skill-concerns#150 carries why it needed a different shape than
+`GRADED_BY`'s: it is self-retiring, so it did not need a second landing to
+close.
 
 "Only make the gate red" also depends on read order, not just on which code
 runs: the candidate subprocesses `run_checks` launches have full write access
@@ -41,6 +56,7 @@ import json
 from pathlib import Path
 
 from admission_stamp import StampRefused, build_receipt, declared_checks, run_checks
+from check_admissions import authoring_commands
 from common import REPO_ROOT, load_json, print_result, safe_repo_path
 
 
@@ -80,6 +96,35 @@ from common import REPO_ROOT, load_json, print_result, safe_repo_path
 # a half-migrated set -- the state that would leave the widening permanent --
 # reds it.
 GRADED_BY = "graded_by"
+
+# ed3c/skill-concerns#150. A second field held outside the byte comparison,
+# and differently from `GRADED_BY` above: that one is popped out and checked
+# strictly (one accepted value, computed fresh every run); this one is
+# tolerated in place, against a small accepted set, because the set itself
+# -- not a single computed value -- is what the migration needs accepted
+# for as long as it is mid-flight.
+#
+# `check_admissions.authoring_commands()` is the repository's declaration of
+# which producer strings a receipt may claim, and it currently accepts two
+# because ed3c/skill-concerns#44's split is mid-flight. This gate never asked it:
+# it re-derived the answer by comparing against the TRUSTED
+# `build_receipt`'s output, which is one string, not a set. Two trusted gates,
+# one field, two independent rules -- and the strict one invisible in the loose
+# one's documentation, which is the second-declaration shape #82 and #112 were
+# filed about.
+#
+# The practical cost was that #44's remaining half (#61) could not land at all:
+# `check_admissions.py` accepts the honest value, and this file reds every
+# receipt carrying it with `RECEIPT_NOT_REPRODUCED:<skill>:authoring_command`,
+# because trusted `build_receipt` still emits the old one. Loosening the wrong
+# gate is indistinguishable from loosening no gate.
+#
+# Reading the declaration instead of re-deriving it is a widening with no data
+# change, and it is SELF-RETIRING: when #61 narrows the set to the single
+# per-Skill value, the committed value and `build_receipt`'s output are the same
+# string again and this branch stops being reachable. `GRADED_BY` above needed a
+# landing two (#133) to close; this one does not.
+AUTHORING_COMMAND = "authoring_command"
 
 
 def graded_by_errors(name: str, root: Path, committed: dict) -> list[str]:
@@ -141,6 +186,19 @@ def reproduce(root: Path, name: str, admission_path: Path) -> list[str]:
         errors.extend(graded_by_errors(name, root, committed))
         committed.pop(GRADED_BY, None)
         actual = json.dumps(committed, indent=2) + "\n"
+
+    # ed3c/skill-concerns#150, and deliberately narrow: only THIS field, only a
+    # value the single declaration already accepts, and only by substituting the
+    # produced string in so every other byte is still compared exactly. A value
+    # outside the set is left alone and reds below like any other drift.
+    if (
+        isinstance(committed, dict)
+        and committed.get(AUTHORING_COMMAND) != produced.get(AUTHORING_COMMAND)
+        and committed.get(AUTHORING_COMMAND) in authoring_commands(name)
+    ):
+        committed[AUTHORING_COMMAND] = produced[AUTHORING_COMMAND]
+        actual = json.dumps(committed, indent=2) + "\n"
+
     if actual == expected:
         return errors
     # Name the field that differs; a bare byte mismatch is unactionable.
