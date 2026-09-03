@@ -109,6 +109,31 @@
       "novel_class_candidates": [],
       "judge_gaps": 23,
       "duplicate_blocks": 10
+    },
+    {
+      "run_id": "2026-09-03T22:45:05+00:00",
+      "wave": "2026-09-04-wave29-sc-implement",
+      "boundary": "implement-boundary",
+      "subject": "wave-boundary",
+      "classes_sampled": [
+        "blind-observer",
+        "free-exit",
+        "trusted-current-literal",
+        "duplicate-discovery",
+        "spec-first-lifecycle",
+        "yielded-non-report"
+      ],
+      "hits": {
+        "blind-observer": 0,
+        "free-exit": 0,
+        "trusted-current-literal": 0,
+        "duplicate-discovery": 3,
+        "spec-first-lifecycle": 0,
+        "yielded-non-report": 0
+      },
+      "novel_class_candidates": [],
+      "judge_gaps": 3,
+      "duplicate_blocks": 3
     }
   ]
 }
