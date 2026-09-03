@@ -8,7 +8,7 @@
         "ed3c/skill-concerns#83",
         "ed3c/skill-concerns#92"
       ],
-      "claim": "the REST events feed returns zero edited-events for issue bodies that GraphQL shows edited two to five times, and the landing machine PATCHes every landed issue's body, so every landing produced an edit the probe reported as zero",
+      "claim": "the REST events feed returns zero edited-events for issue bodies that GraphQL shows edited two to five times, and the landing machine PATCHes every landed issue's body, so every landing produced an edit the probe reported as zero. The sighted surface carries the same shape one level down and its arithmetic is stated here rather than left to each reader: userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102). So a GraphQL 0 does not distinguish 'never edited' from 'no edits observed' either, and the non-zero contrast this class is grounded on is one fewer edit than the number it reports",
       "ledger": "slg cross-wave ledger, wave 2026-09-01-stamper-closure: 'provider userContentEdits prove three acn body edits against a lane report declaring NO PROVIDER-BODY EDIT, both individually true, composed record false'",
       "status": "active"
     },

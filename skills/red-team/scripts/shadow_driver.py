@@ -150,12 +150,16 @@ BLIND_PROBES: dict[str, dict[str, Any]] = {
             "{issue(number:N){userContentEdits(first:20)"
             "{totalCount nodes{editedAt editor{login}}}}}}'"
         ),
+        # Quoted verbatim from `scripts/check_second_arrival_ceiling.py`, which
+        # owns this sentence for every carrier in the tree. One source line on
+        # purpose: implicit string concatenation would put quotes and newlines
+        # through the middle of it, and the byte scan that keeps the carriers
+        # agreeing reads bytes, not the value they evaluate to.
         "ceiling": (
-            "totalCount counts the ORIGINAL revision once any edit exists, so the "
-            "first edit moves it 0 -> 2 and every later edit by one: subtract one "
-            "when non-zero, and read 0 as ABSENT rather than as NEGATIVE "
-            "(ed3c/skill-concerns#102). Read the editor logins in the same query - "
-            "counted alone, an automation edit and a hand edit are the same number"
+            "userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102)"  # noqa: E501
+            ". So subtract one before calling anything an edit count, and read "
+            "the editor logins in the same query - counted alone, an automation "
+            "edit and a hand edit are the same number"
         ),
     },
 }

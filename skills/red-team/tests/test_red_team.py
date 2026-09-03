@@ -243,6 +243,14 @@ class RedTeamEvals(unittest.TestCase):
                 self.assertIn("editor{login}", blind["instead"])
                 self.assertIn("ABSENT", blind["ceiling"])
                 self.assertIn("ed3c/skill-concerns#102", blind["ceiling"])
+                # Not a paraphrase of the ceiling: the sentence
+                # `scripts/check_second_arrival_ceiling.py` owns for every
+                # carrier in the tree, quoted here so drifting either side
+                # reds (ed3c/skill-concerns#102, #135).
+                self.assertIn(
+                    "userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102)",  # noqa: E501
+                    blind["ceiling"],
+                )
 
     def test_the_probe_matches_the_placeholder_a_lane_actually_writes(self) -> None:
         """A detector anchored on `\\d+` reads the fixture and nothing else.

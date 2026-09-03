@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import check_admissions  # noqa: E402
 import check_agents_hops  # noqa: E402
+import check_second_arrival_ceiling  # noqa: E402
 import check_skill_bundles  # noqa: E402
 import cure_authorization  # noqa: E402
 from common import digest_entries, regular_files, tree_digest  # noqa: E402
@@ -838,6 +839,83 @@ class RepositoryControlTests(unittest.TestCase):
             ["AUTHORING_COMMAND_INVALID:control-backup"],
             check_admissions.check(root),
         )
+
+    def test_every_carrier_that_reads_the_counter_states_the_same_ceiling(self) -> None:
+        """The live tree, and the two arms ed3c/skill-concerns#135 asked for.
+
+        Positive: nothing in this tree reads `totalCount` without the sentence.
+        Then the two arms that make that mean something.
+
+        A carrier ARRIVING is covered with no row added anywhere - the half
+        #135 called for by name, because a per-carrier list inside a generic
+        checker is the same defect one level up. And a carrier that DRIFTS reds
+        against the owner instead of standing as a fourth opinion: #135's whole
+        point was that the carriers which agreed agreed by coincidence of
+        authorship, so refining the arithmetic once would have left every copy
+        untouched and none of them red.
+        """
+        self.assertEqual([], check_second_arrival_ceiling.errors(ROOT))
+
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            (temp / "reports").mkdir()
+            (temp / "reports" / "lane-report-tomorrow.md").write_text(
+                "Second arrival: totalCount 4, so three edits.\n", encoding="utf-8"
+            )
+            drifted = temp / "carrier-that-drifted.md"
+            drifted.write_text(
+                check_second_arrival_ceiling.SECOND_ARRIVAL_CEILING.replace(
+                    "0 -> 2", "0 -> 3"
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (temp / "carrier-that-agrees.md").write_text(
+                "totalCount is read as: "
+                + check_second_arrival_ceiling.SECOND_ARRIVAL_CEILING
+                + "\n",
+                encoding="utf-8",
+            )
+            self.assertIn(
+                "totalCount",
+                drifted.read_text(encoding="utf-8"),
+                "the drift arm is vacuous unless the drifted copy is still a carrier",
+            )
+            self.assertEqual(
+                ["carrier-that-drifted.md", "reports/lane-report-tomorrow.md"],
+                sorted(
+                    error.split(":", 2)[1]
+                    for error in check_second_arrival_ceiling.errors(temp)
+                ),
+            )
+
+    def test_a_carrier_arrives_under_any_suffix_including_none(self) -> None:
+        """Discovery is by DECODING, so a suffix table cannot exempt a carrier.
+
+        The arriving-carrier half above used a `.md` file, which an allowlist
+        of suffixes passes - so it never measured the claim that a carrier
+        added tomorrow is covered on arrival. These are the suffixes an
+        allowlist would have missed, plus a file with no suffix at all, and
+        each one is a carrier that must red. The negative arm is a genuinely
+        undecodable file carrying the counter's bytes: it is skipped, because
+        UTF-8 is the property the scan can actually measure and nobody hand-
+        writes a ceiling into a binary.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            named = ("carrier.toml", "carrier.sh", "carrier.jsonl", "carrier.ts", "CARRIER")
+            for name in named:
+                (temp / name).write_text(
+                    "read totalCount here and state nothing\n", encoding="utf-8"
+                )
+            (temp / "carrier.bin").write_bytes(b"\xff\xfetotalCount\x00\x80")
+            self.assertEqual(
+                sorted(named),
+                sorted(
+                    error.split(":", 2)[1]
+                    for error in check_second_arrival_ceiling.errors(temp)
+                ),
+            )
 
 
 class CureAuthorizationTests(unittest.TestCase):

@@ -106,6 +106,26 @@ SKILL_CHECKS: dict[str, tuple[tuple[str, ...], ...]] = {
 }
 
 
+# The repository-wide gates, in the order this runner executes them. ONE
+# declaration, for the same reason `SKILL_CHECKS` is one: the cadence sweep
+# drives these too and used to carry its own hand-typed copy, which had already
+# drifted - `check_receipt_provenance.py` ran here and never there, so that
+# sweep reported the repository gates green having never run one of them, which
+# is the absence-read-as-clean shape this repository admits skills to catch
+# (ed3c/skill-concerns#102). Every gate takes `--root`, which is what lets the
+# sweep run this same tuple against a candidate tree.
+#
+# Named here and not there, in that direction only: the sweep is N-class and no
+# script in this directory may name it (`test_sweep_gates_nothing`).
+REPO_GATES: tuple[str, ...] = (
+    "check_agents_hops.py",
+    "check_skill_bundles.py",
+    "check_admissions.py",
+    "check_receipt_provenance.py",
+    "check_second_arrival_ceiling.py",
+)
+
+
 def run(*args: str) -> None:
     command = [PYTHON, *args]
     print("+", " ".join(command), flush=True)
@@ -114,14 +134,12 @@ def run(*args: str) -> None:
 
 def main() -> int:
     run("-m", "compileall", "-q", "scripts", "tests", "skills")
-    run("scripts/check_agents_hops.py")
-    run("scripts/check_skill_bundles.py")
+    for gate in REPO_GATES:
+        run(f"scripts/{gate}")
     run("-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v")
     for checks in SKILL_CHECKS.values():
         for argv in checks:
             run(*argv)
-    run("scripts/check_admissions.py")
-    run("scripts/check_receipt_provenance.py")
     print("skill-concerns: PASS")
     return 0
 

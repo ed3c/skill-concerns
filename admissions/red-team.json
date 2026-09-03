@@ -21,7 +21,7 @@
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
-      "sha256": "4fdd8381d76877cc4c841ede3d3b8bf6b755e18da4a580b377d0e3329fdbe589"
+      "sha256": "6d719fb7586b7fbedc853e3d9b7108ad0bc3adfb9a753951d46e7d2279eabdd6"
     },
     {
       "path": "skills/red-team/domain/generation-close-runbook.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/reports/lane-report-90.md",
-      "sha256": "068daecf70b47490bdf26a14bc6149760fef9961a47a672f0c1e12d9600eed5f"
+      "sha256": "3c2030e501dfa812192e349b77e5c1f9595b01170d96012b8b2857e5f9ff006f"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/scripts/gen_receipts.py",
@@ -113,7 +113,7 @@
     },
     {
       "path": "skills/red-team/receipts.json",
-      "sha256": "e70f46edf8007d5331b4b98c9f3d0d3300566f3299e00c71e7f0c6170bea38b9"
+      "sha256": "112534348c426a6fb5f4d59e8bfa68f91c74f59f3c582e40e2815303f681fb36"
     },
     {
       "path": "skills/red-team/references/portable-falsification-kernel.md",
@@ -133,7 +133,7 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "9896d9627b1985ce157f21a23d8bc8d3bf812716858f9a8fb86f311a9e903097"
+      "sha256": "c9f73defc0b4b79e730d56a5556eaa76101f3b1ee96f44217b9bc06481d89c98"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
@@ -145,10 +145,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "0244704d41861986439f137921e5e9c0f2620f477fc8d58af74c51dbe109e81e"
+      "sha256": "45af234631aa357f8afc37e4ba6940722555535ef9d2099845bb3e3cf4a750c1"
     }
   ],
-  "skill_tree_sha256": "40d06221fc6d3d09508f856d55da7b7e106fd338ce73f84eec0c6f6eaf79ba0c",
+  "skill_tree_sha256": "c8d90acee3e14bc9a9218200b7c3fd462ff71b85fc41620c32cc4d5ae113f3e2",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
