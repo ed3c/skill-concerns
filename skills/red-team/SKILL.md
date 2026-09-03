@@ -134,7 +134,7 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 ## R7. The instrument reports its own failure to bend the curve
 
 - Signal: the monitor has been running for several waves and everything looks fine.
-- Action: read the run ledger's curve - known-class recurrence per wave, judge gaps per wave, duplicate-fingerprint blocks per wave - and deliver a finding to the dispatcher when it has not declined across three post-admission waves. That is a finding about the architecture, not about the sampling, and fewer than three waves is reported as not-yet-evidence rather than as a reassuring green.
+- Action: read the run ledger's curve ONE STATION AT A TIME - known-class recurrence per wave over the records whose `subject` names that station - and deliver a finding to the dispatcher when it has not declined across three post-admission waves there. Blending stations reports a series no station produced, and lets a station that stopped gating hide inside a bigger one that did (ed3c/skill-concerns#130). `judge_gaps` and `duplicate_blocks` are derived views of the same record's `hits`, not two further series: a record whose columns disagree with the hits it carries was typed rather than produced, and reds. That is a finding about the architecture, not about the sampling, and fewer than three waves at a station is reported as not-yet-evidence rather than as a reassuring green.
 - Why: a monitor that presumes its own effect is the observer whose silence nobody checked; the same defect class it exists to catch, one level up.
 - evidence: duplicate-discovery
 

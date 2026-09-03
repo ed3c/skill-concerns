@@ -510,20 +510,93 @@ class RedTeamEvals(unittest.TestCase):
     def test_a_flat_curve_after_three_waves_is_itself_a_finding(self) -> None:
         flat = {
             "records": [
-                {"wave": f"wave-{index}", "hits": {"blind-observer": 2}}
+                {"subject": STATION, "wave": f"wave-{index}", "hits": {"blind-observer": 2}}
                 for index in (17, 18, 19)
             ]
         }
         self.assertIn("CURVE_NOT_DECLINING", driver.curve_finding(flat))
         bending = {
             "records": [
-                {"wave": "wave-17", "hits": {"blind-observer": 3}},
-                {"wave": "wave-18", "hits": {"blind-observer": 2}},
-                {"wave": "wave-19", "hits": {"blind-observer": 1}},
+                {"subject": STATION, "wave": "wave-17", "hits": {"blind-observer": 3}},
+                {"subject": STATION, "wave": "wave-18", "hits": {"blind-observer": 2}},
+                {"subject": STATION, "wave": "wave-19", "hits": {"blind-observer": 1}},
             ]
         }
         self.assertIsNone(driver.curve_finding(bending))
         self.assertIsNone(driver.curve_finding({"records": flat["records"][:2]}))
+
+    def test_the_curve_is_sliced_by_station_and_the_blend_hides_one(self) -> None:
+        """ed3c/skill-concerns#130's planted control: two stations, one hidden.
+
+        `wave-boundary` is gating - 10, 5, 1. `noodles-generation-close` is
+        not - 1, 2, 3. Summed by wave the series is 11, 7, 4, which DECLINES,
+        so the blended readback the ledger shipped with returns nothing at all
+        while a station that stopped gating sits inside it. The blend is
+        computed here in the reading this atom replaces, so the arm measures
+        the difference rather than asserting it.
+        """
+        ledger = {
+            "records": [
+                {"subject": station, "wave": f"wave-{wave}", "hits": {"blind-observer": count}}
+                for station, counts in (
+                    ("wave-boundary", (10, 5, 1)),
+                    (STATION, (1, 2, 3)),
+                )
+                for wave, count in zip((17, 18, 19), counts)
+            ]
+        }
+        self.assertEqual(["wave-boundary", STATION], driver.stations(ledger))
+        self.assertEqual(
+            [("wave-17", 10), ("wave-18", 5), ("wave-19", 1)],
+            driver.curve(ledger, "wave-boundary"),
+        )
+        self.assertEqual(
+            [("wave-17", 1), ("wave-18", 2), ("wave-19", 3)],
+            driver.curve(ledger, STATION),
+        )
+
+        blended: dict[str, int] = {}
+        for record in ledger["records"]:
+            blended[record["wave"]] = blended.get(record["wave"], 0) + sum(
+                record["hits"].values()
+            )
+        self.assertEqual([11, 7, 4], list(blended.values()))
+        self.assertLess(
+            list(blended.values())[-1],
+            list(blended.values())[0],
+            "the arm is vacuous unless the blended series looks green",
+        )
+
+        finding = driver.curve_finding(ledger)
+        self.assertIn("CURVE_NOT_DECLINING", finding)
+        self.assertIn(STATION, finding)
+        self.assertIn("[1, 2, 3]", finding)
+        self.assertNotIn("wave-boundary", finding)
+
+    def test_a_ledger_column_that_disagrees_with_its_own_hits_reds(self) -> None:
+        """`judge_gaps` and `duplicate_blocks` are views, never measurements.
+
+        Both derive from the record's own `hits`, so a hand-triaged number
+        typed into a committed record is the one thing a single file state can
+        refuse (ed3c/skill-concerns#130). Positive arm first: every committed
+        record's columns already reconcile, so the negative arm is not passing
+        on a ledger that never agreed.
+        """
+        for position, record in enumerate(domain("run-ledger.json")["records"]):
+            with self.subTest(record=position):
+                self.assertEqual([], validator.derived_column_errors(position, record))
+
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        body = json.loads(path.read_text(encoding="utf-8"))
+        body["records"][-1]["judge_gaps"] = 4
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "judge_gaps=4 disagrees with its own hits" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
 
     def test_a_flat_curve_leaves_through_the_exit_code(self) -> None:
         """R7 is a finding, so it does not exit 0 as stdout prose.
@@ -541,6 +614,10 @@ class RedTeamEvals(unittest.TestCase):
                             "run_id": f"2026-08-{day:02d}T00:00:00+00:00",
                             "wave": f"wave-{day}",
                             "boundary": "b",
+                            # The station the appended record will carry, or
+                            # the sliced readback sees three one-point series
+                            # and the arm stops measuring the exit code.
+                            "subject": driver.DEFAULT_SUBJECT,
                             "classes_sampled": [],
                             "hits": {},
                             "novel_class_candidates": [],

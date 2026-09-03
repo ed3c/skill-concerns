@@ -812,6 +812,38 @@ def check_station_arrival(
             )
 
 
+def derived_column_errors(position: int, record: dict) -> list[str]:
+    """`judge_gaps` and `duplicate_blocks` are views of the record's own `hits`.
+
+    The producer builds one finding per hit, so `judge_gaps` IS
+    `sum(hits.values())` and `duplicate_blocks` IS the `duplicate-discovery`
+    entry renamed. Committed as three columns they read as three measurements,
+    and the wave-21 record is the worked example: 23 and 10 were quoted as the
+    wave's numbers while a hand triage had reduced them to 4
+    (ed3c/skill-concerns#130). Nothing here can judge a triage - what it CAN do
+    is refuse a record whose columns disagree with the hits it carries, so a
+    triaged number typed into the ledger reds instead of passing as a produced
+    one. Records are append-only, so the honest form of a re-reading is a new
+    record, never an edit of the committed one.
+    """
+    hits = record.get("hits")
+    if not isinstance(hits, dict) or not all(
+        isinstance(count, int) for count in hits.values()
+    ):
+        return [f"run record {position} hits is not a table of counts"]
+    derived = {
+        "judge_gaps": sum(hits.values()),
+        "duplicate_blocks": hits.get("duplicate-discovery", 0),
+    }
+    return [
+        f"run record {position} {field}={record[field]!r} disagrees with its own hits, "
+        f"which derive {value}; the column is a view of `hits`, never a second "
+        "measurement, so a number that differs was typed rather than produced"
+        for field, value in derived.items()
+        if field in record and record[field] != value
+    ]
+
+
 def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict | None:
     """Record shape, and the one append-only property a single file can carry.
 
@@ -856,6 +888,7 @@ def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict
                 f"{record['subject']!r} is outside the stations "
                 f"domain/observation-topology.json declares {sorted(targets)}"
             )
+        errors.extend(derived_column_errors(position, record))
         try:
             stamp = datetime.fromisoformat(str(record.get("run_id")))
         except ValueError:
