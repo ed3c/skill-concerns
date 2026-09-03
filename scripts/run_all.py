@@ -122,6 +122,7 @@ def main() -> int:
             run(*argv)
     run("scripts/check_admissions.py")
     run("scripts/check_receipt_provenance.py")
+    run("scripts/check_second_arrival_ceiling.py")
     print("skill-concerns: PASS")
     return 0
 
