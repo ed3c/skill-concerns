@@ -20,13 +20,32 @@ only, and nothing at all mid-generation.
    has none of is an empty directory, never a missing one: an absent kind and a
    clean kind must not look alike.
 
-2. **Run the pass.**
+2. **Run the pass, and persist its report in the same invocation.**
 
-   `python3 skills/red-team/scripts/shadow_driver.py --bundle <dir> --wave <generation> --boundary generation-close --subject noodles-generation-close --append-record`
+   `python3 skills/red-team/scripts/shadow_driver.py --bundle <dir> --wave <generation> --boundary generation-close --subject noodles-generation-close --save-report skills/red-team/domain/persisted-reports/<generation>.json --append-record`
 
    Exit 0 is "no findings", the honest steady state. Exit 1 carries findings, or
    the curve report. Exit 2 is a refusal - the bundle moved underneath the pass,
    or a finding the schema rejects - and a refusal appends nothing.
+
+   `--save-report` is not a convenience. The bundle this pass measured stops
+   existing the moment the generation's changes land: the landing machine
+   rewrites every referenced issue body and every branch head moves, so
+   ed3c/skill-concerns#131's re-measure procedure has nothing left to
+   re-measure (ed3c/skill-concerns#158). Three waves in a row lost their record
+   to that ordering. The artifact is committed with the wave, before the lands.
+
+   If the append could not happen here, it happens later from the artifact and
+   from nothing else:
+
+   `python3 skills/red-team/scripts/shadow_driver.py --from-report skills/red-team/domain/persisted-reports/<generation>.json --append-record`
+
+   And if no artifact was persisted and the wave has already landed, the run
+   cannot produce a record at all. It goes into
+   [`unpersistable-runs.json`](unpersistable-runs.json) with its reason and
+   without its numbers - typing those in is refused by `derived_column_errors`
+   and by the `run_id` instant, and it would be refused here anyway: the
+   numbers are exactly what was lost.
 
 3. **Completion receipt: the appended record.** The step is complete when
    [`domain/run-ledger.json`](run-ledger.json) carries one more record whose `subject`

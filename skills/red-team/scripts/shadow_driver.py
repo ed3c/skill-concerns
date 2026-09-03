@@ -16,6 +16,19 @@ three post-admission waves is itself a finding delivered to the dispatcher.
 `--subject` names the station the pass ran at, so the ledger slices by station
 rather than merging two declining curves into one unreadable line.
 
+The record does not have to be appended in the same breath as the pass, and
+until ed3c/skill-concerns#158 it did: `--append-record` was reachable only from
+a live pass, so the row had to be written BEFORE the wave landed. Landing is
+what destroys the evidence - `land_pr.py` stamps every referenced issue body
+and every branch head moves, so re-measuring "the same bundle bytes the monitor
+measured" (ed3c/skill-concerns#131's acceptance clause) is not possible
+afterwards, and three waves in a row lost their record to that ordering.
+`--save-report` persists the producer's own `report` object at the pass, and
+`--from-report` derives the row from that artifact through the SAME
+`ledger_record()`. `run_id` stays the producer's instant OF THE PASS, carried
+in the artifact, so nothing becomes hand-typed and the monotonicity arm keeps
+working.
+
 BUILD half. `--add-class` is the only verb that changes the catalogue, and it
 is behind the repository's cure-authorization refusal
 (`scripts/cure_authorization.py`, ed3c/skill-concerns#93) with `always=True`:
@@ -47,7 +60,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
 import cure_authorization  # noqa: E402
-from validate_red_team import finding_errors, signal_errors  # noqa: E402
+from validate_red_team import (  # noqa: E402
+    FIXTURE_BOUNDARY,
+    finding_errors,
+    signal_errors,
+)
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
@@ -66,6 +83,8 @@ CURVE_NOT_DECLINING = "CURVE_NOT_DECLINING"
 SUBJECT_MUTATED = "SUBJECT_MUTATED"
 FINDING_MALFORMED = "FINDING_MALFORMED"
 SIGNAL_CLASS_UNBOUNDED = "SIGNAL_CLASS_UNBOUNDED"
+SAVED_REPORT_UNGROUNDED = "SAVED_REPORT_UNGROUNDED"
+RECORD_ALREADY_APPENDED = "RECORD_ALREADY_APPENDED"
 
 DIAGNOSTICS = (
     CATALOGUE_CLASS_HIT,
@@ -73,6 +92,8 @@ DIAGNOSTICS = (
     SUBJECT_MUTATED,
     FINDING_MALFORMED,
     SIGNAL_CLASS_UNBOUNDED,
+    SAVED_REPORT_UNGROUNDED,
+    RECORD_ALREADY_APPENDED,
     "CATALOGUE_ENTRY_UNGROUNDED",
     "CATALOGUE_GATE_REFERENCE_ABSENT",
     "CATALOGUE_CLASS_GATED_BUT_ACTIVE",
@@ -259,6 +280,18 @@ def subject(bundle: Path, path: Path) -> dict[str, str]:
         "path": path.relative_to(bundle).as_posix(),
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
     }
+
+
+def named(bundle: Path) -> str:
+    """Repository-relative where it can be, absolute where it cannot.
+
+    A persisted report is committed and read by other people, so a scratch
+    path baked into it names a directory only its author ever had. Bundles
+    that live outside this tree - a clone, a temporary assembly - keep their
+    absolute name, because a relative one would be a lie about where to look.
+    """
+    root = SKILL_ROOT.parents[1]
+    return bundle.relative_to(root).as_posix() if bundle.is_relative_to(root) else str(bundle)
 
 
 def fingerprint(bundle: Path) -> str:
@@ -582,7 +615,7 @@ def run(
         "wave": wave,
         "boundary": boundary,
         "subject": subject_kind,
-        "bundle": str(bundle),
+        "bundle": named(bundle),
         "classes_sampled": classes,
         "hits": hits,
         "novel_class_candidates": novel,
@@ -593,7 +626,7 @@ def run(
     if not report["read_only"]["held"]:
         report["findings"] = []
         report["refusal"] = (
-            f"{SUBJECT_MUTATED}:{bundle}: the bundle digest moved {before} -> {after} "
+            f"{SUBJECT_MUTATED}:{named(bundle)}: the bundle digest moved {before} -> {after} "
             "during a reader-only pass; this report is untrusted"
         )
         report["outcome"] = "blocked"
@@ -635,6 +668,112 @@ def ledger_record(report: dict[str, Any]) -> dict[str, Any]:
         "judge_gaps": len(report["findings"]),
         "duplicate_blocks": report["hits"].get("duplicate-discovery", 0),
     }
+
+
+# The fields `ledger_record()` reads. Named once so the artifact gate and the
+# derivation cannot drift: a saved report missing one of these cannot produce a
+# row, and a row is never assembled from anything else.
+REPORT_DERIVED_FROM = (
+    "generated_utc",
+    "wave",
+    "boundary",
+    "subject",
+    "classes_sampled",
+    "hits",
+    "novel_class_candidates",
+    "findings",
+)
+
+
+def saved_report_errors(report: Any) -> list[str]:
+    """Why a persisted report may not become a row. Derivation, not provenance.
+
+    Every number a record carries comes from `hits`, and every `hits` entry is
+    the length of the finding list the same pass built from it. So the gate
+    that lets an artifact through is that the artifact's own halves still
+    reconcile: each class's count IS the number of findings naming it, every
+    finding passes the schema `finding_errors` owns, the read-only digest pair
+    held, the outcome is not `blocked`, and `generated_utc` parses as the
+    instant `check_ledger` will require. A number edited into a saved report
+    contradicts the findings it was derived from and reds here, which is the
+    same refusal ed3c/skill-concerns#130 landed one file downstream.
+
+    What this cannot see is a whole artifact authored by hand that satisfies
+    every one of those ties - at one file state a produced report and a
+    perfectly consistent forged one are the same bytes.
+    That is a structural ceiling. CEILING:hand-authored-report-artifact
+    The half that watches it is git history: the artifact is committed at the
+    boundary, before the wave's lands, exactly as the ledger's own
+    `append_only` sentence leans on history for the rest of its property. The
+    phrase and the row id are on ONE line each on purpose - the reflexive rule
+    matches per line, so a wrapped admission escapes the very marker it owes.
+    """
+    if not isinstance(report, dict):
+        return ["the artifact is not a report object"]
+    if report.get("schema_version") != 1:
+        return [f"schema_version {report.get('schema_version')!r} is not 1"]
+    missing = [field for field in REPORT_DERIVED_FROM if field not in report]
+    if missing:
+        return [f"the artifact carries no {missing}"]
+    errors: list[str] = []
+    if report.get("outcome") == "blocked":
+        errors.append(
+            f"outcome is 'blocked' ({report.get('refusal')!r}); a pass that refused its "
+            "own report does not become a record later either"
+        )
+    read_only = report.get("read_only")
+    if not isinstance(read_only, dict) or read_only.get("held") is not True:
+        errors.append(
+            "read_only.held is not True; the pass never established that the bundle "
+            "stood still under it, so its counts are untrusted whenever they are read"
+        )
+    try:
+        datetime.fromisoformat(str(report["generated_utc"]))
+    except ValueError:
+        errors.append(
+            f"generated_utc {report['generated_utc']!r} is not the producer's ISO-8601 "
+            "instant; run_id is derived from this field and is never typed"
+        )
+    hits = report["hits"]
+    findings = report["findings"]
+    if not isinstance(hits, dict) or not all(
+        isinstance(count, int) for count in hits.values()
+    ):
+        errors.append("hits is not a table of counts")
+        return errors
+    if not isinstance(findings, list):
+        errors.append("findings is not a list")
+        return errors
+    counted: dict[str, int] = {class_id: 0 for class_id in hits}
+    for position, finding in enumerate(findings):
+        if not isinstance(finding, dict):
+            errors.append(f"finding {position} is not a record")
+            return errors
+        for error in finding_errors(finding):
+            errors.append(f"{finding.get('id', position)}:{error}")
+        class_id = finding.get("catalogue_class")
+        if class_id not in counted:
+            errors.append(
+                f"finding {finding.get('id', position)} names class {class_id!r}, which "
+                "the artifact's own hits table does not carry"
+            )
+            continue
+        counted[class_id] += 1
+    disagreeing = {
+        class_id: (count, counted[class_id])
+        for class_id, count in hits.items()
+        if count != counted[class_id]
+    }
+    if disagreeing:
+        errors.append(
+            f"hits {disagreeing} disagree with the findings the same pass built from "
+            "them (recorded, derived); one finding is built per hit, so a count that "
+            "differs was typed rather than produced"
+        )
+    unsampled = sorted(set(hits) - set(report["classes_sampled"] or []))
+    if unsampled:
+        errors.append(f"hits carries {unsampled}, which classes_sampled does not name")
+    return errors
 
 
 def append_record(ledger: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
@@ -679,6 +818,52 @@ def curve(ledger: dict[str, Any], station: str) -> list[tuple[str, int]]:
     return [(wave, per_wave[wave]) for wave in order]
 
 
+def unpersistable_waves() -> list[str]:
+    """The waves the register says produced no record, named for the curve's reader.
+
+    `domain/unpersistable-runs.json` was write-only: every tie ran from it to
+    the ledger (`check_unpersistable` reds a row naming a wave the ledger
+    already carries) and none ran back, so a reader of the series saw
+    consecutive points where waves had been lost and nothing said so. The
+    register deliberately carries no station - which station a lost pass ran at
+    is part of what was lost - so this cannot be sliced into a station's series
+    and is stated beside all of them instead.
+    """
+    path = SKILL_ROOT / "domain" / "unpersistable-runs.json"
+    if not path.is_file():
+        return []
+    rows = json.loads(path.read_text(encoding="utf-8")).get("rows") or []
+    return [
+        str(row["wave"])
+        for row in rows
+        if isinstance(row, dict) and str(row.get("wave") or "").strip()
+    ]
+
+
+def decidable(ledger: dict[str, Any]) -> dict[str, Any]:
+    """The records an architecture decision may read: a replay is not a wave.
+
+    `curve()` stays the whole series - every record at the station, which is
+    what the ledger is for and what a reader re-derives. What R7 decides on is
+    narrower: a record whose boundary ends in `FIXTURE_BOUNDARY` came from
+    replaying a committed fixture, so it says something about the fixture and
+    nothing about whether the architecture's classes are gating. Left in, it
+    occupies `recent[-1]` - the slot the decline test and the floor guard both
+    read - and one replay with one fewer hit silences a station that has not
+    bent. The discriminator is not new: `check_station_arrival` already refuses
+    to let a fixture record stand in for a station's real arrival, and this is
+    the same rule applied to the same records one consumer over.
+    """
+    return {
+        **ledger,
+        "records": [
+            record
+            for record in ledger.get("records", [])
+            if not str(record.get("boundary") or "").endswith(FIXTURE_BOUNDARY)
+        ],
+    }
+
+
 def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
     """The instrument reporting its own failure to bend the curve.
 
@@ -704,10 +889,14 @@ def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
     point of zero is a decline to the floor whatever preceded it. `[0, 0, 1]`
     still reports: recurrence coming back off the floor is the event this
     finding exists for.
+
+    The series read here is `decidable(ledger)`, not the ledger: a fixture
+    replay is a point on the curve and never a point in the decision.
     """
     findings: list[str] = []
-    for station in stations(ledger):
-        points = curve(ledger, station)
+    decided = decidable(ledger)
+    for station in stations(decided):
+        points = curve(decided, station)
         if len(points) < waves:
             continue
         recent = [count for _, count in points[-waves:]]
@@ -835,13 +1024,100 @@ def build_parser() -> argparse.ArgumentParser:
         "--class", dest="only", help="SHADOW: run one catalogue class's experiment"
     )
     parser.add_argument("--append-record", action="store_true", help="append this run to the ledger")
+    parser.add_argument(
+        "--save-report",
+        type=Path,
+        help="SHADOW: persist this pass's own report object, so its record survives the land",
+    )
+    parser.add_argument(
+        "--from-report",
+        type=Path,
+        help="derive the ledger row from a persisted report instead of from a fresh pass",
+    )
     parser.add_argument("--add-class", type=Path, help="BUILD: fold one adjudicated class in")
     return parser
+
+
+def _append_and_report(ledger_path: Path, report: dict[str, Any], status: int) -> int:
+    """The one place a row reaches the ledger, from a live pass or a saved one.
+
+    Both callers go through `ledger_record()` here rather than each building a
+    row, because the whole claim of the persisted path is that it derives the
+    SAME row - a second assembly site is where "derived" quietly becomes "also
+    derived, differently".
+
+    A persisted report is replayable by construction, so this is also the place
+    that refuses a replay: `run_id` is the instant OF THE PASS and a second row
+    carrying it is the same measurement counted twice. `curve()` sums per wave,
+    so the doubled row doubles the wave's point and `check_ledger`'s
+    monotonicity arm cannot see it - equal instants are not backwards. Before
+    the persisted path, appending twice needed two passes and two clocks; the
+    refusal arrives with the road that made it possible.
+    """
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    record = ledger_record(report)
+    already = [
+        existing
+        for existing in ledger.get("records", [])
+        if isinstance(existing, dict) and existing.get("run_id") == record["run_id"]
+    ]
+    if already:
+        print(
+            f"{RECORD_ALREADY_APPENDED}:{ledger_path}:{record['run_id']}: this ledger "
+            f"already carries a record for that instant (wave {already[0].get('wave')!r}); "
+            "run_id is the instant OF THE PASS, so appending it again counts one "
+            "measurement twice and doubles that wave's point on the curve",
+            file=sys.stderr,
+        )
+        return 2
+    ledger = append_record(ledger, record)
+    ledger_path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+    print(f"  appended run record -> {ledger_path}")
+    lost = unpersistable_waves()
+    if lost:
+        # The series below has holes and they are dispositioned, not missing:
+        # domain/unpersistable-runs.json is the register, and a reader who only
+        # sees the curve reads consecutive points where waves were lost. The
+        # register carries no station on purpose, so this cannot be sliced - it
+        # is stated once, beside every station's series.
+        print(
+            f"  {len(lost)} wave(s) dispositioned UNPERSISTABLE produced no record and "
+            f"are on no series here: {', '.join(lost)} "
+            "(skills/red-team/domain/unpersistable-runs.json)"
+        )
+    bends = curve_findings(ledger)
+    for bend in bends:
+        # R7 is a finding, so it leaves through the exit code like every other
+        # finding. Printed on stdout at status 0 it would be prose no caller
+        # consumes - the mention-is-not-execution shape the architecture clause
+        # exists to refuse. One line PER station: a second non-declining station
+        # that never printed is a station the dispatcher was never told about.
+        print(f"  {bend}")
+    return max(status, 1) if bends else status
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.from_report:
+        if args.bundle:
+            parser.error("--from-report derives the row from a pass already taken; it takes no --bundle")
+        if not args.append_record:
+            parser.error("--from-report is a way to append; pass --append-record with it")
+        report = json.loads(args.from_report.read_text(encoding="utf-8"))
+        refusals = saved_report_errors(report)
+        if refusals:
+            print(
+                f"{SAVED_REPORT_UNGROUNDED}:{args.from_report}: {refusals[0]}",
+                file=sys.stderr,
+            )
+            return 2
+        print(
+            f"red-team: persisted classes={len(report['classes_sampled'])} "
+            f"findings={len(report['findings'])} run_id={report['generated_utc']}"
+        )
+        return _append_and_report(args.ledger, report, 1 if report["findings"] else 0)
 
     catalogue = json.loads(args.catalogue.read_text(encoding="utf-8"))
 
@@ -864,6 +1140,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     except ValueError as exc:
         parser.error(str(exc))
+    if args.save_report:
+        args.save_report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"  persisted report -> {args.save_report}")
     print(
         f"red-team: {report['outcome']} classes={len(report['classes_sampled'])} "
         f"findings={len(report['findings'])}"
@@ -875,21 +1154,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {report['refusal']}")
     status = {"clean": 0, "changed": 1, "blocked": 2}[report["outcome"]]
     if args.append_record and report["outcome"] != "blocked":
-        ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
-        ledger = append_record(ledger, ledger_record(report))
-        args.ledger.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
-        print(f"  appended run record -> {args.ledger}")
-        bends = curve_findings(ledger)
-        for bend in bends:
-            # R7 is a finding, so it leaves through the exit code like every
-            # other finding. Printed on stdout at status 0 it would be prose
-            # no caller consumes - the mention-is-not-execution shape the
-            # architecture clause exists to refuse. One line PER station: a
-            # second non-declining station that never printed is a station
-            # the dispatcher was never told about.
-            print(f"  {bend}")
-        if bends:
-            status = max(status, 1)
+        status = _append_and_report(args.ledger, report, status)
     return status
 
 
