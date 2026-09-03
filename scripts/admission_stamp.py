@@ -391,6 +391,19 @@ def build_receipt(skill: str, root: Path, bound: dict[str, str]) -> dict:
         "skill_tree_sha256": tree_digest(subject_files),
         "contract_files": contract_files,
         "controls": controls,
+        # The argv that graded this receipt (ed3c/skill-concerns#133, landing
+        # two of ed3c/skill-concerns#81). `controls` says WHICH controls were
+        # measured and never which argv measured them, so a bundle graded
+        # through its permanent `run_all.SKILL_CHECKS` row and the same bundle
+        # graded through a `policy/bootstrap-admissions.json` entry produced
+        # byte-identical receipts -- and the entry's argv, reviewed once on the
+        # trusted side, left no trace in the artifact that review produced.
+        #
+        # `declared_checks()` and not a second lookup: `run_checks()` executes
+        # exactly this selection, so the trace and the execution cannot
+        # disagree. A trace read from anywhere else would be a second opinion
+        # about the grading rather than a trace of it.
+        "graded_by": [list(argv) for argv in declared_checks(skill, root)],
         "evidence_ceiling": "L3_HERMETIC",
         "not_claimed": ["L4_MATCHED_LIVE_RUNTIME", "L5_DELIVERY_AND_PRODUCTION"],
         # NOTE: the true producer is skills/<skill>/scripts/gen_admission.py, not

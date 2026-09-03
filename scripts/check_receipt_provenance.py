@@ -44,52 +44,56 @@ from admission_stamp import StampRefused, build_receipt, declared_checks, run_ch
 from common import REPO_ROOT, load_json, print_result, safe_repo_path
 
 
-# The argv trace, ed3c/skill-concerns#81, LANDING ONE OF TWO.
+# The argv trace, ed3c/skill-concerns#81, LANDING TWO OF TWO
+# (ed3c/skill-concerns#133).
 #
-# `build_receipt()` records which controls were measured and never which argv
-# measured them: `bound` comes from `MANDATORY_PRODUCERS` plus the Skill's own
-# `evals/cases.json`, never from `checks`. So a bundle graded through its
+# `build_receipt()` used to record which controls were measured and never which
+# argv measured them: `bound` comes from `MANDATORY_PRODUCERS` plus the Skill's
+# own `evals/cases.json`, never from `checks`. So a bundle graded through its
 # permanent `run_all.SKILL_CHECKS` row and the same bundle graded through a
-# `policy/bootstrap-admissions.json` entry produce byte-identical receipts, and
-# the entry's argv -- reviewed once, on the trusted side -- leaves no trace in
+# `policy/bootstrap-admissions.json` entry produced byte-identical receipts, and
+# the entry's argv -- reviewed once, on the trusted side -- left no trace in
 # the artifact that review produced.
 #
-# The fix cannot be one landing. This module runs from the DEFAULT BRANCH
+# The fix could not be one landing. This module runs from the DEFAULT BRANCH
 # against the candidate (`verify.yml`), so a pull request that emits a new
 # receipt field is graded by the old comparison, which demands the old bytes:
 # planting exactly that change reds with
 # `RECEIPT_NOT_REPRODUCED:control-backup:graded_by`. That is the tightening
 # hazard `check_admissions.py`'s docstring names, from the other side.
 #
-# So this landing only WIDENS, with no data change: a receipt without the field
-# reproduces exactly as before, and a receipt that carries it must name the argv
-# this execution actually selected. Landing two emits the field in
-# `build_receipt`, regenerates the receipts, and narrows back down.
+# Landing one only WIDENED, with no data change, so this gate could accept the
+# field before any receipt carried it. Landing two is the other half and CLOSES
+# the transitional state rather than living in it: `build_receipt` emits the
+# field, every receipt is regenerated through its own Skill's
+# `gen_admission.py`, and the acceptance narrows back down -- an ABSENT field is
+# a named diagnostic now, not the `return []` that tolerated it. Nothing is left
+# optional, which is what stops `graded_by` from settling into the
+# `unread-field` precedent (`skills/shadow-architect/domain/precedents.json` P1)
+# permanently.
 #
-# Landing two is ed3c/skill-concerns#133, filed BEFORE this landed and not
-# inside this comment, because `land_pr.py` closes the `Refs` issue on merge:
-# #81 goes closed the moment this lands, and a plan that lives only in a
-# comment on the closed half is a plan no process re-reads. Between now and
-# then this constant is a field no producer writes -- the `unread-field`
-# precedent, entered deliberately and with an exit filed, rather than by
-# oversight. Its reader is already committed:
-# `tests/test_receipt_provenance.py::test_landing_one_moved_no_receipt_data`
-# requires the field to be all-or-nothing across the receipt set, which passes
-# today only because the set is uniformly absent, and is the assertion landing
-# two has to satisfy from the other side.
+# `tests/test_receipt_provenance.py::GradedByTraceTests
+# ::test_the_field_is_all_or_nothing_across_the_committed_set` is
+# the reader that made the pair landable in this order: it requires the field to
+# be all-or-nothing across the committed set. It passed before because the set
+# was uniformly absent and passes now because the set is uniformly present, and
+# a half-migrated set -- the state that would leave the widening permanent --
+# reds it.
 GRADED_BY = "graded_by"
 
 
 def graded_by_errors(name: str, root: Path, committed: dict) -> list[str]:
-    """Refuse a trace that names argv other than the ones about to execute.
+    """Require a trace naming exactly the argv about to execute.
 
-    Widening is not waiving: while the field is optional, a receipt that
-    carries it is still held to it. Without this the transitional landing
-    would accept any `graded_by` at all, which is a field nothing resolves --
-    the exact shape this repository refuses everywhere else.
+    Two named diagnostics rather than one byte mismatch, because the two states
+    take different actions: ABSENT means a receipt produced by a stamper that
+    predates the field and has to be regenerated through its Skill's own
+    producer, MISMATCH means a receipt naming an execution that is not the one
+    this gate selected. `RECEIPT_NOT_REPRODUCED:<skill>:graded_by` would
+    collapse both into "the bytes differ", which is true and unactionable.
     """
     if GRADED_BY not in committed:
-        return []
+        return [f"RECEIPT_GRADED_BY_ABSENT:{name}"]
     try:
         executed = [list(argv) for argv in declared_checks(name, root)]
     except StampRefused as exc:
@@ -119,22 +123,27 @@ def reproduce(root: Path, name: str, admission_path: Path) -> list[str]:
         bound = run_checks(name, root)
     except StampRefused as exc:
         return [str(exc)]
-    expected = json.dumps(build_receipt(name, root, bound), indent=2) + "\n"
+    produced = build_receipt(name, root, bound)
+    # One owner for one field, and NOT an exemption from the reproduction: the
+    # field is popped from both sides here only so it is not reported twice, and
+    # `graded_by_errors` holds it against the selection that just executed --
+    # value for value, ABSENT and MISMATCH named separately because they take
+    # different actions. Nothing about `graded_by` is accepted that the byte
+    # comparison would have refused; the comparison just says less about it.
+    # Popping and re-serialising rather than diffing key by key keeps the rest
+    # byte-exact: `build_receipt` writes with the same `indent=2` and the same
+    # key order, so the remainder is the same bytes it would have produced.
+    produced.pop(GRADED_BY)
+    expected = json.dumps(produced, indent=2) + "\n"
 
     errors: list[str] = []
-    if isinstance(committed, dict) and GRADED_BY in committed:
+    if isinstance(committed, dict):
         errors.extend(graded_by_errors(name, root, committed))
-        # Compare the rest as if the field were not there. Popping and
-        # re-serialising rather than diffing key by key keeps the byte-exact
-        # comparison that makes this gate a reproduction: `build_receipt`
-        # writes with the same `indent=2` and the same key order, so the
-        # remainder is the same bytes it would have produced.
-        committed.pop(GRADED_BY)
+        committed.pop(GRADED_BY, None)
         actual = json.dumps(committed, indent=2) + "\n"
     if actual == expected:
         return errors
     # Name the field that differs; a bare byte mismatch is unactionable.
-    produced = json.loads(expected)
     drifted = sorted(
         key
         for key in set(produced) | set(committed)

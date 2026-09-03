@@ -104,7 +104,7 @@
     },
     {
       "path": "contracts/admission.schema.json",
-      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+      "sha256": "54c476258a9bd64b44da1c5dd166030120055a26dfdf831c4f3b89dbcc2f9e0d"
     },
     {
       "path": "contracts/feature-map.schema.json",
@@ -184,6 +184,39 @@
       "id": "coverage-diff-detects-changed-edge",
       "state": "PASS"
     }
+  ],
+  "graded_by": [
+    [
+      "skills/feature-map-engineering/scripts/validate_feature_map.py",
+      "--map",
+      "skills/feature-map-engineering/fixtures/valid/feature-map.json",
+      "--plan",
+      "skills/feature-map-engineering/fixtures/valid/verification-plan.json"
+    ],
+    [
+      "skills/feature-map-engineering/scripts/coverage_diff.py",
+      "--old",
+      "skills/feature-map-engineering/fixtures/valid/feature-map.json",
+      "--new",
+      "skills/feature-map-engineering/fixtures/valid/feature-map.json"
+    ],
+    [
+      "skills/feature-map-engineering/scripts/validate_feature_map.py",
+      "--map",
+      "docs/features/skill-admission/feature-map.json",
+      "--plan",
+      "docs/features/skill-admission/verification-plan.json"
+    ],
+    [
+      "-m",
+      "unittest",
+      "discover",
+      "-p",
+      "test_*.py",
+      "-v",
+      "-s",
+      "skills/feature-map-engineering/tests"
+    ]
   ],
   "evidence_ceiling": "L3_HERMETIC",
   "not_claimed": [

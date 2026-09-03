@@ -17,6 +17,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -161,21 +162,23 @@ class ReceiptProvenanceTests(unittest.TestCase):
         )
 
 
-class GradedByWideningTests(unittest.TestCase):
-    """ed3c/skill-concerns#81, landing one of two: the argv trace is accepted.
+class GradedByTraceTests(unittest.TestCase):
+    """ed3c/skill-concerns#81, both landings: the argv trace is produced and held.
 
     A receipt says which controls were measured and not which argv measured
     them, so a bundle graded through its permanent `run_all.SKILL_CHECKS` row
     and the same bundle graded through a `policy/bootstrap-admissions.json`
-    entry produce byte-identical receipts. Emitting the field cannot land in
-    the same pull request that teaches the gate to accept it: this gate runs
-    from the default branch against the candidate, so the emitting change
-    would be graded by a comparison that still demands the old bytes.
+    entry produced byte-identical receipts. Emitting the field could not land
+    in the same pull request that taught the gate to accept it: the gate runs
+    from the default branch against the candidate, so the emitting change would
+    have been graded by a comparison that still demanded the old bytes.
 
-    Three arms, because fewer would not separate WIDENED from WAIVED: a
-    receipt without the field still reproduces, a receipt naming the argv this
-    execution selected reproduces, and a receipt naming any other argv is
-    refused by name.
+    Landing one (ed3c/skill-concerns#81) widened with no data change. Landing
+    two (ed3c/skill-concerns#133) supplies the producer and narrows back down,
+    so these arms are what separate PRODUCED from MERELY TOLERATED: the
+    committed receipts carry the trace, the trace is the selection that
+    actually executes, any other argv is refused by name, and an ABSENT field
+    is its own refusal rather than a silent pass.
     """
 
     def write(self, root: Path, skill: str, trace) -> None:
@@ -184,21 +187,38 @@ class GradedByWideningTests(unittest.TestCase):
         receipt[GRADED_BY] = trace
         path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
 
-    def test_a_receipt_naming_the_executed_argv_still_reproduces(self) -> None:
+    def test_the_producer_emits_the_selection_that_executes(self) -> None:
+        """Landing two's whole claim: `build_receipt` writes the trace itself.
+
+        Against `declared_checks` and not against a second copy of
+        `SKILL_CHECKS`: `run_checks` grades through that one selection, so a
+        trace read from anywhere else would be a second opinion about the
+        grading rather than a trace of it.
+        """
         root = scratch_copy(self)
-        self.write(
-            root,
-            FORGED_SKILL,
+        bound = admission_stamp.control_tests(FORGED_SKILL, root)
+        produced = admission_stamp.build_receipt(FORGED_SKILL, root, bound)
+        self.assertEqual(
             [list(argv) for argv in admission_stamp.declared_checks(FORGED_SKILL, root)],
+            produced[GRADED_BY],
         )
+        committed = json.loads(
+            (root / "admissions" / f"{FORGED_SKILL}.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(produced[GRADED_BY], committed[GRADED_BY])
+
+    def test_the_committed_receipt_reproduces_as_committed(self) -> None:
+        root = scratch_copy(self)
         self.assertEqual([], check_receipt_provenance.check(root, only={FORGED_SKILL}))
-        # And no second gate has to move first: the digest gate never enumerated
-        # a receipt's keys, so landing two needs exactly this one widening.
+        # And no second gate had to move: the digest gate never enumerated a
+        # receipt's keys, so exactly one widening was needed and nothing around
+        # it was widened.
         self.assertEqual([], check_admissions.check(root))
 
     def test_a_trace_naming_other_argv_is_refused_by_name(self) -> None:
         # The planted control the issue asks for: a receipt whose `graded_by`
-        # does not match the argv the gate actually executed goes red.
+        # does not match the argv the gate actually executed goes red, and goes
+        # red under the name that says which field rather than "bytes differ".
         root = scratch_copy(self)
         self.write(root, FORGED_SKILL, [["scripts/run_all.py"]])
         self.assertEqual(
@@ -206,14 +226,57 @@ class GradedByWideningTests(unittest.TestCase):
             check_receipt_provenance.check(root, only={FORGED_SKILL}),
         )
 
-    def test_a_trace_is_not_a_licence_to_drift_elsewhere(self) -> None:
-        """Widening one field must not widen the reproduction around it."""
+    def test_a_moved_declaration_reds_here_and_nowhere_else(self) -> None:
+        """What actually consumes a field the gate could re-derive.
+
+        The objection to `graded_by` is that its validator recomputes it, so
+        the receipt appears to tell the gate nothing the gate did not already
+        know. The answer is which OTHER assertion moves when the declaration
+        does, and the measurement is that none do: `controls`, every digest and
+        the ceiling are identical whether a permanent `run_all.SKILL_CHECKS`
+        row or a `policy/bootstrap-admissions.json` entry graded the bundle --
+        that byte-identity is ed3c/skill-concerns#81's whole trigger. So a row
+        that changes while the committed receipt is not regenerated is drift
+        the byte reproduction structurally cannot see, and this arm reds under
+        exactly one name and no `RECEIPT_NOT_REPRODUCED` beside it.
+
+        The planted row still passes, so the red is the trace disagreeing and
+        never a check failing: nothing here weakens what the receipt has to
+        survive, it only re-selects which argv survived it.
+        """
+        root = scratch_copy(self)
+        moved = dict(admission_stamp.SKILL_CHECKS)
+        moved[FORGED_SKILL] = (moved[FORGED_SKILL][0],)
+        self.assertNotEqual(admission_stamp.SKILL_CHECKS[FORGED_SKILL], moved[FORGED_SKILL])
+        with mock.patch.object(admission_stamp, "SKILL_CHECKS", moved):
+            self.assertEqual(
+                [f"RECEIPT_GRADED_BY_MISMATCH:{FORGED_SKILL}"],
+                check_receipt_provenance.check(root, only={FORGED_SKILL}),
+            )
+
+    def test_an_absent_trace_is_refused_rather_than_tolerated(self) -> None:
+        """The narrowing. Landing one returned [] here, which is the shape that
+        would have left `graded_by` permanently optional.
+
+        ABSENT gets its own diagnostic because it takes its own action --
+        regenerate through the Skill's own producer -- which
+        `RECEIPT_NOT_REPRODUCED:<skill>:graded_by` would not tell anyone.
+        """
         root = scratch_copy(self)
         path = root / "admissions" / f"{FORGED_SKILL}.json"
         receipt = json.loads(path.read_text(encoding="utf-8"))
-        receipt[GRADED_BY] = [
-            list(argv) for argv in admission_stamp.declared_checks(FORGED_SKILL, root)
-        ]
+        receipt.pop(GRADED_BY)
+        path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(
+            [f"RECEIPT_GRADED_BY_ABSENT:{FORGED_SKILL}"],
+            check_receipt_provenance.check(root, only={FORGED_SKILL}),
+        )
+
+    def test_a_trace_is_not_a_licence_to_drift_elsewhere(self) -> None:
+        """One field gets one owner; the reproduction around it does not move."""
+        root = scratch_copy(self)
+        path = root / "admissions" / f"{FORGED_SKILL}.json"
+        receipt = json.loads(path.read_text(encoding="utf-8"))
         receipt["controls"].append({"id": FORGED_CASE_ID, "state": "PASS"})
         path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
         self.assertEqual(
@@ -221,12 +284,13 @@ class GradedByWideningTests(unittest.TestCase):
             check_receipt_provenance.check(root, only={FORGED_SKILL}),
         )
 
-    def test_landing_one_moved_no_receipt_data(self) -> None:
-        """The property that lets the trusted gate grade this change at all.
+    def test_the_field_is_all_or_nothing_across_the_committed_set(self) -> None:
+        """The reader that made the pair landable in this order.
 
-        It is also the reader landing two needs: the field is all-or-nothing
-        across the committed set, because a half-migrated set would leave it
-        permanently optional -- a widening nobody ever narrows.
+        It passed on landing one because the set was uniformly absent and
+        passes now because the set is uniformly present. A half-migrated set --
+        the state that would leave the field permanently optional -- reds it,
+        and the second assertion says which of the two ends this landing chose.
         """
         receipts = sorted((ROOT / "admissions").glob("*.json"))
         self.assertTrue(receipts)
@@ -236,6 +300,7 @@ class GradedByWideningTests(unittest.TestCase):
             if GRADED_BY in json.loads(path.read_text(encoding="utf-8"))
         ]
         self.assertIn(len(carrying), (0, len(receipts)), carrying)
+        self.assertEqual(len(receipts), len(carrying), carrying)
 
 
 if __name__ == "__main__":
