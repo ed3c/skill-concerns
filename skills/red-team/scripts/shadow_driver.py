@@ -117,10 +117,31 @@ DEFAULT_SUBJECT = "wave-boundary"
 # this module's own, and every lane report that adopted it) into a hit. The
 # class is "an absence claim RESTS on a blind observer", never "a document
 # mentions one".
+#
+# The acquittal has to survive the ceiling below becoming MANDATORY. Keyed on
+# the bare token `userContentEdits`, it was satisfied by the very sentence
+# `scripts/check_second_arrival_ceiling.py` orders every carrier in this tree
+# to paste -- a document could be acquitted by quoting the compliance string it
+# was told to quote, which acquits boilerplate and measurement alike. So the
+# acquittal takes two forms and neither is the compliance string:
+#
+#   - the SURFACE, `graphql`. Measured across wave 24's four lane reports,
+#     that is what a consultation actually writes: twelve groundings read "via
+#     authenticated gh api graphql". The ceiling sentence has no `graphql` in
+#     it. Keying on the field alone also RED-ED those twelve, because the
+#     widened claim half matches their `totalCount=0 -> ABSENT` -- correct
+#     dispositions reported as the class they had disposed of.
+#   - the CONNECTION, `userContentEdits` other than as the field path
+#     `userContentEdits.totalCount`. A document that read the connection names
+#     it (`userContentEdits(first:20)`, or bare, as wave 21's L2 wrote it); the
+#     ceiling spells the field path, and that spelling is the one every carrier
+#     is ordered to carry. The lookahead binds to the path rather than to the
+#     sentence's prose on purpose: rewording the ceiling must not silently
+#     loosen this.
 BLIND_PROBES: dict[str, dict[str, Any]] = {
     "rest-events-edited": {
         "pattern": re.compile(r"issues/[^/\s`\"']+/(?:events|timeline)"),
-        "sighted": re.compile(r"userContentEdits"),
+        "sighted": re.compile(r"(?i)graphql|userContentEdits(?!\.totalCount)"),
         "cannot": (
             "carry a body revision at all: `edited` in that payload is a COMMENT event"
         ),
@@ -138,19 +159,36 @@ BLIND_PROBES: dict[str, dict[str, Any]] = {
         ),
     },
 }
-# Still only `body edit`, and NOT yet the `totalCount=0 -> ABSENT` phrasing
-# lanes actually write. That widening is ed3c/skill-concerns#129's other half
-# and is left to it, not declined: with the `sighted` acquittal above in place
-# it would be SAFE, because a report that types the third state names the
-# GraphQL surface in the same breath and is acquitted before the claim is even
-# read. Recording that explicitly because the obvious objection -- "matching
-# ABSENT would fire on the exact discipline #83 asked for" -- was true only
-# while the acquittal did not exist, and a reason that stops holding is worse
-# than no reason. What #129 also asks for and is NOT satisfiable from inside
-# this repository is its last clause: replaying the four wave-21 lane reports
-# through the fixed detector. Those reports never entered the tree.
+# The vocabulary a lane report ACTUALLY writes, not the vocabulary the class was
+# filed in (ed3c/skill-concerns#129). `body[- ]edit` appears in no lane report of
+# wave 21: every one of the four wrote `totalCount=0 -> ABSENT`, and the phrase
+# the first alternative matches is the fixture's, not theirs. A detector whose
+# claim half is silent on every document it is pointed at reports `hits: 1` on
+# the fixture the class was filed from and that reads in the run ledger as a
+# measurement of the wave.
+#
+# Three alternatives, and the case rules are the discriminator rather than
+# decoration. `ABSENT` and `totalCount` are TYPED - a state and a provider field
+# - so they match case-sensitively; the prose alternative stays case-insensitive
+# because prose is. That is also what keeps `RECEIPT_PRODUCER_ABSENT` out: `_A`
+# carries no word boundary, so a diagnostic name ending in the state's spelling
+# is not a claim of absence.
+#
+# Widening is only safe BECAUSE the `sighted` acquittal above already landed:
+# a report that types the third state names the GraphQL surface in the same
+# breath and is acquitted before the claim is read, so the discipline #83 asked
+# for is not turned into a hit by its own cure. The planted negative in
+# `tests/test_red_team.py` is that arm, written in wave-21's own words.
+#
+# What #129 also asks for and is NOT satisfiable from inside this repository is
+# its last clause: replaying the four wave-21 lane reports themselves. Those
+# reports never entered the tree, and no fixture here is them - the control runs
+# their VOCABULARY, quoted from #129's body, and says so.
 ABSENCE_CLAIM = re.compile(
-    r"(?i)\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit", re.M
+    r"(?i:\b(?:no|zero|none|0)\b[^\n]{0,80}\bbody[- ]edit)"
+    r"|totalCount[^\n]{0,20}\b0\b"
+    r"|\bABSENT\b",
+    re.M,
 )
 TYPED_EXIT = "HOST_OBSERVED"
 HISTORICAL_FIELD = re.compile(
