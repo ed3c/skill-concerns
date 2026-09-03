@@ -42,8 +42,13 @@ if the digest moved.
 
 Nowhere, by design. The monitor manufactures admission-grade evidence and the
 dispatcher files with it: `render_demonstration()` emits a block that drops
-verbatim into an issue body's observer-demonstration section and survives that
-gate's fence-stripping, proven by the round-trip fixture rather than asserted.
+verbatim into an issue body's observer-demonstration section, proven by the
+round-trip fixture rather than asserted. Since ed3c/noodles#317 that section is
+graded by the consumer's one fence-PRESERVING reader instead of the
+fence-stripping one, so the block's survival no longer turns on the fence at all
+(ed3c/skill-concerns#137). What it does not yet satisfy is the same gate's demand
+for two discriminating direction transcripts -- measured, not assumed, and filed
+as ed3c/skill-concerns#148.
 The only real-time channel out is one escalation signal to the dispatcher, for
 two enumerated urgent classes, carrying no instruction and no patch.
 

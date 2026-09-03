@@ -36,6 +36,7 @@ import shlex
 import shutil
 import sys
 import tempfile
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -129,8 +130,13 @@ FORBIDDEN_SURFACE = (
 # --------------------------------------------------------------------------
 # the consumer's issue-admission completeness shape, mirrored deliberately
 #
-# Provenance: ed3c/noodles `issue_contract.py` - `sections()`,
-# `required_section_reasons()`, `completeness_reasons()` - read 2026-09-02.
+# Provenance: ed3c/noodles `issue_contract.py` blob
+# 0c36bdf354863f02d1794e513d9cee7fbe6f60a5 (37686 bytes, 738 lines) - the
+# functions `sections()`, `required_section_reasons()`, `completeness_reasons()`
+# and, since ed3c/noodles#317, `evidence_reasons()` / `evidence_marker_reasons()`.
+# Re-derived 2026-09-03 against those exact bytes: the blob was fetched from the
+# provider and `sha1("blob %d\0" % len(b) + b)` reproduced the id above, so this
+# mirrors the upstream file and not a proxy's rendering of it.
 # This is a MIRROR and says so: that gate lives in another repository, this one
 # takes no dependency on it, and clause A4 of `arrival-engineering` is why the
 # mirror names exactly which functions it copies instead of claiming to be the
@@ -138,10 +144,31 @@ FORBIDDEN_SURFACE = (
 # specification and provider readback and cannot be decided from a body alone:
 # the noodles-requirement id resolution, and the dependency-state derivation.
 #
-# The load-bearing detail is the stripping: fenced blocks and HTML comments are
-# removed BEFORE sections are cut, so a section whose only content is a fenced
-# block arrives at that gate empty. That is why `render_demonstration` emits no
-# fence, and the round-trip fixture is what keeps the two facts tied.
+# THE STRIPPING IS NO LONGER ONE ANSWER (ed3c/skill-concerns#137). Before #317
+# every reader cut its sections out of a fence-stripped body, and this mirror
+# concluded from that "a section whose only content is a fenced block arrives
+# empty, which is why `render_demonstration` emits no fence". Upstream now
+# reads (`issue_contract.py@0c36bdf3:668-673`):
+#
+#     def sections(body: str, *, keep_fences: bool = False) -> dict[str, str]:
+#         stripped = body or "" if keep_fences else FENCE_RE.sub("", body or "")
+#         text = HTML_COMMENT_RE.sub("", stripped)
+#
+# so there are two readers with opposite fence handling, and which one grades a
+# section is now part of the answer:
+#
+#   STRIPS  `required_section_reasons` + the rest of `completeness_reasons` -
+#           REQUIRED_SECTIONS, the rationale heading, Non-case, the acceptance
+#           obligations. A required section whose only content is a fence still
+#           arrives empty and still reds.
+#   KEEPS   `evidence_reasons` -> `sections(body, keep_fences=True)`, the ONE
+#           reader upstream names as fence-preserving, because a demonstration
+#           IS a fenced transcript. HTML comments stay stripped on both paths:
+#           an untouched template placeholder must never read as authored.
+#
+# `observer_demonstration` moved from the first reader to the second, so the
+# old conclusion is dead in both halves: the demonstration section is not in
+# REQUIRED_SECTIONS at all, and the reader that does grade it no longer strips.
 FENCE_RE = re.compile(r"(?ms)^```[^\n]*\n.*?^```[ \t]*$")
 HTML_COMMENT_RE = re.compile(r"(?s)<!--.*?-->")
 SECTION_RE = re.compile(r"(?m)^##[ \t]+(?P<heading>\S[^\n]*?)[ \t]*$")
@@ -149,12 +176,53 @@ REQUIRED_SECTIONS = ("goal", "claim", "physical_acceptance", "non_claims")
 RATIONALE_SECTION = "physical_trigger"
 RATIONALE_PREFIX = "why_"
 NON_CASE_SECTION = "non_case"
-DEMONSTRATION_SECTION = "observer_demonstration"
+NON_CASE_NONE = "none"
 ACCEPTANCE_OBLIGATIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("positive control", ("positive control", "positive:", "positive/planted")),
-    ("planted-negative control", ("planted-negative", "planted negative", "negative control")),
+    ("positive control", ("positive control", "positive:", "positive/planted", "positive and planted")),
+    (
+        "planted-negative control",
+        ("planted-negative", "planted negative", "negative control", "positive/planted"),
+    ),
     ("direct readback", ("readback",)),
     ("zero-residue readback", ("residue", "cleanup")),
+)
+PROVIDER_AUTHORITY_TOKENS = ("provider", "github")
+PROVIDER_READBACK_TOKENS = (
+    "provider readback",
+    "provider-body",
+    "provider body",
+    "provider/direct",
+    "closure readback",
+    "merge readback",
+    "provider landing",
+)
+
+# The evidence-marker half, added upstream by ed3c/noodles#317. ONE row per
+# marker carrying everything a reason needs - marker, heading, section key, the
+# honest-`none` claim, and the directions as (label, subject) pairs - because
+# upstream's own note records that three tables keyed on the same strings turned
+# a new marker into a KeyError raised out of a reason-GENERATING function.
+#
+# The declared marker values are NOT decidable from a body: upstream takes them
+# as an argument too (`evidence_reasons(body, declared)`), parsed from the
+# issue's marker block by a producer that is not in the mirrored file. So this
+# mirror takes them as an argument rather than inventing a parser it never read.
+EVIDENCE_NONE = "none"
+EVIDENCE_SECTIONS: tuple[tuple[str, str, str, str, tuple[tuple[str, str], ...]], ...] = (
+    (
+        "observer",
+        "Observer demonstration",
+        "observer_demonstration",
+        "makes no absence-or-failure observation claim",
+        (("GREEN", "clean subject"), ("RED", "planted violation")),
+    ),
+    (
+        "capability-probe",
+        "Capability probe",
+        "capability_probe",
+        "prescribes no external tool behavior in its acceptance",
+        (),
+    ),
 )
 
 # --------------------------------------------------------------------------
@@ -270,8 +338,17 @@ def signal_errors(record: Any) -> list[str]:
     return errors
 
 
-def sections(body: str) -> dict[str, str]:
-    text = HTML_COMMENT_RE.sub("", FENCE_RE.sub("", body or ""))
+def sections(body: str, *, keep_fences: bool = False) -> dict[str, str]:
+    """Headings to their text. `keep_fences` picks WHICH reader you are.
+
+    Default strips fenced blocks before cutting sections, so a required section
+    whose only content is a fence arrives empty. `keep_fences=True` is the
+    evidence gate's reader and the only one upstream marks as fence-preserving,
+    because a demonstration IS a fenced transcript. HTML comments are stripped
+    either way: an untouched template placeholder must never read as authored.
+    """
+    stripped = body or "" if keep_fences else FENCE_RE.sub("", body or "")
+    text = HTML_COMMENT_RE.sub("", stripped)
     matches = list(SECTION_RE.finditer(text))
     parsed: dict[str, str] = {}
     for index, match in enumerate(matches):
@@ -281,10 +358,142 @@ def sections(body: str) -> dict[str, str]:
     return parsed
 
 
-def completeness_reasons(body: str) -> list[str]:
-    """The consumer's admission dry-run over a candidate issue body."""
+def _direction_halves(section: str, directions: Sequence[str]) -> dict[str, str]:
+    """Each declared direction label to the text under it, split at the next label.
+
+    A label starts a LINE, optionally behind markdown decoration. Anchoring is
+    what stops a sentence that MENTIONS the labels - "the RED and GREEN runs
+    below use the same command" - from becoming the RED half itself.
+    """
+    found = {
+        direction: match.start()
+        for direction in directions
+        for match in [re.search(rf"(?m)^[^A-Za-z0-9]*{direction}\b", section)]
+        if match
+    }
+    ordered = sorted(found.items(), key=lambda item: item[1])
+    return {
+        direction: section[
+            start : (ordered[index + 1][1] if index + 1 < len(ordered) else len(section))
+        ]
+        for index, (direction, start) in enumerate(ordered)
+    }
+
+
+def _observed_output(block: str, invocation: str) -> list[str]:
+    """The non-empty lines recorded under this block's copy of the invocation."""
+    if invocation not in block:
+        return []
+    after = block.split(invocation, 1)[1].splitlines()[1:]
+    return [line.strip() for line in after if line.strip() and line.strip() != "```"]
+
+
+def _invocation_reasons(
+    marker: str, heading: str, invocation: str, block: str, where: str
+) -> list[str]:
+    """Command identity plus an observed output. Nothing here judges the output."""
+    if invocation not in block:
+        return [
+            f"'## {heading}' {where} does not run the declared noodles-{marker} invocation "
+            f"{invocation!r}; the demonstration must use the same command, flags, and access path "
+            "the claim relies on"
+        ]
+    if not _observed_output(block, invocation):
+        return [
+            f"'## {heading}' {where} runs the declared noodles-{marker} invocation but carries no "
+            "observed output under it; write what it actually printed, including 'no output'"
+        ]
+    return []
+
+
+def evidence_marker_reasons(
+    marker: str,
+    value: str | None,
+    heading: str,
+    claim: str,
+    section: str | None,
+    directions: Sequence[tuple[str, str]],
+) -> list[str]:
+    """One deterministic reason per absent half of one evidence marker.
+
+    A missing marker is its own reason; an honest `none` is complete and
+    untouched; a non-`none` marker owes its section, every declared direction,
+    the identical invocation inside each, and an output under it.
+    """
+    if value is None:
+        return [
+            f"issue declares no noodles-{marker} marker; write exactly {EVIDENCE_NONE!r} when the "
+            f"issue {claim}, or the exact invocation plus a '## {heading}' section"
+        ]
+    invocation = value.strip()
+    if invocation == EVIDENCE_NONE:
+        return []
+    if not (section or "").strip():
+        return [
+            f"noodles-{marker} declares {invocation!r} but the issue body has no "
+            f"'## {heading}' section"
+        ]
+    if not directions:
+        return _invocation_reasons(marker, heading, invocation, section or "", "section")
+    labels = [label for label, _subject in directions]
+    halves = _direction_halves(section or "", labels)
+    reasons: list[str] = []
+    for label, subject in directions:
+        if label not in halves:
+            reasons.append(
+                f"'## {heading}' carries no {label} direction ({subject}) "
+                f"for noodles-{marker} {invocation!r}"
+            )
+            continue
+        reasons.extend(
+            _invocation_reasons(marker, heading, invocation, halves[label], f"{label} direction")
+        )
+    # Upstream's second live blindness case: a probe whose planted direction
+    # returned exactly what its clean direction returned. That is an observer
+    # that did not discriminate, and it is checkable without judging either
+    # output's truth. Keyed on "more than one direction, all identical" rather
+    # than on exactly two, so a third direction narrows the check instead of
+    # silently switching it off.
+    if not reasons and len(labels) > 1:
+        recorded = [tuple(_observed_output(halves[label], invocation)) for label in labels]
+        if len(set(recorded)) == 1:
+            reasons.append(
+                f"'## {heading}' records identical output for {' and '.join(labels)}; "
+                f"the declared noodles-{marker} invocation {invocation!r} did not discriminate the "
+                "planted violation from the clean subject, so it cannot observe what the trigger claims"
+            )
+    return reasons
+
+
+def evidence_reasons(body: str, declared: Mapping[str, str | None]) -> list[str]:
+    """Both evidence markers judged against the body's own fence-preserving sections."""
+    demonstration = sections(body, keep_fences=True)
+    return [
+        reason
+        for marker, heading, key, claim, directions in EVIDENCE_SECTIONS
+        for reason in evidence_marker_reasons(
+            marker, declared.get(marker), heading, claim, demonstration.get(key), directions
+        )
+    ]
+
+
+def completeness_reasons(
+    body: str, declared: Mapping[str, str | None] | None = None
+) -> list[str]:
+    """The consumer's admission dry-run over a candidate issue body.
+
+    `declared` is the dispatcher's evidence-marker block. It defaults to nothing
+    declared and therefore FAILS CLOSED - a caller that cannot supply the markers
+    gets the two "declares no noodles-<marker> marker" reasons rather than a
+    silent pass, the same discipline upstream applies to `known_requirements`.
+
+    Two readers, and which one grades a section is the answer this function
+    carries: everything below cuts its sections with fences STRIPPED, and
+    `evidence_reasons` re-cuts the body with fences KEPT.
+    """
     parsed = sections(body)
-    reasons = [
+    reasons = list(evidence_reasons(body, dict(declared or {})))
+    reasons += [
         f"issue body has no '## {name.replace('_', ' ')}' section"
         for name in REQUIRED_SECTIONS
         if not (parsed.get(name) or "").strip()
@@ -299,15 +508,21 @@ def completeness_reasons(body: str) -> list[str]:
             "'Why ...' rationale heading"
         )
     if not (parsed.get(NON_CASE_SECTION) or "").strip():
-        reasons.append("issue body has no '## Non-case' section")
+        reasons.append(
+            f"issue body has no '## Non-case' section; write exactly {NON_CASE_NONE!r} "
+            "when there is none"
+        )
     acceptance = (parsed.get("physical_acceptance") or "").lower()
     for label, tokens in ACCEPTANCE_OBLIGATIONS:
         if not any(token in acceptance for token in tokens):
             reasons.append(f"'## Physical acceptance' names no {label} obligation")
-    if not (parsed.get(DEMONSTRATION_SECTION) or "").strip():
+    claim = (parsed.get("claim") or "").lower()
+    if any(token in claim for token in PROVIDER_AUTHORITY_TOKENS) and not any(
+        token in acceptance for token in PROVIDER_READBACK_TOKENS
+    ):
         reasons.append(
-            "'## Observer demonstration' carries no authored assertion after fenced "
-            "blocks and HTML comments are stripped"
+            "'## Claim' claims provider authority but '## Physical acceptance' names no provider "
+            "readback obligation"
         )
     return reasons
 

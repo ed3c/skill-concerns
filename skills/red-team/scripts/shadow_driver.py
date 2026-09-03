@@ -729,12 +729,23 @@ def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
 def render_demonstration(finding: dict[str, Any]) -> str:
     """The experiment block, shaped to drop VERBATIM into an issue body.
 
-    No fenced block anywhere. The consumer's admission gate strips fenced
-    blocks and HTML comments before it decides whether a section carries an
-    authored assertion, so a block that is only a fence arrives at that gate as
-    an empty section. Inline backticks survive; fences do not. That is a
-    property of the consumer's parser, not a style choice, and the round-trip
-    fixture is what keeps it true.
+    No fenced block anywhere -- but the reason this docstring used to give for
+    that is dead (ed3c/skill-concerns#137). It said the consumer strips fences
+    before deciding whether a section carries an authored assertion, so a block
+    that was only a fence arrived empty. Since ed3c/noodles#317 the section this
+    block lands in is graded by `sections(body, keep_fences=True)`, the one
+    reader upstream marks as fence-preserving, and it is not in REQUIRED_SECTIONS
+    for the readers that still strip. Fenced or not, that reader sees this text.
+
+    So the grammar is kept for the weaker reason it can still earn: unfenced
+    content is the shape both readers admit, which costs nothing and stops the
+    block from depending on which reader receives it. What this block does NOT
+    satisfy is the evidence gate #317 added -- two labelled directions running
+    the identical invocation with different recorded outputs -- because a finding
+    records one transcript and declares its second direction in prose. That is
+    ed3c/skill-concerns#148, and `test_a_declared_observer_marker_owes_two_
+    discriminating_directions` is where the refusal is measured rather than
+    assumed.
     """
     lines = [
         f"- finding: `{finding['id']}`",

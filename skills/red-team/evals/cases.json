@@ -87,10 +87,22 @@
       "test": "test_red_team.RedTeamEvals.test_a_malformed_finding_fails_the_validator"
     },
     {
-      "id": "fenced-demonstration-block-refused",
+      "id": "demonstration-graded-fence-preserving",
+      "expected": "PASS",
+      "note": "ed3c/skill-concerns#137: since ed3c/noodles#317 the observer-demonstration section is graded by sections(body, keep_fences=True), the consumer's one fence-preserving reader, so the same block fenced and unfenced reaches it identically. Replaces fenced-demonstration-block-refused, whose subject the consumer no longer refuses.",
+      "test": "test_red_team.RedTeamEvals.test_the_demonstration_is_graded_by_the_reader_that_keeps_fences"
+    },
+    {
+      "id": "fenced-required-section-refused",
       "expected": "FAIL",
-      "note": "The same block inside a fence arrives at the consumer's admission gate as an empty section, which is why the grammar carries no fence.",
-      "test": "test_red_team.RedTeamEvals.test_a_fenced_demonstration_block_fails_the_admission_dry_run"
+      "note": "ed3c/skill-concerns#137: the fence negative control keeps its subject, the readers that DO strip. A REQUIRED section whose only content is a fence still arrives empty and is still refused by name.",
+      "test": "test_red_team.RedTeamEvals.test_a_fenced_required_section_still_reds_the_reader_that_strips"
+    },
+    {
+      "id": "undeclared-evidence-markers-fail-closed",
+      "expected": "FAIL",
+      "note": "ed3c/skill-concerns#137: the declared evidence markers cannot be read off a body, so supplying none is a refusal and never a silent pass; a dry run quieter than the gate it mirrors is the one direction it must not fail in.",
+      "test": "test_red_team.RedTeamEvals.test_an_undeclared_marker_block_fails_closed"
     },
     {
       "id": "signal-outside-the-urgent-list-refused",
