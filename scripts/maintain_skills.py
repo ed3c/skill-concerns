@@ -588,10 +588,18 @@ def source_lock_pins(root: Path) -> tuple[list[dict[str, Any]], list[dict[str, s
 
     ADMITTED only, and the gate is the receipt. `intake/` also holds candidates
     whose admission has not landed (`agent-friendly-architecture-compiler`,
-    ed3c/skill-concerns#19); this sweep's subject is admitted Skill content, a
-    candidate's provider is not yet a fact this repository rests on, and that
-    one answers `HTTP 404` today -- watching it would park the sweep on
-    `blocked` forever over bytes no receipt binds.
+    ed3c/skill-concerns#19); this sweep's subject is admitted Skill content, and
+    a candidate's provider is not yet a fact this repository rests on.
+
+    That candidate is also the worked example of why the gate is not merely
+    tidy. `ed3c/ai-content-notes` resolves, is public, and its pinned commit
+    `c461dd5e` still serves both frozen blobs -- but neither
+    `templates/agent-friendly-architecture.md` nor
+    `schemas/architecture-context-pack.schema.json` is on its default branch any
+    more (`HTTP 404` on both `contents` reads, 2026-09-03). Watching a candidate
+    would park this sweep on `changed` forever over bytes no receipt binds, for
+    a Skill nobody has admitted. That is a fact for #19 to weigh, not drift in
+    this repository's own subject.
 
     No `pinned_commit` and no `branch`. The lock's own `commit` is immutable, so
     re-reading a blob at it can only ever come back identical; the question

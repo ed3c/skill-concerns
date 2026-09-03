@@ -624,9 +624,10 @@ class SourceLockPinTests(unittest.TestCase):
         """The ADMITTED gate is the receipt, and it is load-bearing.
 
         `intake/agent-friendly-architecture-compiler` is a candidate on an
-        unlanded PR (ed3c/skill-concerns#19) whose provider answers HTTP 404 to
-        this repository's token. Watching it would park the sweep on `blocked`
-        forever over bytes no receipt binds.
+        unlanded PR (ed3c/skill-concerns#19). Its provider resolves and its
+        pinned commit still serves both frozen blobs, but neither watched path
+        is on that provider's default branch any more, so watching it would park
+        the sweep on `changed` forever over bytes no receipt binds.
         """
         candidates = [
             lock.parent.name
