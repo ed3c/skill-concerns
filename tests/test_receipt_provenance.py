@@ -17,6 +17,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -224,6 +225,34 @@ class GradedByTraceTests(unittest.TestCase):
             [f"RECEIPT_GRADED_BY_MISMATCH:{FORGED_SKILL}"],
             check_receipt_provenance.check(root, only={FORGED_SKILL}),
         )
+
+    def test_a_moved_declaration_reds_here_and_nowhere_else(self) -> None:
+        """What actually consumes a field the gate could re-derive.
+
+        The objection to `graded_by` is that its validator recomputes it, so
+        the receipt appears to tell the gate nothing the gate did not already
+        know. The answer is which OTHER assertion moves when the declaration
+        does, and the measurement is that none do: `controls`, every digest and
+        the ceiling are identical whether a permanent `run_all.SKILL_CHECKS`
+        row or a `policy/bootstrap-admissions.json` entry graded the bundle --
+        that byte-identity is ed3c/skill-concerns#81's whole trigger. So a row
+        that changes while the committed receipt is not regenerated is drift
+        the byte reproduction structurally cannot see, and this arm reds under
+        exactly one name and no `RECEIPT_NOT_REPRODUCED` beside it.
+
+        The planted row still passes, so the red is the trace disagreeing and
+        never a check failing: nothing here weakens what the receipt has to
+        survive, it only re-selects which argv survived it.
+        """
+        root = scratch_copy(self)
+        moved = dict(admission_stamp.SKILL_CHECKS)
+        moved[FORGED_SKILL] = (moved[FORGED_SKILL][0],)
+        self.assertNotEqual(admission_stamp.SKILL_CHECKS[FORGED_SKILL], moved[FORGED_SKILL])
+        with mock.patch.object(admission_stamp, "SKILL_CHECKS", moved):
+            self.assertEqual(
+                [f"RECEIPT_GRADED_BY_MISMATCH:{FORGED_SKILL}"],
+                check_receipt_provenance.check(root, only={FORGED_SKILL}),
+            )
 
     def test_an_absent_trace_is_refused_rather_than_tolerated(self) -> None:
         """The narrowing. Landing one returned [] here, which is the shape that

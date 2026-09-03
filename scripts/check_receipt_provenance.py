@@ -124,13 +124,15 @@ def reproduce(root: Path, name: str, admission_path: Path) -> list[str]:
     except StampRefused as exc:
         return [str(exc)]
     produced = build_receipt(name, root, bound)
-    # One owner for one field. `graded_by_errors` holds the trace against the
-    # selection that just executed and names ABSENT and MISMATCH separately, so
-    # the byte reproduction below covers everything else and never reports the
-    # same drift twice under a name that says less. Popping and re-serialising
-    # rather than diffing key by key keeps that comparison byte-exact:
-    # `build_receipt` writes with the same `indent=2` and the same key order, so
-    # the remainder is the same bytes it would have produced.
+    # One owner for one field, and NOT an exemption from the reproduction: the
+    # field is popped from both sides here only so it is not reported twice, and
+    # `graded_by_errors` holds it against the selection that just executed --
+    # value for value, ABSENT and MISMATCH named separately because they take
+    # different actions. Nothing about `graded_by` is accepted that the byte
+    # comparison would have refused; the comparison just says less about it.
+    # Popping and re-serialising rather than diffing key by key keeps the rest
+    # byte-exact: `build_receipt` writes with the same `indent=2` and the same
+    # key order, so the remainder is the same bytes it would have produced.
     produced.pop(GRADED_BY)
     expected = json.dumps(produced, indent=2) + "\n"
 
