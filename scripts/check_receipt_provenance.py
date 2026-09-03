@@ -28,11 +28,17 @@ candidate `run_all.py`, `admission_stamp.py` or `check_admissions.py` is never
 imported or executed here.
 
 That the comparison is byte-exact is what makes this gate strictly stronger than
-`check_admissions.py`, and also what makes it the one that blocks any change to
+`check_admissions.py`, and also what makes it the one that blocks most change to
 receipt CONTENT: a field whose value is being migrated cannot be "accepted
 either way" against a reproduction, because there is no accepted set, only one
-function's output. `AUTHORING_COMMAND` below is the single, named exception and
-ed3c/skill-concerns#150 carries why.
+function's output -- for every field but two. `GRADED_BY` above is popped from
+both sides and held to its own strict, unconditional comparison instead of the
+byte diff; it tolerates nothing, it is just reported under a name that says
+which field. `AUTHORING_COMMAND` below is the one field that genuinely
+tolerates a small accepted set in place of the byte-exact rule, and
+ed3c/skill-concerns#150 carries why it needed a different shape than
+`GRADED_BY`'s: it is self-retiring, so it did not need a second landing to
+close.
 
 "Only make the gate red" also depends on read order, not just on which code
 runs: the candidate subprocesses `run_checks` launches have full write access
@@ -91,7 +97,12 @@ from common import REPO_ROOT, load_json, print_result, safe_repo_path
 # reds it.
 GRADED_BY = "graded_by"
 
-# ed3c/skill-concerns#150. The one field this gate does NOT reproduce by bytes.
+# ed3c/skill-concerns#150. A second field held outside the byte comparison,
+# and differently from `GRADED_BY` above: that one is popped out and checked
+# strictly (one accepted value, computed fresh every run); this one is
+# tolerated in place, against a small accepted set, because the set itself
+# -- not a single computed value -- is what the migration needs accepted
+# for as long as it is mid-flight.
 #
 # `check_admissions.authoring_commands()` is the repository's declaration of
 # which producer strings a receipt may claim, and it currently accepts two
@@ -176,7 +187,6 @@ def reproduce(root: Path, name: str, admission_path: Path) -> list[str]:
         committed.pop(GRADED_BY, None)
         actual = json.dumps(committed, indent=2) + "\n"
 
-    produced = json.loads(expected)
     # ed3c/skill-concerns#150, and deliberately narrow: only THIS field, only a
     # value the single declaration already accepts, and only by substituting the
     # produced string in so every other byte is still compared exactly. A value
