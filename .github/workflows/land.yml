@@ -43,6 +43,32 @@ jobs:
         with:
           python-version: '3.12'
 
+      # Three exits, not two (ed3c/skill-concerns#141). 0 landed; 3 landed and
+      # the provider misreported one of its own writes, which is a red run and
+      # NOT a failed landing; anything else is a refusal with the provider's
+      # own reason in it.
+      #
+      # Actions has no tri-state step outcome: 3 fails this job exactly as 1
+      # does. So the distinction is not written for whoever reads this comment,
+      # it is written for whatever runs next, and what runs next is this same
+      # job re-attempted. Attempt 1 merges; any later attempt is by
+      # construction a re-entry after the merge may already have happened, so
+      # it carries `--resume` and the two exits separate physically:
+      #
+      #   landed, provider misreported  ->  re-entry re-reads a merged pull,
+      #                                     posts no second anchor, never
+      #                                     merges again;
+      #   did not land                  ->  re-entry refuses
+      #                                     `RESUME_NOT_MERGED:<n>:open`,
+      #                                     because the merge it would be
+      #                                     resuming after never happened.
+      #
+      # That is fail-closed in the direction that matters: a pre-merge failure
+      # is NOT retried by re-running this job, it is retried by re-running
+      # `verify`, which produces a fresh receipt. Re-entering by hand is the
+      # thing this replaces -- the anchor is the artifact a third party
+      # recomputes the landing from, so a hand-typed one in the machine's
+      # format would be indistinguishable from a real one.
       - name: Exact-head merge, Issue closure and marker stamp with readback
         env:
           GH_TOKEN: ${{ github.token }}
@@ -50,3 +76,4 @@ jobs:
           python3 scripts/land_pr.py
           --receipt "$GITHUB_WORKSPACE/receipt/skill-concerns-receipt.json"
           --policy policy/github.json
+          ${{ github.run_attempt != '1' && '--resume' || '' }}
