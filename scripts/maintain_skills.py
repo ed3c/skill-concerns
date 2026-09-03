@@ -28,17 +28,42 @@ exit code or its report (`tests/test_maintain_skills.py::test_sweep_gates_nothin
 is the mechanical reader for that claim). Drift leaves SHADOW as a finding with
 a destination, never as a patch.
 
-Nothing SCHEDULES it either, and "cadence" here names what the sweep re-reads,
-not a clock it runs on. Worth stating rather than leaving a reader to discover:
-`test_sweep_gates_nothing` refuses any file under `.github/workflows/`
+Two clocks run it (ed3c/skill-concerns#134), and neither consumes it:
+
+  `.github/workflows/maintain.yml`   daily cron on the default branch, plus
+                                     `workflow_dispatch`. Its exit code is the
+                                     sweep's own -- a red run IS the finding
+                                     surfacing -- and the report is uploaded on
+                                     every outcome, so drift is visible to
+                                     anyone with the repository rather than
+                                     only to whoever typed the command;
+  `ops/com.neon.maintain-skills.plist`  daily launchd row on a live working
+                                     tree, where `git["dirty"]` can be true.
+                                     That is the half CI structurally cannot
+                                     see, which is why both exist.
+
+Until this landing there was no clock at all, and none was reachable:
+`test_sweep_gates_nothing` refused ANY file under `.github/workflows/`
 containing the string `maintain_skills`, so a cron whose only job was to run
-this sweep would red the same test that keeps it N-class -- the scan cannot
-presently tell "a workflow that RUNS the sweep" from "a gate that CONSUMES its
-result". Until it can, the cadence is whoever types the command, and the pins
-record what to re-read when they do. Filed as ed3c/skill-concerns#134 rather
-than resolved here: widening the gate a candidate is judged against, in the
-landing that needs the widening, is the move this repository refuses by
-standing rule.
+this sweep red the same test that keeps it N-class. The test's stated rule and
+its implemented rule were different sizes -- the docstring said "no admission,
+stamp, or CI path may CONSUME this sweep", the code was a substring scan that
+could not tell "a workflow that RUNS the sweep" from "a gate that CONSUMES its
+result". The rule protecting the N-class property was therefore also the rule
+denying the sweep a cadence.
+
+The scan now discriminates instead of widening: `maintain.yml` is the one
+exempt file, and `consumption_offenses` in that test holds it to two rules at
+once. A denylist refuses the four YAML keys that would give an admission path
+an edge -- a job dependency, a `workflow_run` trigger, and pull-request or push
+triggers -- and an allowlist requires the `on:` block to be exactly `schedule`
+and `workflow_dispatch`. The second exists because the first can only refuse a
+shape somebody thought of: `workflow_call:` would make the sweep a reusable
+workflow another job `uses:` and reads `outputs:` from, and a denylist written
+before that trigger existed would have admitted it silently. Without an edge
+and without an unlisted entry the run cannot be a required status and nothing
+waits on it. No admission, stamp, or gate reads this sweep's exit code, which
+is the claim; a scheduled job's own red is not a gate on anything.
 
 Two modes, and the split is the point (ed3c/skill-concerns#62)
 --------------------------------------------------------------

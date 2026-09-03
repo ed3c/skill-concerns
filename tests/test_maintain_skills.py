@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import plistlib
+import re
 import subprocess
 import sys
 import unittest
@@ -16,6 +17,92 @@ import run_all  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 SWEEP = ROOT / "scripts" / "maintain_skills.py"
 PLIST = ROOT / "ops" / "com.neon.maintain-skills.plist"
+WORKFLOWS = ROOT / ".github" / "workflows"
+
+# The one workflow allowed to name the sweep (ed3c/skill-concerns#134).
+CADENCE_WORKFLOW = WORKFLOWS / "maintain.yml"
+
+# Invocation is allowed; consumption is not, and the two are different bytes.
+#
+# A workflow that only RUNS the sweep leaves no edge an admission path can
+# follow: nothing waits on its job, no other workflow triggers on its
+# completion, and it never runs on a pull request or a push, so branch
+# protection has no check to require. Each shape below is one YAML key a reader
+# can point at, because this repository has no YAML parser available to its
+# gates and a rule nothing can run is not a rule.
+#
+# Comment-only lines are skipped so the file can DESCRIBE the shapes it must
+# not contain. An inline trailing comment after a real key still counts, which
+# is the fail-closed direction: a false positive costs one reworded comment, a
+# false negative ships a consumed sweep.
+#
+# This table is a DENYLIST and is therefore not the whole rule: it can only
+# refuse a shape somebody thought of, and GitHub's trigger vocabulary grows
+# (`workflow_call:` alone would make this sweep a reusable workflow another job
+# `uses:`, with `outputs:` a consumer reads, and no key below says a word about
+# it). `TRIGGER_ALLOWLIST` closes that direction: what this file may be
+# triggered BY is enumerated positively, so an event nobody here has heard of
+# reds on arrival instead of on the day someone adds a row. The denylist keeps
+# the shapes an allowlist over triggers cannot see -- `needs:` lives inside a
+# job, not under `on:`.
+CONSUMPTION_SHAPES = {
+    "needs:": "a job another job waits on",
+    "workflow_run": "a completion another workflow triggers on",
+    "pull_request": "a run branch protection could require",
+    "push:": "a run branch protection could require",
+}
+
+# Every event the cadence workflow may run on. A clock and a human, nothing
+# else: both are entered from outside the admission path and neither hands a
+# result back to it.
+TRIGGER_ALLOWLIST = ["schedule", "workflow_dispatch"]
+
+
+def workflow_directives(text: str) -> str:
+    """The lines a YAML reader acts on. A comment-only line is prose."""
+    return "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#")
+    )
+
+
+def trigger_keys(text: str) -> list[str]:
+    """The event keys under the top-level `on:` block, in file order.
+
+    Two-space keys only, so `- cron:` under `schedule:` is an argument to a
+    trigger rather than a trigger, and the first unindented line ends the
+    block. Enough of a reader for a rule to run on, which is the bar here: the
+    gates in this repository have no YAML parser available to them.
+    """
+    keys: list[str] = []
+    inside = False
+    for line in workflow_directives(text).splitlines():
+        if line.startswith("on:"):
+            inside = True
+            continue
+        if not inside:
+            continue
+        if line[:1] not in {" ", "\t", ""}:
+            break
+        found = re.match(r"  (\w+):", line)
+        if found:
+            keys.append(found.group(1))
+    return keys
+
+
+def consumption_offenses(text: str) -> list[str]:
+    """Every way `text` would let some surface consume the sweep's result."""
+    directives = workflow_directives(text)
+    offenses = [
+        f"{token}: {why}"
+        for token, why in CONSUMPTION_SHAPES.items()
+        if token in directives
+    ]
+    offenses += [
+        f"on: {key}: not an entry this workflow may be triggered by"
+        for key in trigger_keys(text)
+        if key not in TRIGGER_ALLOWLIST
+    ]
+    return sorted(offenses)
 
 
 class MaintainSkillsTests(unittest.TestCase):
@@ -62,18 +149,102 @@ class MaintainSkillsTests(unittest.TestCase):
         globbed rather than hand-enumerated - a hardcoded list goes stale
         the day a new script (e.g. scripts/common.py, scripts/freeze_source.py)
         starts naming this sweep and nobody remembers to add it here.
+
+        One workflow is exempt, and only one (ed3c/skill-concerns#134). The
+        stated rule was always about CONSUMPTION - "if any surface starts
+        reading its exit code or its report" - while the implemented rule was a
+        substring scan that could not tell a workflow that RUNS the sweep from
+        a gate that consumes it, so the rule protecting the N-class property
+        was also the rule denying the sweep a clock. CADENCE_WORKFLOW is that
+        one file and it is held to the harder half by
+        `test_the_cadence_workflow_invokes_without_being_consumed`; every other
+        workflow, and every other script, still may not name the sweep at all.
         """
         consumers = [
             path
             for path in sorted((ROOT / "scripts").glob("*.py"))
             if path.name != "maintain_skills.py"
-        ] + sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+        ] + [
+            path
+            for path in sorted(WORKFLOWS.glob("*.yml"))
+            if path != CADENCE_WORKFLOW
+        ]
         offenders = [
             path.relative_to(ROOT).as_posix()
             for path in consumers
             if "maintain_skills" in path.read_text(encoding="utf-8")
         ]
         self.assertEqual([], offenders)
+
+    def test_the_cadence_workflow_invokes_without_being_consumed(self) -> None:
+        """The exemption is not a hole: the one allowed file is held tighter.
+
+        It must actually run the sweep (an exemption for a workflow that does
+        not invoke it would be an exemption for nothing), it must run on a
+        clock, it must carry none of the shapes that would give an admission
+        path an edge into it, and no other workflow may trigger on its name.
+        """
+        text = CADENCE_WORKFLOW.read_text(encoding="utf-8")
+        directives = workflow_directives(text)
+        # Every arm reads the directives, never the prose: a workflow that only
+        # DESCRIBED running the sweep would otherwise satisfy this.
+        self.assertIn("scripts/maintain_skills.py", directives)
+        self.assertIn("schedule:", directives)
+        self.assertIn("cron:", directives)
+        self.assertEqual([], consumption_offenses(text))
+        # Positively, not by absence of the shapes anyone happened to list: the
+        # events this file may be entered by are exactly these two, so a
+        # `workflow_call:` (which would make the sweep a reusable workflow with
+        # outputs a caller reads) or a `repository_dispatch:` reds without
+        # anybody having to have anticipated it.
+        self.assertEqual(TRIGGER_ALLOWLIST, trigger_keys(text))
+        # SHADOW only: the invocation nobody watches must not carry the half
+        # with a write verb, exactly as the launchd row must not.
+        self.assertNotIn("--pass", directives)
+
+        name = re.search(r"^name:[ \t]*(\S+)", directives, re.MULTILINE).group(1)
+        for path in sorted(WORKFLOWS.glob("*.yml")):
+            if path == CADENCE_WORKFLOW:
+                continue
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.lstrip().startswith("workflows:"):
+                    self.assertNotIn(name, line, path.name)
+
+    def test_a_consuming_edge_still_reds_the_same_rule(self) -> None:
+        """The planted control ed3c/skill-concerns#134 asks for.
+
+        The widening admits invocation and must still refuse consumption, so
+        the same function that passes the committed file has to red on each
+        shape added to it. Four denylisted shapes, and then the two the
+        denylist never mentions: `workflow_call:` and `repository_dispatch:`
+        are refused by the trigger allowlist instead, which is the arm that
+        says the rule does not depend on somebody having thought of them.
+        """
+        text = CADENCE_WORKFLOW.read_text(encoding="utf-8")
+        self.assertEqual([], consumption_offenses(text))
+        for planted in (
+            "    needs: [verify]\n",
+            "  workflow_run:\n    workflows: [verify]\n",
+            "  pull_request:\n",
+            "  push:\n",
+        ):
+            with self.subTest(planted=planted.strip()):
+                self.assertNotEqual([], consumption_offenses(text + planted))
+        # Inside the `on:` block, where a trigger actually goes. Appending to
+        # the end of the file would land after `permissions:` and prove nothing
+        # about triggers.
+        entered = "  workflow_dispatch:\n"
+        self.assertIn(entered, text)
+        for planted in ("  workflow_call:\n", "  repository_dispatch:\n"):
+            with self.subTest(planted=planted.strip()):
+                mutated = text.replace(entered, entered + planted, 1)
+                self.assertNotEqual([], consumption_offenses(mutated))
+                self.assertNotEqual(TRIGGER_ALLOWLIST, trigger_keys(mutated))
+        # And prose about the shapes is not the shapes: a comment naming them
+        # must not red, or the file could not document its own rule.
+        self.assertEqual(
+            [], consumption_offenses(text + "\n# no needs: edge, no workflow_run\n")
+        )
 
     def test_check_upstream_flags_all_three_drift_diagnostics(self) -> None:
         """Planted drift on the wire: each finding branch must actually red.

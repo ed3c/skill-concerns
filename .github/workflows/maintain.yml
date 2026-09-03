@@ -1,0 +1,77 @@
+name: maintain
+
+# The cadence sweep's clock (ed3c/skill-concerns#134).
+#
+# `scripts/maintain_skills.py` is the declared owner of admitted-Skill CONTENT
+# freshness and stays N-class: it gates nothing. This workflow INVOKES it and
+# does not CONSUME it, and the difference is mechanical rather than promised --
+# `tests/test_maintain_skills.py::consumption_offenses` reads these bytes and
+# refuses a job dependency edge, a `workflow_run` trigger, or any pull-request
+# or push trigger, and separately requires the `on:` block to be exactly the
+# two entries below. The allowlist is the half that does not depend on somebody
+# having thought of the shape: `workflow_call:` would make this a reusable
+# workflow another job `uses:` and reads `outputs:` from, and no denylist
+# written before that trigger existed would have said a word about it. Without
+# an edge and without an unlisted entry there is nothing an admission path can
+# follow: this workflow cannot appear as a required status on a pull request,
+# and nothing downstream waits on it.
+#
+# The exit code still means what the sweep means -- 0 clean, 1 drift found,
+# 2 coverage unfinished -- so a red run here IS the finding surfacing. That is
+# the point: `UPSTREAM_MAIN_MOVED` on the pstack pin
+# (`policy/upstream-pins.json`) was reachable only by a human typing the
+# command, which is a cadence with no clock. The report is uploaded on every
+# outcome so the finding survives the run that produced it.
+#
+# The launchd row `ops/com.neon.maintain-skills.plist` is the other cadence and
+# is not replaced by this: it sweeps a live working tree, where `git["dirty"]`
+# can be true. This one sweeps the default branch, which is the tree everyone
+# else reads.
+
+on:
+  schedule:
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintain
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the default branch this sweep re-reads
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      # SHADOW is the default pass and has no write verb at all. `--pass` is
+      # BUILD and must never appear here: the one invocation nobody watches is
+      # the one that must not be able to propose bytes.
+      - name: SHADOW pass over receipts, gates and provider pins
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 scripts/maintain_skills.py
+          --report-dir "$RUNNER_TEMP/maintain-skills"
+
+      - name: Upload the report whatever the outcome
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: maintain-skills-report
+          path: ${{ runner.temp }}/maintain-skills
+          if-no-files-found: error
+          retention-days: 30
