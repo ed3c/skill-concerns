@@ -408,12 +408,57 @@ class ResumeAfterMergeTests(SequenceTestCase):
             f"HEAD_MOVED:{PULL}:{provider_head}:{HEAD_SHA}", str(caught.exception)
         )
 
+    def test_the_re_entry_tells_landed_apart_from_never_landed(self) -> None:
+        """The process that reads the three exits is the re-attempt itself.
+
+        Actions has no tri-state step outcome: `PROVIDER_MISREPORTED` fails the
+        job exactly as a refusal does, so "landed, provider misreported" and
+        "did not land" are one colour to anything watching the job. They are
+        two states to the only thing that runs next, which is this same command
+        re-entered with `--resume`, and this is that pair measured rather than
+        asserted in prose: a completed landing re-enters without merging again
+        and without a second anchor, while a run that never got past the merge
+        refuses by name.
+        """
+        landed = Provider(refuses_patch=True, patch_applies=True)
+        self.assertEqual(PROVIDER_MISREPORTED, self.run_land(landed))
+        self.assertEqual(PROVIDER_MISREPORTED, self.run_land(landed, "--resume"))
+        self.assertEqual(1, len(landed.anchors()), landed.comments)
+        self.assertEqual(
+            1, len([call for call in landed.calls if call[0] == "PUT"]), landed.calls
+        )
+
+        never = Provider(merged=False)
+        with self.assertRaises(SystemExit) as caught:
+            self.run_land(never, "--resume")
+        self.assertEqual(f"RESUME_NOT_MERGED:{PULL}:open", str(caught.exception))
+        self.assertEqual([], never.anchors())
+
 
 class ExitCodeSeparationTests(unittest.TestCase):
     def test_misreported_is_neither_success_nor_a_refusal(self) -> None:
         """Three outcomes, three codes: the report shape is the finding."""
         self.assertNotIn(PROVIDER_MISREPORTED, (0, 1, 2))
         self.assertEqual(PROVIDER_MISREPORTED, land_pr.PROVIDER_MISREPORTED)
+
+    def test_the_re_entry_flag_has_a_caller(self) -> None:
+        """`--resume` is passed by the workflow, never typed by a person.
+
+        An option no process resolves is prose, and this one guards the step
+        after an irreversible action, so it is the worst possible place for a
+        flag that exists only in a docstring. The caller is the job's own
+        re-attempt: attempt 1 merges, and every later attempt of the same run
+        is by construction a re-entry after the merge may already have
+        happened. Read off the directives, never the comments -- a workflow
+        that only DESCRIBED passing the flag would otherwise satisfy this.
+        """
+        text = (ROOT / ".github" / "workflows" / "land.yml").read_text(encoding="utf-8")
+        directives = "\n".join(
+            line for line in text.splitlines() if not line.lstrip().startswith("#")
+        )
+        self.assertIn("--resume", directives)
+        self.assertIn("github.run_attempt", directives)
+        self.assertIn("scripts/land_pr.py", directives)
 
 
 if __name__ == "__main__":

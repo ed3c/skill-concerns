@@ -22,7 +22,19 @@ survive being interrupted and re-run:
      shape with the landing failing;
   3. `--resume` re-enters after the merge instead of exiting `PULL_NOT_OPEN`,
      so an interrupted landing is finished by the mechanism that owns the
-     artifact rather than by hand.
+     artifact rather than by hand. Its caller is `.github/workflows/land.yml`,
+     which passes it on every attempt after the first -- an option no process
+     resolves is prose, and re-running the job is the only recovery path this
+     repository has after an irreversible step.
+
+`PROVIDER_MISREPORTED` and a refusal both fail the Actions job, because Actions
+has no tri-state step outcome. The re-entry is what separates them physically
+rather than in a comment: after a landing that completed, `--resume` re-reads a
+merged pull request, posts no second anchor and never merges again; after a run
+that never got past the merge, it refuses `RESUME_NOT_MERGED:<n>:open`, so a
+pre-merge failure is retried by re-running `verify` for a fresh receipt and
+never by re-entering here. `tests/test_land_pr.py::ResumeAfterMergeTests
+::test_the_re_entry_tells_landed_apart_from_never_landed` is that pair.
 
 The instance this was found on is `ed3c/skill-concerns` PR 140
 (`Refs ed3c/skill-concerns#81`, merge commit
