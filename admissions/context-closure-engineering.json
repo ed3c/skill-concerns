@@ -100,7 +100,7 @@
     },
     {
       "path": "contracts/admission.schema.json",
-      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+      "sha256": "54c476258a9bd64b44da1c5dd166030120055a26dfdf831c4f3b89dbcc2f9e0d"
     }
   ],
   "controls": [
@@ -188,6 +188,21 @@
       "id": "consumer-canary-overclaimed",
       "state": "PASS"
     }
+  ],
+  "graded_by": [
+    [
+      "skills/context-closure-engineering/scripts/validate_context_closure_engineering.py"
+    ],
+    [
+      "-m",
+      "unittest",
+      "discover",
+      "-p",
+      "test_*.py",
+      "-v",
+      "-s",
+      "skills/context-closure-engineering/tests"
+    ]
   ],
   "evidence_ceiling": "L3_HERMETIC",
   "not_claimed": [

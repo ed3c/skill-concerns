@@ -708,7 +708,7 @@
     },
     {
       "path": "contracts/admission.schema.json",
-      "sha256": "37de9f53d752f3e05291135f8b14dfcee03f138b263cfa1b5bcf5b8e9585be7f"
+      "sha256": "54c476258a9bd64b44da1c5dd166030120055a26dfdf831c4f3b89dbcc2f9e0d"
     },
     {
       "path": "scripts/common.py",
@@ -936,6 +936,21 @@
       "id": "predicate-kind-with-one-call-site",
       "state": "PASS"
     }
+  ],
+  "graded_by": [
+    [
+      "skills/spatial-loop-grounded/scripts/validate_spatial_loop_grounded.py"
+    ],
+    [
+      "-m",
+      "unittest",
+      "discover",
+      "-p",
+      "test_*.py",
+      "-v",
+      "-s",
+      "skills/spatial-loop-grounded/tests"
+    ]
   ],
   "evidence_ceiling": "L3_HERMETIC",
   "not_claimed": [
