@@ -300,6 +300,70 @@ class RedTeamEvals(unittest.TestCase):
             [hit["subject"]["path"] for hit in hits],
         )
 
+    def test_the_claim_half_reads_the_words_wave_21_lanes_actually_wrote(self) -> None:
+        """ed3c/skill-concerns#129: `body edit` is in no lane report.
+
+        The three citations below are QUOTED from #129's body, which measured
+        them across wave 21's four lane reports: `issues/<n>/events` and
+        `issues/N/events` as the probe spelling, `totalCount=0 -> ABSENT` as
+        the absence, and L2's disposal line verbatim. The reports themselves
+        never entered this tree, so this runs their vocabulary through the
+        fixed detector and is not the replay #129's last clause asks for --
+        that clause is answered in the issue, not here.
+
+        The vacuity guard is the load-bearing line: each positive arm is
+        asserted to contain no `body edit`, so it can only be matched by the
+        widening this atom lands.
+        """
+        bundle = self.scratch / "wave-21-vocabulary"
+        (bundle / "reports").mkdir(parents=True)
+        resting = {
+            "lane-report-l2-resting.md": (
+                "Second arrival: `gh api repos/ed3c/skill-concerns/issues/<n>/events`\n"
+                "-- totalCount=0 -> ABSENT.\n"
+            ),
+            "lane-report-l3-resting.md": (
+                "SECOND ARRIVAL: issues/N/events returned nothing, so ABSENT.\n"
+            ),
+        }
+        disposed = {
+            "lane-report-l2-disposed.md": (
+                "REST `issues/<n>/events` is structurally blind here and was not "
+                "consulted; second arrival is `userContentEdits` totalCount=0 "
+                "-> ABSENT.\n"
+            ),
+        }
+        for name, text in {**resting, **disposed}.items():
+            (bundle / "reports" / name).write_text(text, encoding="utf-8")
+
+        for name, text in resting.items():
+            with self.subTest(positive=name):
+                self.assertNotIn("body edit", text.lower(), "the arm is vacuous")
+                self.assertTrue(driver.ABSENCE_CLAIM.search(text))
+
+        hits = driver.EXPERIMENTS["blind-observer"](bundle)
+        self.assertEqual(
+            sorted(f"reports/{name}" for name in resting),
+            sorted(hit["subject"]["path"] for hit in hits),
+        )
+
+    def test_a_diagnostic_name_ending_in_the_state_is_not_an_absence_claim(self) -> None:
+        """The planted negative for the widening's own false positive.
+
+        `RECEIPT_PRODUCER_ABSENT` is a diagnostic, not a claim, and the
+        wave-17 fixture carries it beside the probe citation. A claim half
+        matching the bare state without a word boundary would have turned
+        every finding that names that diagnostic into a blind-observer hit --
+        and the committed wave-17 record, which is append-only, says the count
+        there is one.
+        """
+        self.assertIsNone(driver.ABSENCE_CLAIM.search("RECEIPT_PRODUCER_ABSENT"))
+        self.assertEqual(
+            1, len(driver.EXPERIMENTS["blind-observer"](WAVE_17)),
+            "the committed wave-17 record's blind-observer count is 1 and the "
+            "ledger is append-only",
+        )
+
     def test_the_blind_observer_finding_points_at_the_sighted_surface(self) -> None:
         """Direct readback: a lane reads the finding, not this table.
 
