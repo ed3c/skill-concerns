@@ -637,7 +637,7 @@ def curve(ledger: dict[str, Any], station: str) -> list[tuple[str, int]]:
     return [(wave, per_wave[wave]) for wave in order]
 
 
-def curve_finding(ledger: dict[str, Any], waves: int = 3) -> str | None:
+def curve_findings(ledger: dict[str, Any], waves: int = 3) -> list[str]:
     """The instrument reporting its own failure to bend the curve.
 
     Reported rather than presumed: three post-admission waves whose recurrence
@@ -646,21 +646,38 @@ def curve_finding(ledger: dict[str, Any], waves: int = 3) -> str | None:
     direction, so that station is skipped rather than answered with a
     reassuring green - and a station with too few points can no longer borrow
     another station's decline to look answered.
+
+    EVERY non-declining station is returned, never the first one found. A
+    single-string readback left the second station's silence
+    indistinguishable from its absence: the dispatcher saw one diagnostic and
+    had nothing telling it another station had been skipped, which is the
+    hides-inside-a-bigger-one shape the slicing exists to end, one level up.
+
+    The floor is the DECLARED success state and a strict decline cannot read
+    it. `[0, 0, 0]` is a station whose classes are gating; `recent[-1] <
+    recent[0]` calls it non-declining forever, so the bundle's own steady
+    state ("'No findings' is the honest and expected steady state",
+    `AGENTS.md`) would be reported as an architecture failure permanently,
+    and per-station slicing multiplies that rather than causing it. A last
+    point of zero is a decline to the floor whatever preceded it. `[0, 0, 1]`
+    still reports: recurrence coming back off the floor is the event this
+    finding exists for.
     """
+    findings: list[str] = []
     for station in stations(ledger):
         points = curve(ledger, station)
         if len(points) < waves:
             continue
         recent = [count for _, count in points[-waves:]]
-        if recent[-1] < recent[0]:
+        if recent[-1] < recent[0] or recent[-1] == 0:
             continue
-        return (
+        findings.append(
             f"{CURVE_NOT_DECLINING}:{station}:{points[-waves][0]}..{points[-1][0]}: "
             f"known-class recurrence {recent} has not declined across {waves} waves at "
             "this station; the classes are not gating there and the architecture, not "
             "the sampling, is what this reports on"
         )
-    return None
+    return findings
 
 
 # --------------------------------------------------------------------------
@@ -809,13 +826,16 @@ def main(argv: list[str] | None = None) -> int:
         ledger = append_record(ledger, ledger_record(report))
         args.ledger.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
         print(f"  appended run record -> {args.ledger}")
-        bend = curve_finding(ledger)
-        if bend:
+        bends = curve_findings(ledger)
+        for bend in bends:
             # R7 is a finding, so it leaves through the exit code like every
             # other finding. Printed on stdout at status 0 it would be prose
             # no caller consumes - the mention-is-not-execution shape the
-            # architecture clause exists to refuse.
+            # architecture clause exists to refuse. One line PER station: a
+            # second non-declining station that never printed is a station
+            # the dispatcher was never told about.
             print(f"  {bend}")
+        if bends:
             status = max(status, 1)
     return status
 
