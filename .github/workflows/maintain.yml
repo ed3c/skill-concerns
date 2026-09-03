@@ -7,9 +7,14 @@ name: maintain
 # does not CONSUME it, and the difference is mechanical rather than promised --
 # `tests/test_maintain_skills.py::consumption_offenses` reads these bytes and
 # refuses a job dependency edge, a `workflow_run` trigger, or any pull-request
-# or push trigger. Without those there is no edge an admission path can follow
-# and no check branch protection can require: this workflow cannot appear as a
-# required status on a pull request, and nothing downstream waits on it.
+# or push trigger, and separately requires the `on:` block to be exactly the
+# two entries below. The allowlist is the half that does not depend on somebody
+# having thought of the shape: `workflow_call:` would make this a reusable
+# workflow another job `uses:` and reads `outputs:` from, and no denylist
+# written before that trigger existed would have said a word about it. Without
+# an edge and without an unlisted entry there is nothing an admission path can
+# follow: this workflow cannot appear as a required status on a pull request,
+# and nothing downstream waits on it.
 #
 # The exit code still means what the sweep means -- 0 clean, 1 drift found,
 # 2 coverage unfinished -- so a red run here IS the finding surfacing. That is

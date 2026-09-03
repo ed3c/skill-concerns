@@ -53,12 +53,17 @@ result". The rule protecting the N-class property was therefore also the rule
 denying the sweep a cadence.
 
 The scan now discriminates instead of widening: `maintain.yml` is the one
-exempt file, and `consumption_offenses` in that test refuses inside it the four
-YAML keys that would give an admission path an edge -- a job dependency, a
-`workflow_run` trigger, and pull-request or push triggers. Without them the run
-cannot be a required status and nothing waits on it. No admission, stamp, or
-gate reads this sweep's exit code, which is the claim; a scheduled job's own
-red is not a gate on anything.
+exempt file, and `consumption_offenses` in that test holds it to two rules at
+once. A denylist refuses the four YAML keys that would give an admission path
+an edge -- a job dependency, a `workflow_run` trigger, and pull-request or push
+triggers -- and an allowlist requires the `on:` block to be exactly `schedule`
+and `workflow_dispatch`. The second exists because the first can only refuse a
+shape somebody thought of: `workflow_call:` would make the sweep a reusable
+workflow another job `uses:` and reads `outputs:` from, and a denylist written
+before that trigger existed would have admitted it silently. Without an edge
+and without an unlisted entry the run cannot be a required status and nothing
+waits on it. No admission, stamp, or gate reads this sweep's exit code, which
+is the claim; a scheduled job's own red is not a gate on anything.
 
 Two modes, and the split is the point (ed3c/skill-concerns#62)
 --------------------------------------------------------------

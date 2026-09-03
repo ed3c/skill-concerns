@@ -35,12 +35,27 @@ CADENCE_WORKFLOW = WORKFLOWS / "maintain.yml"
 # not contain. An inline trailing comment after a real key still counts, which
 # is the fail-closed direction: a false positive costs one reworded comment, a
 # false negative ships a consumed sweep.
+#
+# This table is a DENYLIST and is therefore not the whole rule: it can only
+# refuse a shape somebody thought of, and GitHub's trigger vocabulary grows
+# (`workflow_call:` alone would make this sweep a reusable workflow another job
+# `uses:`, with `outputs:` a consumer reads, and no key below says a word about
+# it). `TRIGGER_ALLOWLIST` closes that direction: what this file may be
+# triggered BY is enumerated positively, so an event nobody here has heard of
+# reds on arrival instead of on the day someone adds a row. The denylist keeps
+# the shapes an allowlist over triggers cannot see -- `needs:` lives inside a
+# job, not under `on:`.
 CONSUMPTION_SHAPES = {
     "needs:": "a job another job waits on",
     "workflow_run": "a completion another workflow triggers on",
     "pull_request": "a run branch protection could require",
     "push:": "a run branch protection could require",
 }
+
+# Every event the cadence workflow may run on. A clock and a human, nothing
+# else: both are entered from outside the admission path and neither hands a
+# result back to it.
+TRIGGER_ALLOWLIST = ["schedule", "workflow_dispatch"]
 
 
 def workflow_directives(text: str) -> str:
@@ -50,14 +65,44 @@ def workflow_directives(text: str) -> str:
     )
 
 
+def trigger_keys(text: str) -> list[str]:
+    """The event keys under the top-level `on:` block, in file order.
+
+    Two-space keys only, so `- cron:` under `schedule:` is an argument to a
+    trigger rather than a trigger, and the first unindented line ends the
+    block. Enough of a reader for a rule to run on, which is the bar here: the
+    gates in this repository have no YAML parser available to them.
+    """
+    keys: list[str] = []
+    inside = False
+    for line in workflow_directives(text).splitlines():
+        if line.startswith("on:"):
+            inside = True
+            continue
+        if not inside:
+            continue
+        if line[:1] not in {" ", "\t", ""}:
+            break
+        found = re.match(r"  (\w+):", line)
+        if found:
+            keys.append(found.group(1))
+    return keys
+
+
 def consumption_offenses(text: str) -> list[str]:
     """Every way `text` would let some surface consume the sweep's result."""
     directives = workflow_directives(text)
-    return sorted(
+    offenses = [
         f"{token}: {why}"
         for token, why in CONSUMPTION_SHAPES.items()
         if token in directives
-    )
+    ]
+    offenses += [
+        f"on: {key}: not an entry this workflow may be triggered by"
+        for key in trigger_keys(text)
+        if key not in TRIGGER_ALLOWLIST
+    ]
+    return sorted(offenses)
 
 
 class MaintainSkillsTests(unittest.TestCase):
@@ -147,6 +192,12 @@ class MaintainSkillsTests(unittest.TestCase):
         self.assertIn("schedule:", directives)
         self.assertIn("cron:", directives)
         self.assertEqual([], consumption_offenses(text))
+        # Positively, not by absence of the shapes anyone happened to list: the
+        # events this file may be entered by are exactly these two, so a
+        # `workflow_call:` (which would make the sweep a reusable workflow with
+        # outputs a caller reads) or a `repository_dispatch:` reds without
+        # anybody having to have anticipated it.
+        self.assertEqual(TRIGGER_ALLOWLIST, trigger_keys(text))
         # SHADOW only: the invocation nobody watches must not carry the half
         # with a write verb, exactly as the launchd row must not.
         self.assertNotIn("--pass", directives)
@@ -164,8 +215,10 @@ class MaintainSkillsTests(unittest.TestCase):
 
         The widening admits invocation and must still refuse consumption, so
         the same function that passes the committed file has to red on each
-        shape added to it. Three arms because the edge can arrive four ways and
-        one green arm would not show the scanner discriminates at all.
+        shape added to it. Four denylisted shapes, and then the two the
+        denylist never mentions: `workflow_call:` and `repository_dispatch:`
+        are refused by the trigger allowlist instead, which is the arm that
+        says the rule does not depend on somebody having thought of them.
         """
         text = CADENCE_WORKFLOW.read_text(encoding="utf-8")
         self.assertEqual([], consumption_offenses(text))
@@ -177,6 +230,16 @@ class MaintainSkillsTests(unittest.TestCase):
         ):
             with self.subTest(planted=planted.strip()):
                 self.assertNotEqual([], consumption_offenses(text + planted))
+        # Inside the `on:` block, where a trigger actually goes. Appending to
+        # the end of the file would land after `permissions:` and prove nothing
+        # about triggers.
+        entered = "  workflow_dispatch:\n"
+        self.assertIn(entered, text)
+        for planted in ("  workflow_call:\n", "  repository_dispatch:\n"):
+            with self.subTest(planted=planted.strip()):
+                mutated = text.replace(entered, entered + planted, 1)
+                self.assertNotEqual([], consumption_offenses(mutated))
+                self.assertNotEqual(TRIGGER_ALLOWLIST, trigger_keys(mutated))
         # And prose about the shapes is not the shapes: a comment naming them
         # must not red, or the file could not document its own rule.
         self.assertEqual(
