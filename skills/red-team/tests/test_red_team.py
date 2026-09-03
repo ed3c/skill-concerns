@@ -23,6 +23,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import cure_authorization  # noqa: E402
 import gen_red_team_receipts  # noqa: E402
+import land_pr  # noqa: E402
 import shadow_driver as driver  # noqa: E402
 import validate_red_team as validator  # noqa: E402
 
@@ -943,6 +944,250 @@ class RedTeamEvals(unittest.TestCase):
             [finding.split(":")[1] for finding in driver.curve_findings(appended)],
         )
 
+    # ------------------------------------------ the record survives the land
+
+    def _persist(self, bundle: Path, wave: str = "persisted") -> Path:
+        """One pass over `bundle`, its report written where a land cannot reach."""
+        artifact = self.scratch / f"{wave}.json"
+        driver.main(
+            [
+                "--bundle", str(bundle),
+                "--wave", wave,
+                "--boundary", "persisted-report-fixture",
+                "--subject", driver.DEFAULT_SUBJECT,
+                "--save-report", str(artifact),
+            ]
+        )
+        return artifact
+
+    def _empty_ledger(self, name: str = "ledger.json") -> Path:
+        path = self.scratch / name
+        path.write_text(json.dumps({"records": []}), encoding="utf-8")
+        return path
+
+    def test_a_record_lands_from_a_persisted_report_after_the_land_moved_the_bundle(
+        self,
+    ) -> None:
+        """ed3c/skill-concerns#158's positive control, with the mutation measured.
+
+        The ordering that lost three waves' records: `--append-record` was
+        reachable only from a live pass, and landing the wave rewrites the
+        bytes that pass measured. The land is not simulated by an invented
+        edit - `land_pr.stamp` IS the landing machine's own marker writer, so
+        the mutation this arm plants is the mutation landing performs, and it
+        cannot drift from it.
+
+        What the stamp destroys is not the counts, it is the identity:
+        ed3c/skill-concerns#131 admits a re-run only when "the fingerprint is
+        re-measured on the copy actually used", and after the stamp the
+        re-measured fingerprint is a different number from the one the pass
+        pinned. That is asserted before the recovery is attempted, because a
+        recovery that was never needed proves nothing.
+        """
+        bundle = self.scratch / "bundle"
+        shutil.copytree(WAVE_17, bundle)
+        artifact = self._persist(bundle)
+        persisted = json.loads(artifact.read_text(encoding="utf-8"))
+        self.assertEqual(driver.fingerprint(bundle), persisted["read_only"]["before"])
+
+        stamped = bundle / "issues" / "filed-84-draft.md"
+        stamped.write_text(
+            land_pr.stamp(
+                stamped.read_text(encoding="utf-8"),
+                {
+                    "state": "landed",
+                    "landed-pr": "ed3c/skill-concerns#158",
+                    "head": "0" * 40,
+                    "merge": "1" * 40,
+                },
+            ),
+            encoding="utf-8",
+        )
+        rerun = driver.run(bundle, catalogue(), "persisted", "persisted-report-fixture")
+        self.assertNotEqual(
+            persisted["read_only"]["before"],
+            rerun["read_only"]["before"],
+            "ed3c/skill-concerns#131 admits a re-run only when the fingerprint is "
+            "re-measured on the copy actually used; this is the measurement that "
+            "shows the land already made that impossible",
+        )
+
+        ledger = self._empty_ledger()
+        status = driver.main(
+            ["--from-report", str(artifact), "--ledger", str(ledger), "--append-record"]
+        )
+        self.assertEqual(1, status)
+        records = json.loads(ledger.read_text(encoding="utf-8"))["records"]
+        self.assertEqual([driver.ledger_record(persisted)], records)
+        self.assertEqual(persisted["generated_utc"], records[0]["run_id"])
+        self.assertEqual([], validator.derived_column_errors(0, records[0]))
+
+    def test_the_committed_roundtrip_record_is_re_derivable_from_this_repository(
+        self,
+    ) -> None:
+        """The direct readback: the committed row comes back out of committed bytes.
+
+        A reader with nothing but this repository re-derives the row from the
+        persisted artifact - no bundle, no clock, no argument - and the curve
+        at `wave-boundary` carries its point. That is the whole claim of the
+        persisted path, read off the ledger this bundle actually ships.
+        """
+        artifact = (
+            SKILL_ROOT / "domain" / "persisted-reports" / "persisted-report-roundtrip.json"
+        )
+        persisted = json.loads(artifact.read_text(encoding="utf-8"))
+        self.assertEqual([], driver.saved_report_errors(persisted))
+        ledger = domain("run-ledger.json")
+        committed = next(
+            record
+            for record in ledger["records"]
+            if record["wave"] == "persisted-report-roundtrip"
+        )
+        self.assertEqual(committed, driver.ledger_record(persisted))
+        point = next(
+            count
+            for wave, count in driver.curve(ledger, driver.DEFAULT_SUBJECT)
+            if wave == "persisted-report-roundtrip"
+        )
+        self.assertEqual(sum(committed["hits"].values()), point)
+        self.assertIn(
+            f"{point}]",
+            "\n".join(
+                finding
+                for finding in driver.curve_findings(ledger)
+                if finding.split(":")[1] == driver.DEFAULT_SUBJECT
+            ),
+        )
+
+    def test_a_persisted_report_whose_numbers_were_edited_is_refused(self) -> None:
+        """The cure may not open a hand-reconstruction path. Both directions.
+
+        Every number a record carries derives from `hits`, and every `hits`
+        entry is the length of the finding list the same pass built from it -
+        so an edited count contradicts the findings shipped beside it and the
+        artifact never becomes a row. The inverse edit restores the byte and
+        the same invocation lands, which is what makes the refusal a
+        measurement of the edit rather than of the file.
+        """
+        artifact = self._persist(WAVE_17)
+        body = json.loads(artifact.read_text(encoding="utf-8"))
+        original = body["hits"]["duplicate-discovery"]
+        body["hits"]["duplicate-discovery"] = original + 3
+        artifact.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        ledger = self._empty_ledger()
+        self.assertEqual(
+            2,
+            driver.main(
+                ["--from-report", str(artifact), "--ledger", str(ledger), "--append-record"]
+            ),
+        )
+        self.assertEqual([], json.loads(ledger.read_text(encoding="utf-8"))["records"])
+
+        body["hits"]["duplicate-discovery"] = original
+        artifact.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual(
+            1,
+            driver.main(
+                ["--from-report", str(artifact), "--ledger", str(ledger), "--append-record"]
+            ),
+        )
+        self.assertEqual(1, len(json.loads(ledger.read_text(encoding="utf-8"))["records"]))
+
+    def test_the_guards_130_and_131_landed_are_not_weakened_by_the_persisted_path(
+        self,
+    ) -> None:
+        """Each planted defect, at the door and one file downstream.
+
+        A typed label where the instant belongs is refused at the artifact
+        gate, so `run_id` cannot become a name by taking the new road; and the
+        record such a report would have produced is still refused by
+        `check_ledger` if it somehow arrived, which is the arm that keeps the
+        two guards independent rather than one standing in for the other.
+        """
+        artifact = self._persist(WAVE_17)
+        body = json.loads(artifact.read_text(encoding="utf-8"))
+
+        for label, needle in (
+            ("wave-22", "is not the producer's ISO-8601 instant"),
+            ("recovered by hand", "is not the producer's ISO-8601 instant"),
+        ):
+            with self.subTest(label=label):
+                typed = dict(body, generated_utc=label)
+                self.assertTrue(
+                    any(needle in error for error in driver.saved_report_errors(typed))
+                )
+
+        blocked = dict(body, outcome="blocked", refusal="SUBJECT_MUTATED:...")
+        self.assertTrue(
+            any("blocked" in error for error in driver.saved_report_errors(blocked))
+        )
+        untrusted = dict(body, read_only={"before": "a", "after": "b", "held": False})
+        self.assertTrue(
+            any("read_only.held" in error for error in driver.saved_report_errors(untrusted))
+        )
+        dropped = dict(body, findings=body["findings"][:-1])
+        self.assertTrue(
+            any("disagree with the findings" in error for error in driver.saved_report_errors(dropped))
+        )
+
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        ledger = json.loads(path.read_text(encoding="utf-8"))
+        ledger["records"][-1]["run_id"] = "wave-22, recovered"
+        path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "is not the producer's ISO-8601 instant" in error
+                for error in validator.validate(copy, REPO_ROOT)
+            )
+        )
+
+    def test_the_unpersistable_register_refuses_the_numbers_it_is_missing(self) -> None:
+        """A lost run is refused with a reason and WITHOUT what it would have said.
+
+        The register is the one place the queue of unappendable runs is
+        discharged, and it is exactly one edit away from being the
+        hand-reconstruction path the cure was not allowed to open - so the
+        planted control is a row that carries a measurement, and the second is
+        a row for a wave that did reach the ledger.
+        """
+        register = domain("unpersistable-runs.json")
+        waves = [row["wave"] for row in register["rows"]]
+        self.assertEqual(
+            ["wave22-acn", "wave23-noodles", "wave25-acn", "wave26-acn", "wave28-noodles"],
+            sorted(waves),
+        )
+        recorded = {record["wave"] for record in domain("run-ledger.json")["records"]}
+        for row in register["rows"]:
+            with self.subTest(wave=row["wave"]):
+                self.assertEqual("UNPERSISTABLE", row["disposition"])
+                self.assertNotIn(row["wave"], recorded)
+                self.assertEqual([], sorted(set(validator.MEASUREMENT_KEYS) & set(row)))
+                self.assertTrue(validator.PROVIDER_REF.fullmatch(row["evidence"]))
+
+        for change, needle in (
+            (lambda body: body["rows"][0].__setitem__("judge_gaps", 8), "carries ['judge_gaps']"),
+            (
+                lambda body: body["rows"][0].__setitem__("wave", "persisted-report-roundtrip"),
+                "names a wave the ledger already carries",
+            ),
+            (
+                lambda body: body["rows"][0].__setitem__("station", "some-other-seam"),
+                "OBSERVATION_TARGET_UNGROUNDED",
+            ),
+            (lambda body: body["rows"][0].pop("reason"), "has no 'reason'"),
+        ):
+            with self.subTest(needle=needle):
+                copy = self.copy()
+                path = copy / "domain" / "unpersistable-runs.json"
+                body = json.loads(path.read_text(encoding="utf-8"))
+                change(body)
+                path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+                self.assertTrue(
+                    any(needle in error for error in validator.validate(copy, REPO_ROOT)),
+                    validator.validate(copy, REPO_ROOT)[:3],
+                )
+
     def test_every_recipe_runs_through_the_drivers_own_parser(self) -> None:
         """A recipe naming a flag the driver has not got is not runnable.
 
@@ -1225,7 +1470,7 @@ class RedTeamEvals(unittest.TestCase):
         while watching nothing, which is the gap class it exists to record.
         """
         rows = domain("residual-sensor-register.json")["rows"]
-        self.assertEqual(5, len(rows))
+        self.assertEqual(6, len(rows))
         for row in rows:
             with self.subTest(row=row["id"]):
                 readback = REPO_ROOT / row["sensor"]["readback"]
