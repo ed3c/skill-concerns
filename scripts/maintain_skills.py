@@ -226,9 +226,15 @@ PIN_HOLDER_GLOBS = (
     "registry.json",
 )
 
-PROVIDER_REF = re.compile(r"^(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?P<number>\d+)$")
+# One character class for GitHub's `owner/name` identity, quoted twice below
+# rather than hand-copied twice: `PROVIDER_REF` and `PROVIDER_SLUG` read the
+# same slug shape out of two different surroundings (an issue reference, a
+# clone URL), and a third caller wanting that shape composes `_SLUG_SEGMENT`
+# instead of re-typing the character class a third time.
+_SLUG_SEGMENT = r"[A-Za-z0-9_.-]+"
+PROVIDER_REF = re.compile(rf"^(?P<repo>{_SLUG_SEGMENT}/{_SLUG_SEGMENT})#(?P<number>\d+)$")
 PROVIDER_SLUG = re.compile(
-    r"^(?:https?://github\.com/)?(?P<slug>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?/?$"
+    rf"^(?:https?://github\.com/)?(?P<slug>{_SLUG_SEGMENT}/{_SLUG_SEGMENT}?)(?:\.git)?/?$"
 )
 GATE_ERROR = re.compile(r"^(?P<diagnostic>[A-Z][A-Z0-9_]*):(?P<subject>.+)$")
 
