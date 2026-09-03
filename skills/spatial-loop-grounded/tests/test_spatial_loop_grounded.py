@@ -306,14 +306,18 @@ class SpatialLoopGroundedEvals(unittest.TestCase):
             )
         )
         happened = claim["what_actually_happened"]
-        for token in (
-            "0 is ABSENT",
-            "the first edit moves it 0 -> 2",
-            "every later edit by one",
-            "ed3c/skill-concerns#102",
-        ):
-            with self.subTest(token=token):
-                self.assertIn(token, happened)
+        # ONE resolution, and it is the owner's whole sentence. Four fragments
+        # beside it were four weaker readers of the same string: a fixture that
+        # had drifted BETWEEN them passes every fragment and fails the
+        # sentence, so they graded nothing the sentence does not already grade,
+        # while leaving two readers at two resolutions over one string - the
+        # drift this arm exists to stop, one level up. Reword the owner and
+        # this reds with every other carrier, at the same instant and for the
+        # same reason.
+        self.assertIn(
+            "userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102)",  # noqa: E501
+            happened,
+        )
 
     def test_hollow_c12_undemonstrated_silence_accepted_fails(self) -> None:
         """The blind-fixture arm, planted into the fixture the clause certifies:
