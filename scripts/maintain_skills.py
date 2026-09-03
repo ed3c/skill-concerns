@@ -166,16 +166,16 @@ from common import (  # noqa: E402
 import run_all  # noqa: E402
 
 
-REPO_GATES = (
-    "check_agents_hops.py",
-    "check_skill_bundles.py",
-    "check_admissions.py",
-    # Reads no receipt and no pin, so it is not what the sweep exists for - it
-    # is here because a sweep that reports the repository gates green while a
-    # gate was never run is the absence-read-as-clean shape this repository
-    # admits skills to catch (ed3c/skill-concerns#102).
-    "check_second_arrival_ceiling.py",
-)
+# DERIVED, never a second list. This was a hand copy of the gates
+# `scripts/run_all.py` runs, and it had already drifted:
+# `check_receipt_provenance.py` ran there and never here, so this sweep
+# reported the repository gates green having never run one of them - the
+# absence-read-as-clean shape this repository admits skills to catch
+# (ed3c/skill-concerns#102). Skill checks were already derived from the owning
+# declaration; the repository gates now come from the same file, so a gate
+# added to the runner is swept on arrival and forgetting is not a thing a
+# person can do here.
+REPO_GATES = run_all.REPO_GATES
 
 # Everything the sweep reads as subject and must leave byte-identical.
 EDIT_SCOPE = ("skills", "admissions", "intake", "contracts", "policy", "registry.json")

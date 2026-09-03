@@ -889,6 +889,34 @@ class RepositoryControlTests(unittest.TestCase):
                 ),
             )
 
+    def test_a_carrier_arrives_under_any_suffix_including_none(self) -> None:
+        """Discovery is by DECODING, so a suffix table cannot exempt a carrier.
+
+        The arriving-carrier half above used a `.md` file, which an allowlist
+        of suffixes passes - so it never measured the claim that a carrier
+        added tomorrow is covered on arrival. These are the suffixes an
+        allowlist would have missed, plus a file with no suffix at all, and
+        each one is a carrier that must red. The negative arm is a genuinely
+        undecodable file carrying the counter's bytes: it is skipped, because
+        UTF-8 is the property the scan can actually measure and nobody hand-
+        writes a ceiling into a binary.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            named = ("carrier.toml", "carrier.sh", "carrier.jsonl", "carrier.ts", "CARRIER")
+            for name in named:
+                (temp / name).write_text(
+                    "read totalCount here and state nothing\n", encoding="utf-8"
+                )
+            (temp / "carrier.bin").write_bytes(b"\xff\xfetotalCount\x00\x80")
+            self.assertEqual(
+                sorted(named),
+                sorted(
+                    error.split(":", 2)[1]
+                    for error in check_second_arrival_ceiling.errors(temp)
+                ),
+            )
+
 
 class CureAuthorizationTests(unittest.TestCase):
     """The BUILD cure-authorization rule, ed3c/skill-concerns#93.

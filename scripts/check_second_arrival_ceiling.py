@@ -55,19 +55,25 @@ OWNER_SYMBOL = "SECOND_ARRIVAL_CEILING"
 DIAGNOSTIC = "SECOND_ARRIVAL_CEILING_ABSENT"
 
 SKIP_DIRS = {".git", "__pycache__"}
-# Text this repository authors. A binary or an unknown suffix is skipped rather
-# than guessed at: a scan that decoded everything would report on bytes nobody
-# writes by hand, and the carriers this rule is about are all authored text.
-TEXT_SUFFIXES = {".py", ".json", ".md", ".txt", ".yml", ".yaml", ".diff", ".patch"}
 
 
 def carriers(root: Path) -> list[Path]:
-    """Every authored text file in `root` whose bytes read the counter."""
+    """Every text file in `root` whose bytes read the counter.
+
+    Text is decided by DECODING, never by a suffix table. An allowlist of
+    suffixes stood here and it was the per-carrier table this module refuses,
+    one level up: discovery depended on somebody remembering to add a row, so a
+    `.toml`, `.sh`, `.jsonl` or `.ts` carrier arriving tomorrow would be
+    silently exempt and nothing would go red until a human noticed - the
+    property the docstring above claims is exactly what the table took away.
+    UTF-8 is what the scan actually needs and the only thing it can measure;
+    binary skips itself by failing to decode, which is the outcome the table
+    was reaching for, without the row nobody maintains. Measured on this tree:
+    58 files carry no listed suffix, all 58 decode, and none is a carrier.
+    """
     found: list[Path] = []
     for path in sorted(root.rglob("*")):
         if not path.is_file() or set(path.parts) & SKIP_DIRS:
-            continue
-        if path.suffix not in TEXT_SUFFIXES:
             continue
         try:
             text = path.read_text(encoding="utf-8")

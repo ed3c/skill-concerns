@@ -10,6 +10,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import maintain_skills  # noqa: E402
+import run_all  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,28 @@ class MaintainSkillsTests(unittest.TestCase):
             cwd=ROOT,
         )
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+
+    def test_the_sweep_drives_every_repository_gate_the_runner_runs(self) -> None:
+        """The gate list is DERIVED, so a hand copy cannot drift again.
+
+        It had drifted: `check_receipt_provenance.py` ran in
+        `scripts/run_all.py` and was absent from the sweep's own tuple, so the
+        sweep reported the repository gates green having never run one of them
+        (ed3c/skill-concerns#102). Two arms. The identity is asserted against
+        `run_all` because that is the owning declaration, and then the argv the
+        sweep actually builds is read back - a tuple that agreed while the rows
+        were built from something else would pass the first arm alone. The
+        second is also the vacuity guard: the drifted gate is named here by
+        hand, so a future edit that quietly narrows either side reds.
+        """
+        self.assertEqual(maintain_skills.REPO_GATES, run_all.REPO_GATES)
+        self.assertIn("check_receipt_provenance.py", maintain_skills.REPO_GATES)
+        driven = [
+            Path(argv[0]).name
+            for subject, argv in maintain_skills.check_rows(ROOT, run_skill_checks=False)
+            if subject.startswith("repository:")
+        ]
+        self.assertEqual(list(run_all.REPO_GATES), driven)
 
     def test_sweep_gates_nothing(self) -> None:
         """N-class reader: no admission, stamp, or CI path may consume this sweep.
