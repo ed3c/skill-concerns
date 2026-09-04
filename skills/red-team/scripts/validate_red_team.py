@@ -93,6 +93,48 @@ FINDING_FIELDS = (
     "both_directions",
 )
 VERDICTS = ("CONFIRMED", "REFUTED", "INCONCLUSIVE")
+
+# The verdict a pass reaches when nobody filed an adjudication for the hit: the
+# catalogue match standing as the machine made it.
+#
+# ed3c/skill-concerns#152 adds `adjudication`, the ground a verdict was produced
+# from, and it is REQUIRED exactly where it carries information. A verdict that
+# departed from the machine's own reading was produced by a judge, and a judge
+# who states no ground has typed a number - that is the whole finding. A
+# `DEFAULT_VERDICT` reached because nothing was filed claims no judgment at all,
+# and its ground is the experiment block two fields up; a required boilerplate
+# line beside it saying "no adjudication filed" would be a certified mention of
+# a judgment nobody made.
+#
+# That is also why the field is absent rather than empty in the default case,
+# and why it is not in `FINDING_FIELDS`. A required field would make every
+# report produced before it existed retroactively malformed - including
+# `domain/persisted-reports/persisted-report-roundtrip.json`, the artifact
+# ed3c/skill-concerns#158 committed as its own direct readback, which
+# `shadow_driver.saved_report_errors` runs through this function on every
+# `--from-report`. The same reasoning `domain/run-ledger.json` records under
+# `undenominated` for the sweep size: a column added to committed bytes
+# afterwards is a guess wearing a measurement.
+DEFAULT_VERDICT = "CONFIRMED"
+
+# ed3c/skill-concerns#152. The tuple above declared three states while
+# `shadow_driver.build_finding` assigned one of them as a literal, so the field
+# was a tri-state declaration in front of a mono-state instrument. The verdict
+# is now computed from a filed adjudication, and this is the regression pin on
+# that: a literal verdict assignment anywhere in the driver's bytes reds.
+#
+# A byte scan is the honest form here. It cannot prove the other two states are
+# REACHABLE - only a run can, and `tests/test_red_team.py` runs the driver until
+# each state comes back in a report - but it CAN prove the collapsed path is
+# gone, and that is the half a static reader can own. The scan targets the
+# driver by name and never itself: this module carries the pattern and a
+# well-formed fixture by construction, which is the same self-exemption
+# `VERB_SCAN_EXEMPT` takes and for the same reason.
+VERDICT_PRODUCER = "shadow_driver.py"
+VERDICT_PRODUCER_COLLAPSED = "VERDICT_PRODUCER_COLLAPSED"
+VERDICT_LITERAL = re.compile(
+    r"[\"']verdict[\"']\s*:\s*[\"'](?:" + "|".join(VERDICTS) + r")[\"']"
+)
 # A command is a command. Prose in the slot where a command belongs is the
 # exact malformity ed3c/skill-concerns#94 names, so the grammar is a closed
 # list of verbs rather than "a non-empty string".
@@ -323,6 +365,17 @@ def finding_errors(record: Any) -> list[str]:
             errors.append(f"experiment block has no {field}")
     if record["verdict"] not in VERDICTS:
         errors.append(f"verdict {record['verdict']!r} is outside {list(VERDICTS)}")
+    ground = str(record.get("adjudication") or "").strip()
+    if "adjudication" in record and not ground:
+        errors.append(
+            "the adjudication field is present and empty, which reads as a ground that "
+            "was stated and says nothing; an unadjudicated hit carries no field at all"
+        )
+    if record["verdict"] != DEFAULT_VERDICT and not ground:
+        errors.append(
+            f"a {record['verdict']} verdict states no ground; the field the verdict was "
+            "produced from is what separates a disposition from a number that was typed"
+        )
     if not str(record["both_directions"] or "").strip():
         errors.append("both-directions status is absent")
     return errors
@@ -1277,6 +1330,23 @@ def check_forbidden_surface(path: Path, errors: list[str]) -> None:
             )
 
 
+def check_verdict_producer(skill_root: Path, errors: list[str]) -> None:
+    """The driver's verdict is computed, never a literal (ed3c/skill-concerns#152)."""
+    path = skill_root / "scripts" / VERDICT_PRODUCER
+    if not path.is_file():
+        errors.append(f"{VERDICT_PRODUCER_COLLAPSED}:{VERDICT_PRODUCER}: driver absent")
+        return
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        match = VERDICT_LITERAL.search(line)
+        if match:
+            errors.append(
+                f"{VERDICT_PRODUCER_COLLAPSED}:{VERDICT_PRODUCER}:{number}: "
+                f"{match.group(0)!r} assigns a verdict as a literal. A three-valued "
+                "declaration in front of a one-valued producer is what #152 filed; the "
+                "verdict comes from `adjudicate()` or the states have no producer again"
+            )
+
+
 def check_method_claims(catalogue: dict, repo_root: Path, errors: list[str]) -> None:
     """A method claim is grounded the same way a cure is, or it is not evidence.
 
@@ -1477,6 +1547,45 @@ def check_boundaries(repo_root: Path, text: str, errors: list[str]) -> None:
             errors.append(f"neighbour {name} named but absent from this tree")
 
 
+NEIGHBOUR_UNADMITTED = re.compile(
+    r"unadmitted\s+`?(" + "|".join(re.escape(name) for name in NEIGHBOURS) + r")`?"
+)
+NEIGHBOUR_ABSENCE_STALE = "NEIGHBOUR_ABSENCE_STALE"
+
+
+def check_stale_absence(skill_root: Path, repo_root: Path, errors: list[str]) -> None:
+    """No page here calls a neighbour unadmitted whose admission receipt says otherwise.
+
+    `check_boundaries` deliberately narrows to SKILL.md's Non-claims section,
+    because over a whole document any incidental mention acquits the check. The
+    cost of that narrowing is that every OTHER page in the bundle is graded by
+    nothing, and `README.md` restated the same boundary and went stale on it:
+    `shadow-architect` was admitted by ed3c/skill-concerns#75 and SKILL.md was
+    updated while the README still called it unadmitted. One page said a thing
+    about the tree and the tree said the opposite, and no gate held the pair.
+
+    So this is the complement rather than a widening: `check_boundaries` grades
+    PRESENCE in one section, this grades a CLAIM OF ABSENCE anywhere in the
+    bundle, against the one artifact that settles it - the neighbour's own
+    admission receipt. It scans whole file text and not lines, because the
+    sentence that went stale wrapped across a line break and a per-line scan
+    would have missed exactly the instance this exists for.
+    """
+    for page in sorted(skill_root.rglob("*.md")):
+        for name in set(NEIGHBOUR_UNADMITTED.findall(page.read_text(encoding="utf-8"))):
+            receipt = repo_root / "admissions" / f"{name}.json"
+            if not receipt.is_file():
+                continue
+            if json.loads(receipt.read_text(encoding="utf-8")).get("status") != "ADMITTED":
+                continue
+            errors.append(
+                f"{NEIGHBOUR_ABSENCE_STALE}:{page.relative_to(skill_root).as_posix()}: "
+                f"calls {name} unadmitted, and admissions/{name}.json reads ADMITTED. An "
+                "absence claim outlives what it was true about; this one is settled by a "
+                "receipt in this repository, so it is graded rather than restated"
+            )
+
+
 def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     repo_root = repo_root or skill_root.parents[1]
     errors: list[str] = []
@@ -1508,9 +1617,11 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
         check_no_reach(script, errors)
         if script.name != VERB_SCAN_EXEMPT:
             check_forbidden_surface(script, errors)
+    check_verdict_producer(skill_root, errors)
     check_recipes_parse(catalogue, errors)
     check_roles(skill_root, errors)
     check_boundaries(repo_root, text, errors)
+    check_stale_absence(skill_root, repo_root, errors)
     check_receipts_are_produced(skill_root, catalogue, errors)
     if "Non-claims" not in text:
         errors.append("Non-claims section missing")
@@ -1905,6 +2016,37 @@ def selftest() -> int:
             "does not name the neighbour it is not",
         )
 
+        def restore_the_stale_absence(copy: Path) -> None:
+            """The sentence README.md actually carried, back in its own slot.
+
+            Verbatim, and on the page `check_boundaries` does not read, so the
+            arm measures the complement rather than the check that was already
+            there. It wraps across a line break exactly as the landed bytes did
+            - a per-line scan passes this mutation, which is why the check
+            reads whole file text.
+            """
+            path = copy / "README.md"
+            text = path.read_text(encoding="utf-8")
+            needle = (
+                "and not the architecture angle `shadow-architect`\ncarries "
+                "(ed3c/skill-concerns#75, admitted)."
+            )
+            assert text.count(needle) == 1, "the sentence this mutation restores moved"
+            path.write_text(
+                text.replace(
+                    needle,
+                    "and not the architecture angle the unadmitted\n`shadow-architect` "
+                    "will carry (ed3c/skill-concerns#75).",
+                ),
+                encoding="utf-8",
+            )
+
+        mutate(
+            "a_stale_unadmitted_claim_on_a_second_page_reds",
+            restore_the_stale_absence,
+            NEIGHBOUR_ABSENCE_STALE,
+        )
+
         def name_a_neighbour_outside_non_claims(copy: Path) -> None:
             """Delete only the bullet; `skills/arrival-engineering` stays elsewhere.
 
@@ -1926,6 +2068,27 @@ def selftest() -> int:
             "does not name the neighbour it is not: arrival-engineering",
         )
 
+        def restore_the_verdict_literal(copy: Path) -> None:
+            """Put the collapsed producer back and require the pin to catch it.
+
+            The pre-#152 line verbatim, in the slot it occupied: the finding
+            record's own dict. A pin nobody has watched catch the exact shape it
+            was written for is a sentence.
+            """
+            path = copy / "scripts" / "shadow_driver.py"
+            text = path.read_text(encoding="utf-8")
+            needle = '        "verdict": verdict,\n'
+            assert text.count(needle) == 1, "the line this mutation replaces moved"
+            path.write_text(
+                text.replace(needle, '        "verdict": "CONFIRMED",\n'), encoding="utf-8"
+            )
+
+        mutate(
+            "a_literal_verdict_in_the_driver_reds",
+            restore_the_verdict_literal,
+            "VERDICT_PRODUCER_COLLAPSED:shadow_driver.py",
+        )
+
         # Schema controls: a malformed finding, an out-of-list signal, and a
         # demonstration block that the consumer's gate would read as empty.
         good = {
@@ -1941,6 +2104,32 @@ def selftest() -> int:
             "both_directions": "positive: the all-exit fixture; negative: a grounded file",
         }
         record("well_formed_finding_passes_the_schema", not finding_errors(good), "")
+        # Both directions on the ground requirement, over one base record. The
+        # default verdict owes no ground and passes with the field absent; a
+        # verdict that departed from the machine's reading owes one and reds
+        # without it. A single arm on either side alone would be satisfied by a
+        # schema that required the field always or never.
+        record(
+            "an_unadjudicated_default_verdict_owes_no_ground",
+            not finding_errors(good) and "adjudication" not in good,
+            "",
+        )
+        record(
+            "verdict_without_a_ground_reds",
+            any(
+                "states no ground" in error
+                for error in finding_errors({**good, "verdict": "REFUTED"})
+            ),
+            "",
+        )
+        record(
+            "an_empty_ground_reds_even_on_the_default_verdict",
+            any(
+                "present and empty" in error
+                for error in finding_errors({**good, "adjudication": "   "})
+            ),
+            "",
+        )
         record(
             "finding_without_observed_reds",
             any(

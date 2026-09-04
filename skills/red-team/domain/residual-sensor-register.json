@@ -100,6 +100,21 @@
         "path": "file the artifact-provenance tightening naming the record and the commit its artifact arrived in, so the boundary-ordering claim becomes a gate over history instead of a runbook step"
       },
       "status": "OPEN"
+    },
+    {
+      "id": "verdicts-absent-from-the-ledger-row",
+      "gap": "ed3c/skill-concerns#152 gives the second and third verdicts a producer, and a REFUTED verdict still changes no number in the committed ledger row. hits is the raw machine count taken before any adjudication runs, judge_gaps is len(findings) with refuted findings still in that list, and curve() sums hits - so wave 21's worked example, 23 quoted while a hand triage had reduced it to 4, still reads 23 on the curve after the adjudication seam lands. The verdict tally rides on the report and on the persisted artifact beside it, and a reader of the ledger alone sees only what the machine counted. This is a structural ceiling. CEILING:verdicts-absent-from-the-ledger-row",
+      "no_mechanical_form": "the available forms are both worse than the gap. A required verdicts column reds every record produced before the field existed, and domain/run-ledger.json is append-only, so those rows cannot acquire one - a column added to committed bytes afterwards is the guess-wearing-a-measurement move the undenominated key already refuses for artifacts_swept. An OPTIONAL column means 'not measured' and 'no refutations' at once, which is the absence-read-as-negative shape this bundle catalogues. Re-deriving judge_gaps from the adjudicated subset would reinterpret every historical row through a column those rows never carried.",
+      "sensor": {
+        "readback": "skills/red-team/domain/run-ledger.json",
+        "phrase": "judge_gaps",
+        "how": "the record schema in that file lists every column a row carries and verdicts is not among them, so the comparison is one grep: a wave whose persisted report under domain/persisted-reports/ tallies a non-zero REFUTED or INCONCLUSIVE, against that wave's committed row where judge_gaps still equals the full finding count. Artifact and row are both committed, so the discrepancy is readable from this repository with no clock and no bundle"
+      },
+      "escalation": {
+        "trigger": "the first wave whose persisted report tallies a non-zero REFUTED or INCONCLUSIVE while its committed ledger row's judge_gaps equals the total number of findings - the wave where an adjudication actually moved a number and the series did not show it",
+        "path": "file the ledger-column atom naming that wave and both artifacts, adding verdicts to record_schema from that wave forward with the same explicit not-measured reading undenominated already carries for artifacts_swept, so historical rows stay honest instead of being backfilled"
+      },
+      "status": "OPEN"
     }
   ]
 }

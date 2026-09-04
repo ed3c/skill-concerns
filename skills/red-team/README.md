@@ -84,6 +84,6 @@ than presuming success.
 
 Not supervised-conduct clause judgment (`spatial-loop-grounded`), not context
 projection (`context-closure-engineering`), not runtime liveness
-(`dynamic-workflow`), and not the architecture angle the unadmitted
-`shadow-architect` will carry (ed3c/skill-concerns#75). Those read and
+(`dynamic-workflow`), and not the architecture angle `shadow-architect`
+carries (ed3c/skill-concerns#75, admitted). Those read and
 question; this one executes falsification. The differential is the verb.

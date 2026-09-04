@@ -13,11 +13,11 @@
     },
     {
       "path": "skills/red-team/README.md",
-      "sha256": "44157b7cb444a5b1621cf3874425007bfd3cb43a77b7ea5f40feb26583815dce"
+      "sha256": "d73190dad0048cc83be6e0794acec45ea1f7be96700df58e3819afc6490c4c18"
     },
     {
       "path": "skills/red-team/SKILL.md",
-      "sha256": "7017cc3125b7c3775ad8aeaf7e418671e3c40df49371c276972d2ef9797a8a3a"
+      "sha256": "0397720835a7f36adfe8076b8d1ffdb4a01061ef03dd563074d854f7db543fb8"
     },
     {
       "path": "skills/red-team/domain/catalogue.json",
@@ -37,7 +37,7 @@
     },
     {
       "path": "skills/red-team/domain/residual-sensor-register.json",
-      "sha256": "ab5faa3c42dcce92cb3add6dfb1af744dfc47a2e87ae5be49e4429336b4abece"
+      "sha256": "a209eae799e8d5c40b7de964ff23ea847827bcf3cc414d25cf4145a3efb5dd71"
     },
     {
       "path": "skills/red-team/domain/run-ledger.json",
@@ -49,7 +49,7 @@
     },
     {
       "path": "skills/red-team/evals/cases.json",
-      "sha256": "ef9053d9d9008eb1abc8f48f42a99d825e1f5917fe4a1f6f1a3b455dcf599927"
+      "sha256": "fdf0fe866764380e2993f03e3d1608c8a6ac891faa61076c111252db61d1a595"
     },
     {
       "path": "skills/red-team/evals/fixtures/clean/diffs/growth-bound.diff",
@@ -141,11 +141,11 @@
     },
     {
       "path": "skills/red-team/scripts/shadow_driver.py",
-      "sha256": "05a5244d1a6924d2c58c320c4e1a5c6e6d73abfb9b524288b75ab46f1e80bf43"
+      "sha256": "847b75a5e9a3720dcce0d218514c75745a829988e5864de3b781dabbc9bf95b0"
     },
     {
       "path": "skills/red-team/scripts/validate_red_team.py",
-      "sha256": "82e0aad4338d927a4f4f167eda3e85466ed94b2f0ebbf75e2ad2b8971b038495"
+      "sha256": "f648fc711218d8c6c540b804cf4c761e3bd8fd6957584c7d73145c410a3c1290"
     },
     {
       "path": "skills/red-team/skill.json",
@@ -153,10 +153,10 @@
     },
     {
       "path": "skills/red-team/tests/test_red_team.py",
-      "sha256": "43e26ec536ff245455e0241699f4fb35807cbcefaff62a71dbefd9ef2ebaa326"
+      "sha256": "6d13a7f04aac1ad639292b3298405a43cfe4bf4c16ee272e5ded736734d48063"
     }
   ],
-  "skill_tree_sha256": "cdf0b7e5855a322e9e6ec8e1054df2fb4cab8bef759d435e379d86ce471aeed7",
+  "skill_tree_sha256": "c0fff51d4e6644e308c8778c65e06b8e8016c1ac2f56604a41ed583b0f82bc12",
   "contract_files": [
     {
       "path": "contracts/skill-manifest.schema.json",
@@ -402,6 +402,42 @@
     },
     {
       "id": "flat-curve-leaves-through-the-exit-code",
+      "state": "PASS"
+    },
+    {
+      "id": "unadjudicated-hit-reaches-confirmed",
+      "state": "PASS"
+    },
+    {
+      "id": "pre-adjudication-report-still-derives-a-row",
+      "state": "PASS"
+    },
+    {
+      "id": "refuted-reached-by-a-run",
+      "state": "PASS"
+    },
+    {
+      "id": "inconclusive-reached-by-a-run",
+      "state": "PASS"
+    },
+    {
+      "id": "demonstration-carries-verdict-ground",
+      "state": "PASS"
+    },
+    {
+      "id": "stale-disposition-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "ungrounded-verdict-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "verdict-outside-the-declared-states-blocks",
+      "state": "PASS"
+    },
+    {
+      "id": "two-dispositions-of-one-hit-refused",
       "state": "PASS"
     }
   ],

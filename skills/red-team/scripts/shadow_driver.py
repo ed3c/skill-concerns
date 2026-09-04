@@ -61,7 +61,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
 import cure_authorization  # noqa: E402
 from validate_red_team import (  # noqa: E402
+    DEFAULT_VERDICT,
     FIXTURE_BOUNDARY,
+    VERDICTS,
     finding_errors,
     signal_errors,
 )
@@ -85,6 +87,8 @@ FINDING_MALFORMED = "FINDING_MALFORMED"
 SIGNAL_CLASS_UNBOUNDED = "SIGNAL_CLASS_UNBOUNDED"
 SAVED_REPORT_UNGROUNDED = "SAVED_REPORT_UNGROUNDED"
 RECORD_ALREADY_APPENDED = "RECORD_ALREADY_APPENDED"
+ADJUDICATION_STALE = "ADJUDICATION_STALE"
+ADJUDICATION_UNGROUNDED = "ADJUDICATION_UNGROUNDED"
 
 # What a rate reads when the record it would divide carries no sweep size. It is
 # a value in a series, never a diagnostic: a record that predates
@@ -100,6 +104,10 @@ DIAGNOSTICS = (
     SIGNAL_CLASS_UNBOUNDED,
     SAVED_REPORT_UNGROUNDED,
     RECORD_ALREADY_APPENDED,
+    ADJUDICATION_STALE,
+    ADJUDICATION_UNGROUNDED,
+    "VERDICT_PRODUCER_COLLAPSED",
+    "NEIGHBOUR_ABSENCE_STALE",
     "CATALOGUE_ENTRY_UNGROUNDED",
     "CATALOGUE_GATE_REFERENCE_ABSENT",
     "CATALOGUE_CLASS_GATED_BUT_ACTIVE",
@@ -556,7 +564,115 @@ def sampled_classes(catalogue: dict) -> list[str]:
     ]
 
 
-def build_finding(index: int, class_id: str, entry: dict, hit: dict) -> dict[str, Any]:
+# --------------------------------------------------------------------------
+# the adjudication: where the second and third verdicts come from
+#
+# ed3c/skill-concerns#152. `VERDICTS` declared three states and this driver
+# reached one: `build_finding` wrote the string CONFIRMED and no line anywhere
+# emitted the other two, so the type was a tri-state in front of a mono-state
+# instrument and the collapse was invisible downstream - `finding_errors` sees
+# the full tuple and a test can construct a `REFUTED` record and pass.
+#
+# The producer seam is the one that already existed OFF the instrument. Machine
+# hits have been hand-triaged since wave 21 - `derived_column_errors` calls that
+# wave the worked example, 23 and 10 quoted as the wave's numbers while a hand
+# triage had reduced them to 4 - and ed3c/skill-concerns#130 closed the ledger
+# to that triage: "nothing here can judge a triage", so a triaged number typed
+# into a column reds. That refusal was right and it left the triage homeless.
+# This is its home: the disposition arrives as a RECORD the driver reads, and
+# the verdict is computed from it.
+#
+# Two properties make the record a produced thing rather than a note.
+#
+#   - It is BOUND to the exact bytes it disposed of. The adjudication names the
+#     subject's sha256 and the driver compares it against the sha256 it just
+#     computed; a triage carried forward onto changed bytes is `ADJUDICATION_
+#     STALE` and refuses the whole pass. Re-triaging is the honest form of a
+#     re-reading, which is the same shape the append-only ledger already takes.
+#   - It carries its GROUND, and an empty one is `ADJUDICATION_UNGROUNDED`. A
+#     bare `REFUTED` would be the trusted-current-literal class aimed at this
+#     bundle's own verdict field. What this cannot judge is whether the ground
+#     is any good; that is the same residue `residual-sensor-register.json`
+#     already carries for cure-authorization quality, and no shape check here
+#     would be more than a certified mention.
+#
+# The default stays `DEFAULT_VERDICT`, unchanged, because
+# ed3c/skill-concerns#152 makes no claim that any committed finding's CONFIRMED
+# was wrong. What changes is that CONFIRMED is now one branch of a function over
+# an input rather than the only string the code can write.
+#
+# The unadjudicated branch emits NO `adjudication` field, rather than a stock
+# sentence saying none was filed. A finding that carries the field carries a
+# judgment somebody made; one that omits it claims none, and the two must not
+# look alike. `validate_red_team.DEFAULT_VERDICT` is where that rule is
+# enforced and why - and it is also what keeps the reports produced before this
+# field existed readable, which matters because
+# `domain/persisted-reports/persisted-report-roundtrip.json` is one of them and
+# `saved_report_errors` below schema-checks every finding in it.
+ADJUDICATION_FIELDS = ("catalogue_class", "subject", "verdict", "ground")
+
+
+class AdjudicationRefused(RuntimeError):
+    """Raised instead of applying a triage to bytes it never disposed of."""
+
+
+def load_adjudications(path: Path | None) -> dict[tuple[str, str], dict[str, Any]]:
+    """The filed dispositions, keyed by the (class, subject path) they dispose of.
+
+    A second row for the same key is refused rather than last-one-wins: two
+    dispositions of one hit is a disagreement, and picking one silently is how
+    a disagreement becomes a verdict nobody adjudicated.
+    """
+    if path is None:
+        return {}
+    body = json.loads(path.read_text(encoding="utf-8"))
+    filed: dict[tuple[str, str], dict[str, Any]] = {}
+    for position, entry in enumerate(body.get("adjudications") or []):
+        missing = [field for field in ADJUDICATION_FIELDS if field not in entry]
+        if missing:
+            raise AdjudicationRefused(
+                f"{ADJUDICATION_UNGROUNDED}:{path}:{position}: adjudication omits {missing}"
+            )
+        key = (entry["catalogue_class"], str((entry.get("subject") or {}).get("path")))
+        if key in filed:
+            raise AdjudicationRefused(
+                f"{ADJUDICATION_UNGROUNDED}:{path}:{position}: {key} is adjudicated twice; "
+                "two dispositions of one hit is a disagreement, not a verdict"
+            )
+        filed[key] = entry
+    return filed
+
+
+def adjudicate(class_id: str, hit: dict, filed: dict[tuple[str, str], dict]) -> tuple[str, str]:
+    """This hit's verdict and the ground it rests on. The only verdict producer."""
+    entry = filed.get((class_id, hit["subject"]["path"]))
+    if entry is None:
+        return DEFAULT_VERDICT, ""
+    verdict = entry["verdict"]
+    ground = str(entry["ground"] or "").strip()
+    if verdict not in VERDICTS:
+        raise AdjudicationRefused(
+            f"{ADJUDICATION_UNGROUNDED}:{class_id}:{hit['subject']['path']}: "
+            f"verdict {verdict!r} is outside {list(VERDICTS)}"
+        )
+    if not ground:
+        raise AdjudicationRefused(
+            f"{ADJUDICATION_UNGROUNDED}:{class_id}:{hit['subject']['path']}: "
+            f"a {verdict} verdict states no ground; a bare verdict is a number that was typed"
+        )
+    disposed = str((entry.get("subject") or {}).get("sha256"))
+    if disposed != hit["subject"]["sha256"]:
+        raise AdjudicationRefused(
+            f"{ADJUDICATION_STALE}:{class_id}:{hit['subject']['path']}: the adjudication "
+            f"disposed of sha256 {disposed} and this pass read {hit['subject']['sha256']}; "
+            "a triage is bound to the bytes it read"
+        )
+    return verdict, ground
+
+
+def build_finding(
+    index: int, class_id: str, entry: dict, hit: dict, verdict: str, ground: str
+) -> dict[str, Any]:
     return {
         "id": f"F{index:02d}",
         "catalogue_class": class_id,
@@ -566,7 +682,11 @@ def build_finding(index: int, class_id: str, entry: dict, hit: dict) -> dict[str
             "expected": hit["expected"],
             "observed": hit["observed"],
         },
-        "verdict": "CONFIRMED",
+        "verdict": verdict,
+        # Present only when a judgment was filed. Absence is the claim that
+        # none was, and an empty string would be a stated ground that says
+        # nothing - `finding_errors` reds on that shape.
+        **({"adjudication": ground} if ground else {}),
         "both_directions": entry["falsification"]["both_directions"],
     }
 
@@ -578,6 +698,7 @@ def run(
     boundary: str,
     only: str | None = None,
     subject_kind: str = DEFAULT_SUBJECT,
+    filed: dict[tuple[str, str], dict] | None = None,
 ) -> dict[str, Any]:
     """One boundary pass. `only` runs a single class's experiment.
 
@@ -587,6 +708,7 @@ def run(
     or the lifecycle field would be indistinguishable from a deleted detector.
     """
     bundle = bundle.resolve()
+    filed = filed or {}
     before = fingerprint(bundle)
     # The denominator, counted HERE and accepted from nowhere: the sweep size is
     # a fact about the walk this pass performed, so the only party that can know
@@ -608,6 +730,7 @@ def run(
     findings: list[dict[str, Any]] = []
     hits: dict[str, int] = {}
     novel: list[str] = []
+    refusal: str | None = None
     for class_id in classes:
         experiment = EXPERIMENTS.get(class_id)
         if experiment is None:
@@ -616,8 +739,15 @@ def run(
         found = experiment(bundle)
         hits[class_id] = len(found)
         for hit in found:
+            try:
+                verdict, ground = adjudicate(class_id, hit, filed)
+            except AdjudicationRefused as exc:
+                refusal = refusal or str(exc)
+                continue
             findings.append(
-                build_finding(len(findings) + 1, class_id, entries[class_id], hit)
+                build_finding(
+                    len(findings) + 1, class_id, entries[class_id], hit, verdict, ground
+                )
             )
     after = fingerprint(bundle)
 
@@ -633,15 +763,59 @@ def run(
         "artifacts_swept": swept,
         "novel_class_candidates": novel,
         "findings": findings,
+        # The direct readback ed3c/skill-concerns#152 asks for: which verdicts
+        # this run REACHED and how many of each. Every declared state is a key
+        # whether or not it was reached, so a zero is a measured zero and not an
+        # absent one - the two must not look alike in the one place a reader
+        # goes to ask whether the instrument is still mono-state.
+        #
+        # It rides on the report and not on the ledger record, and that is a
+        # named ceiling rather than an oversight: `domain/run-ledger.json` is
+        # append-only and its committed records were produced before this field
+        # existed, so a required column here would make every historical record
+        # red, and an optional one would be a column that means "not measured"
+        # and "zero" at once. The report is what a run produces; the ledger
+        # record is the derived subset R7 reads.
+        #
+        # State the consequence rather than leave it to be discovered: a REFUTED
+        # verdict changes NO number in the ledger row. `ledger_record` derives
+        # `judge_gaps` from `len(report["findings"])` and refuted findings are
+        # still in that list, `hits` is the raw machine count taken before any
+        # adjudication runs, and `curve()` sums `hits`. So the wave-21 worked
+        # example this atom is about - 23 quoted while a hand triage had reduced
+        # it to 4 - still reads 23 on the curve after this lands. That is
+        # deliberate and not yet fixed: `judge_gaps` means the same thing in
+        # every committed row and re-deriving it here would reinterpret history
+        # from a column those rows never carried, which is the move
+        # `domain/run-ledger.json` refuses under `undenominated` for the sweep
+        # size. What a reader of the row gets today is the machine's count; the
+        # adjudicated count lives in the report and in the persisted artifact
+        # beside it.
+        # That is a structural ceiling. CEILING:verdicts-absent-from-the-ledger-row
+        "verdicts": {
+            state: sum(1 for finding in findings if finding["verdict"] == state)
+            for state in VERDICTS
+        },
         "read_only": {"before": before, "after": after, "held": before == after},
         "outcome": "clean",
     }
     if not report["read_only"]["held"]:
         report["findings"] = []
+        report["verdicts"] = {state: 0 for state in VERDICTS}
         report["refusal"] = (
             f"{SUBJECT_MUTATED}:{named(bundle)}: the bundle digest moved {before} -> {after} "
             "during a reader-only pass; this report is untrusted"
         )
+        report["outcome"] = "blocked"
+        return report
+    # An adjudication this pass could not apply blocks the WHOLE pass rather
+    # than dropping one hit: a run that silently omitted the finding it could
+    # not dispose of would report a smaller number than it measured, which is
+    # the triaged-number-as-produced-number shape #130 refused one level down.
+    if refusal is not None:
+        report["findings"] = []
+        report["verdicts"] = {state: 0 for state in VERDICTS}
+        report["refusal"] = refusal
         report["outcome"] = "blocked"
         return report
     malformed = [
@@ -1039,6 +1213,13 @@ def render_demonstration(finding: dict[str, Any]) -> str:
         f"- expected: {finding['experiment']['expected']}",
         f"- observed: {finding['experiment']['observed']}",
         f"- verdict: {finding['verdict']}",
+    ]
+    # Rendered only when the finding carries one. A line reading "adjudication:
+    # none was filed" in an issue body is a judgment the block would be
+    # asserting on nobody's behalf.
+    if finding.get("adjudication"):
+        lines.append(f"- adjudication: {finding['adjudication']}")
+    lines += [
         f"- both directions: {finding['both_directions']}",
     ]
     return "\n".join(lines)
@@ -1115,6 +1296,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--class", dest="only", help="SHADOW: run one catalogue class's experiment"
+    )
+    parser.add_argument(
+        "--adjudications",
+        type=Path,
+        help="SHADOW: filed dispositions for this pass's hits; each names the subject "
+        "sha256 it disposed of, a verdict, and its ground",
     )
     parser.add_argument("--append-record", action="store_true", help="append this run to the ledger")
     parser.add_argument(
@@ -1228,21 +1415,33 @@ def main(argv: list[str] | None = None) -> int:
     if not args.bundle:
         parser.error("--bundle is required for a SHADOW pass")
     try:
+        filed = load_adjudications(args.adjudications)
+    except AdjudicationRefused as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    try:
         report = run(
-            args.bundle, catalogue, args.wave, args.boundary, args.only, args.subject
+            args.bundle,
+            catalogue,
+            args.wave,
+            args.boundary,
+            args.only,
+            args.subject,
+            filed,
         )
     except ValueError as exc:
         parser.error(str(exc))
     if args.save_report:
         args.save_report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"  persisted report -> {args.save_report}")
+    verdicts = " ".join(f"{state}={count}" for state, count in report["verdicts"].items())
     print(
         f"red-team: {report['outcome']} classes={len(report['classes_sampled'])} "
-        f"findings={len(report['findings'])}"
+        f"findings={len(report['findings'])} verdicts: {verdicts}"
     )
     for finding in report["findings"]:
         print(f"  {CATALOGUE_CLASS_HIT} {finding['id']} {finding['catalogue_class']} "
-              f"{finding['subject']['path']}")
+              f"{finding['verdict']} {finding['subject']['path']}")
     if report.get("refusal"):
         print(f"  {report['refusal']}")
     status = {"clean": 0, "changed": 1, "blocked": 2}[report["outcome"]]
