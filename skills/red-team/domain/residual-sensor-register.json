@@ -85,6 +85,21 @@
         "path": "file the marker-vocabulary widening naming the unmarked sentence, and add the row it should have pointed at in the same atom"
       },
       "status": "OPEN"
+    },
+    {
+      "id": "hand-authored-report-artifact",
+      "gap": "a persisted report (--save-report / --from-report, ed3c/skill-concerns#158) is graded by its own internal ties: each class's count is the number of findings the same pass built from it, every finding passes the schema, the read-only digest pair held, the instant parses. An artifact authored WHOLE by hand that satisfies every one of those ties is admitted, because at one file state a produced report and a perfectly consistent forged one are the same bytes. What the gate does remove is the edit: a number changed in a saved report contradicts the findings it was derived from. CEILING:hand-authored-report-artifact",
+      "no_mechanical_form": "signing the artifact moves the question to a key this bundle has nowhere to keep, and no module here may open a socket to check one - that refusal is the reader property the whole bundle rests on. A checksum carried inside the same file is recomputable by whoever edited it, so the mechanical form actually available would certify arithmetic and be read as certifying production.",
+      "sensor": {
+        "readback": "skills/red-team/domain/run-ledger.json",
+        "phrase": "persisted_report",
+        "how": "the ledger names where persisted reports live and every artifact carries its own wave and instant, so `git log --diff-filter=A -- skills/red-team/domain/persisted-reports/<wave>.json` answers when the artifact first existed. An artifact that appeared AFTER the wave's land commits is the forgery this row watches for, and history is the half a single file state cannot hold - the same half `append_only` already leans on"
+      },
+      "escalation": {
+        "trigger": "a record derived from an artifact whose first appearance in git history is after that wave's land commits, or an artifact with no committed appearance at all",
+        "path": "file the artifact-provenance tightening naming the record and the commit its artifact arrived in, so the boundary-ordering claim becomes a gate over history instead of a runbook step"
+      },
+      "status": "OPEN"
     }
   ]
 }

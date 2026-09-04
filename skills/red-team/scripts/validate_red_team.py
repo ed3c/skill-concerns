@@ -257,6 +257,22 @@ ARRIVAL_TOPOLOGY = "skills/arrival-engineering/domain/capability-topology.json"
 # sandbox arrival and nothing more. Anything else is a real generation.
 FIXTURE_BOUNDARY = "-fixture"
 
+# domain/unpersistable-runs.json: the runs the cure cannot admit, refused with a
+# reason instead of dropped (ed3c/skill-concerns#158). The second tuple is the
+# load-bearing one - a row may state WHY there is no record and may never state
+# what the record would have said, or the register becomes the hand-reconstruction
+# path the ledger's own guards refuse.
+UNPERSISTABLE = "UNPERSISTABLE"
+UNPERSISTABLE_FIELDS = ("wave", "disposition", "reason", "evidence")
+MEASUREMENT_KEYS = (
+    "run_id",
+    "classes_sampled",
+    "hits",
+    "novel_class_candidates",
+    "judge_gaps",
+    "duplicate_blocks",
+)
+
 # The set is this bundle's own, not a copy of the repository's skill list: a
 # name belongs here when red-team's page must state a differential against it,
 # which is a per-bundle judgement and the reason `registry.json` cannot supply
@@ -1065,10 +1081,17 @@ def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict
     A string saying "append_only" is not a check - it is the HOST_OBSERVED exit
     this bundle catalogues as free-exit, aimed at itself. What one file state
     CAN carry is that `run_id` is the producer's derived clock: it must parse
-    as an ISO-8601 instant and must not go backwards, so a hand-typed label or
-    a record inserted before an existing one reds. The rest of append-only is
-    carried by git history and branch protection, not by this file, and this
-    docstring is where that ceiling is named rather than implied.
+    as an ISO-8601 instant, must not go backwards, and must not repeat, so a
+    hand-typed label, a record inserted before an existing one, or the same
+    pass counted twice all red. The rest of append-only is carried by git
+    history and branch protection, not by this file, and this docstring is
+    where that ceiling is named rather than implied.
+
+    Uniqueness is the arm the persisted path made load-bearing
+    (ed3c/skill-concerns#158): a saved report replays, and monotonicity is
+    blind to a repeat because equal instants are not backwards. The driver
+    refuses the second append with `RECORD_ALREADY_APPENDED`; this is the
+    independent arrival that also catches a row put here by hand.
     """
     path = skill_root / "domain" / "run-ledger.json"
     if not path.is_file():
@@ -1080,6 +1103,7 @@ def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict
         errors.append("run ledger carries no records list")
         return ledger
     previous: datetime | None = None
+    instants: set[str] = set()
     for position, record in enumerate(records):
         if not isinstance(record, dict):
             errors.append(f"run record {position} is not an object")
@@ -1117,8 +1141,102 @@ def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict
                 f"run record {position} run_id {record['run_id']!r} precedes the record "
                 "before it; an append-only ledger does not go backwards"
             )
+        if str(record["run_id"]) in instants:
+            errors.append(
+                f"run record {position} run_id {record['run_id']!r} is already carried by "
+                "an earlier record; run_id is the instant OF THE PASS, so a repeat is one "
+                "measurement counted twice and doubles that wave's point on the curve"
+            )
+        instants.add(str(record["run_id"]))
         previous = stamp
     return ledger
+
+
+def check_unpersistable(
+    skill_root: Path, targets: set[str], ledger: dict | None, errors: list[str]
+) -> None:
+    """A run that produced no record is refused here, and refused WITHOUT numbers.
+
+    ed3c/skill-concerns#158 cured the ordering that made a record unappendable
+    after its wave landed, and the cure admits exactly the passes that persisted
+    their own report. The passes that did not are not thereby dropped: each one
+    is a row here with the reason it cannot be derived. The load-bearing half is
+    what a row may NOT carry. `hits`, `judge_gaps`, `duplicate_blocks` and the
+    rest are exactly what was lost, so a row holding one has become the
+    hand-typed record `derived_column_errors` and the `run_id` instant exist to
+    refuse (ed3c/skill-concerns#130), moved one file over and wearing an
+    apology. A register that could carry the numbers would BE the
+    reconstruction path the cure was not allowed to open.
+
+    `station` is optional and graded when present: which station a lost pass ran
+    at is part of what was lost, and picking one of the two the topology
+    declares is the same reconstruction one field over.
+    """
+    path = skill_root / "domain" / "unpersistable-runs.json"
+    if not path.is_file():
+        errors.append(
+            "domain/unpersistable-runs.json missing; a run that produced no record has "
+            "nowhere to be refused and so reads as silence, which is the absence-as-clean "
+            "shape this bundle exists to catch"
+        )
+        return
+    document = json.loads(path.read_text(encoding="utf-8"))
+    rows = document.get("rows")
+    if not isinstance(rows, list) or not rows:
+        errors.append("domain/unpersistable-runs.json carries no rows")
+        return
+    recorded = {
+        str(record.get("wave"))
+        for record in (ledger or {}).get("records") or []
+        if isinstance(record, dict)
+    }
+    seen: set[str] = set()
+    for position, row in enumerate(rows):
+        if not isinstance(row, dict):
+            errors.append(f"unpersistable row {position} is not a record")
+            continue
+        wave = str(row.get("wave") or "").strip()
+        label = wave or f"<row {position}>"
+        for field in UNPERSISTABLE_FIELDS:
+            if not str(row.get(field) or "").strip():
+                errors.append(
+                    f"unpersistable row {label} has no {field!r}; a run refused without "
+                    "all four is a run dropped with better manners"
+                )
+        if row.get("disposition") != UNPERSISTABLE:
+            errors.append(
+                f"unpersistable row {label} disposition {row.get('disposition')!r} is not "
+                f"{UNPERSISTABLE!r}; the register carries one verdict and states it"
+            )
+        carried = sorted(set(MEASUREMENT_KEYS) & set(row))
+        if carried:
+            errors.append(
+                f"unpersistable row {label} carries {carried}; those numbers are exactly "
+                "what was lost, so a row holding one is the hand-typed record "
+                "domain/run-ledger.json refuses, one file over"
+            )
+        if wave and wave in recorded:
+            errors.append(
+                f"unpersistable row {label} names a wave the ledger already carries a "
+                "record for; a run that reached the ledger leaves this register instead "
+                "of being counted in both"
+            )
+        if wave and wave in seen:
+            errors.append(f"unpersistable row {label} is listed twice")
+        seen.add(wave)
+        evidence = str(row.get("evidence") or "")
+        if evidence and not PROVIDER_REF.fullmatch(evidence):
+            errors.append(
+                f"unpersistable row {label} evidence {evidence!r} is not a provider ref "
+                "that says where the absence is recorded"
+            )
+        station = row.get("station")
+        if station is not None and station not in targets:
+            errors.append(
+                f"OBSERVATION_TARGET_UNGROUNDED:unpersistable row {label}: station "
+                f"{station!r} is outside the stations domain/observation-topology.json "
+                f"declares {sorted(targets)}"
+            )
 
 
 def check_forbidden_surface(path: Path, errors: list[str]) -> None:
@@ -1370,6 +1488,7 @@ def validate(skill_root: Path, repo_root: Path | None = None) -> list[str]:
     check_method_claims(catalogue, repo_root, errors)
     targets = check_observation_topology(skill_root, errors)
     ledger = check_ledger(skill_root, targets, errors)
+    check_unpersistable(skill_root, targets, ledger, errors)
     check_station_arrival(repo_root, targets, ledger, errors)
     check_ceiling_markers(skill_root, check_register(skill_root, repo_root, errors), errors)
     # Every executable in the bundle, not just the driver: the Non-claim is
@@ -1561,6 +1680,43 @@ def selftest() -> int:
             "run_record_naming_an_undeclared_station_reds",
             undeclared_station,
             "OBSERVATION_TARGET_UNGROUNDED:run record 0",
+        )
+
+        def repeated_run_id(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/run-ledger.json",
+                lambda body: body["records"].append(dict(body["records"][-1])),
+            )
+
+        mutate(
+            "the_same_pass_appended_twice_reds",
+            repeated_run_id,
+            "is already carried by an earlier record",
+        )
+
+        def unpersistable_row_carrying_a_measurement(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/unpersistable-runs.json",
+                lambda body: body["rows"][0].__setitem__(
+                    "hits", {"blind-observer": 3, "duplicate-discovery": 5}
+                ),
+            )
+
+        mutate(
+            "unpersistable_row_that_reconstructs_the_numbers_reds",
+            unpersistable_row_carrying_a_measurement,
+            "carries ['hits']",
+        )
+
+        def unpersistable_register_deleted(copy: Path) -> None:
+            (copy / "domain" / "unpersistable-runs.json").unlink()
+
+        mutate(
+            "deleted_unpersistable_register_reds",
+            unpersistable_register_deleted,
+            "domain/unpersistable-runs.json missing",
         )
 
         def unpointed_runbook(copy: Path) -> None:

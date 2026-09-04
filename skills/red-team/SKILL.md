@@ -141,7 +141,7 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 ## R8. A resident station runs at the closed boundary and leaves a record
 
 - Signal: a supervised generation is closing, or someone wants the monitor to watch one while it is still running.
-- Action: run the pass only at the closed boundary, against artifacts read from a clone or a fixture, naming the station with `--subject`; append the run record, and treat that record as the step's completion. There is no mid-generation observation and no daemon-side invocation - the daemon never spawns a monitor - and a close-out with no record for its station is incomplete rather than clean.
+- Action: run the pass only at the closed boundary, against artifacts read from a clone or a fixture, naming the station with `--subject`; persist the pass's own report with `--save-report` in the same invocation, and append the run record - live, or later from that artifact with `--from-report`. Treat the record as the step's completion. There is no mid-generation observation and no daemon-side invocation - the daemon never spawns a monitor - and a close-out with no record for its station is incomplete rather than clean. A pass that persisted no report and whose wave has landed cannot produce a record at all: it goes into [`domain/unpersistable-runs.json`](domain/unpersistable-runs.json) with its reason and WITHOUT its numbers, never typed into the ledger.
 - Why: the zero-injection adjudication drew this boundary before the first run, and a resident duty whose completion is nobody's readback is a duty that gets skipped silently - which is the same absence-read-as-clean shape the blind-observer class exists to catch, one level up.
 - evidence: zero-injection-boundary
 
@@ -161,6 +161,8 @@ The driver emits exactly these, and only these:
 - `SUBJECT_MUTATED` - the bundle digest moved during a reader-only pass; the report is untrusted (R3).
 - `FINDING_MALFORMED` - a finding the validator's schema rejects (R4).
 - `SIGNAL_CLASS_UNBOUNDED` - a signal citing a class outside the urgent list (R5).
+- `SAVED_REPORT_UNGROUNDED` - a persisted report offered to `--from-report` whose own halves do not reconcile: a count that disagrees with the findings the same pass built from it, a finding the schema rejects, a read-only digest pair that never held, a blocked pass, or an instant that will not parse (R8).
+- `RECORD_ALREADY_APPENDED` - a run offered to `--append-record` whose `run_id` the ledger already carries; the instant is the pass's, so a second row for it counts one measurement twice and doubles that wave's point (R8).
 - `CATALOGUE_ENTRY_UNGROUNDED` - a class with no provenance, no runnable recipe, or no stock sweep (R1/R6).
 - `CATALOGUE_GATE_REFERENCE_ABSENT` - a gated class with no gate to point at (R6).
 - `CATALOGUE_CLASS_GATED_BUT_ACTIVE` - a class still sampled after its gate landed (R6).
@@ -176,7 +178,7 @@ The driver emits exactly these, and only these:
 Concern layers:
 
 - L0 procedural - [`references/portable-falsification-kernel.md`](references/portable-falsification-kernel.md): one domain-free kernel per clause.
-- L1 domain knowledge - [`domain/catalogue.json`](domain/catalogue.json) (the classes, their provenance and lifecycle), [`domain/run-ledger.json`](domain/run-ledger.json) (the append-only run records the curve reads, sliced by station), [`domain/observation-topology.json`](domain/observation-topology.json) (the stations and their access and feedback), [`domain/generation-close-runbook.md`](domain/generation-close-runbook.md) (the one close-out step this bundle owns) and [`domain/residual-sensor-register.json`](domain/residual-sensor-register.json) (the gaps, their sensors and their triggers).
+- L1 domain knowledge - [`domain/catalogue.json`](domain/catalogue.json) (the classes, their provenance and lifecycle), [`domain/run-ledger.json`](domain/run-ledger.json) (the append-only run records the curve reads, sliced by station), [`domain/observation-topology.json`](domain/observation-topology.json) (the stations and their access and feedback), [`domain/generation-close-runbook.md`](domain/generation-close-runbook.md) (the one close-out step this bundle owns), [`domain/persisted-reports/`](domain/persisted-reports/) (the producer's own report objects, so a record survives the land that destroys its bundle), [`domain/unpersistable-runs.json`](domain/unpersistable-runs.json) (the runs that cannot produce a record, refused with a reason and without numbers) and [`domain/residual-sensor-register.json`](domain/residual-sensor-register.json) (the gaps, their sensors and their triggers).
 - L2 execution + assertions - [`scripts/shadow_driver.py`](scripts/shadow_driver.py) and [`scripts/validate_red_team.py`](scripts/validate_red_team.py), plus the fixtures under [`evals/fixtures/`](evals/fixtures/).
 
 ```sh
@@ -184,6 +186,8 @@ python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name> 
 python3 scripts/shadow_driver.py --bundle <dir> --subject <station> --append-record  # one station's record
 python3 scripts/shadow_driver.py --bundle <dir> --class <class-id>                # one class's recipe
 python3 scripts/shadow_driver.py --bundle <dir> --append-record                   # append one run record
+python3 scripts/shadow_driver.py --bundle <dir> --save-report <file>              # persist the pass's own report
+python3 scripts/shadow_driver.py --from-report <file> --append-record             # append after the wave landed
 python3 scripts/shadow_driver.py --add-class <class.json>                         # BUILD: refuses an unadjudicated class
 python3 scripts/validate_red_team.py [--selftest]
 python3 scripts/gen_red_team_receipts.py                                                   # receipts.json's only author

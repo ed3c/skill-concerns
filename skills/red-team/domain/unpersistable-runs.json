@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "purpose": "one row per boundary run whose record can never be appended, so a pass that produced no record is legible as a refusal rather than as silence. The queue this file discharges is the runs that were handed to a land lane and could not be taken: ed3c/skill-concerns#158 named the ordering that produced them, and the cure it landed (a persisted producer report) admits only passes that persisted one. None of these did.",
+  "disposition": "UNPERSISTABLE",
+  "row_schema": [
+    "wave",
+    "disposition",
+    "reason",
+    "evidence"
+  ],
+  "no_counts": "a row carries no hits, no judge_gaps, no duplicate_blocks and no artifacts_swept, and never will. The numbers are exactly what was lost, and a row that carried them would be the hand-typed record the ledger refuses (ed3c/skill-concerns#130), moved one file over and wearing an apology. scripts/validate_red_team.py reds on a row carrying any measurement key, which is the only way this file stays a refusal instead of becoming the reconstruction path the cure was not allowed to open.",
+  "no_station": "station is optional and these rows carry none. Which station a lost pass ran at is part of what was lost, and domain/observation-topology.json declares two - guessing between them is the same reconstruction the counts rule refuses, one field over. A row that DOES name a station is graded against that topology like any record.",
+  "exit": "a row leaves this file only by its run becoming appendable, which for these five it cannot: no bundle survives and no report was persisted. The validator reds on a row whose wave the ledger already carries a record for, so the register cannot double-count a run that did land.",
+  "rows": [
+    {
+      "wave": "wave22-acn",
+      "disposition": "UNPERSISTABLE",
+      "reason": "unappendable twice over. The bundle was mutated by the wave's own lands, so ed3c/skill-concerns#131's re-measure procedure has nothing to re-measure; and the record never existed in machine form at all - the report file the duty names carries zero occurrences of run_id, classes_sampled, novel_class_candidates, judge_gaps and duplicate_blocks, and states in its own text that RED-TEAM's JSON block sat in a lane report only. The surviving fragment is a single curve point; per-class hits are gone, and judge_gaps and duplicate_blocks derive from hits.",
+      "evidence": "ed3c/skill-concerns#158"
+    },
+    {
+      "wave": "wave23-noodles",
+      "disposition": "UNPERSISTABLE",
+      "reason": "no persisted producer report exists for this pass and the bundle it measured has been mutated by the wave's own lands, so no field of the record can be derived from anything. The only remaining form is hand-typed, which check_ledger's run_id instant and derived_column_errors both refuse.",
+      "evidence": "ed3c/skill-concerns#158"
+    },
+    {
+      "wave": "wave25-acn",
+      "disposition": "UNPERSISTABLE",
+      "reason": "no persisted producer report exists for this pass and the bundle it measured has been mutated by the wave's own lands, so no field of the record can be derived from anything. The only remaining form is hand-typed, which check_ledger's run_id instant and derived_column_errors both refuse.",
+      "evidence": "ed3c/skill-concerns#158"
+    },
+    {
+      "wave": "wave26-acn",
+      "disposition": "UNPERSISTABLE",
+      "reason": "no persisted producer report exists for this pass and the bundle it measured has been mutated by the wave's own lands, so no field of the record can be derived from anything. The only remaining form is hand-typed, which check_ledger's run_id instant and derived_column_errors both refuse.",
+      "evidence": "ed3c/skill-concerns#158"
+    },
+    {
+      "wave": "wave28-noodles",
+      "disposition": "UNPERSISTABLE",
+      "reason": "no persisted producer report exists for this pass and the bundle it measured has been mutated by the wave's own lands, so no field of the record can be derived from anything. The only remaining form is hand-typed, which check_ledger's run_id instant and derived_column_errors both refuse.",
+      "evidence": "ed3c/skill-concerns#158"
+    }
+  ]
+}

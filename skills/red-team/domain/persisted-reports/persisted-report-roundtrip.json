@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-09-03T18:37:00+00:00",
+  "wave": "persisted-report-roundtrip",
+  "boundary": "persisted-report-fixture",
+  "subject": "wave-boundary",
+  "bundle": "skills/red-team/evals/fixtures/wave-17",
+  "classes_sampled": [
+    "blind-observer",
+    "free-exit",
+    "trusted-current-literal",
+    "duplicate-discovery",
+    "spec-first-lifecycle",
+    "yielded-non-report"
+  ],
+  "hits": {
+    "blind-observer": 1,
+    "free-exit": 1,
+    "trusted-current-literal": 1,
+    "duplicate-discovery": 1,
+    "spec-first-lifecycle": 1,
+    "yielded-non-report": 0
+  },
+  "novel_class_candidates": [],
+  "findings": [
+    {
+      "id": "F01",
+      "catalogue_class": "blind-observer",
+      "subject": {
+        "path": "reports/lane-report-72.md",
+        "sha256": "a8d223522b8b3c4966dd517090cf64bf8415bdba5c44382916efd1a61b4a4482"
+      },
+      "experiment": {
+        "commands": [
+          "gh api repos/ed3c/skill-concerns/issues/72/events --jq '[.[]|select(.event==\"edited\")]|length'",
+          "gh api graphql -f query='{repository(owner:\"ed3c\",name:\"skill-concerns\"){issue(number:72){userContentEdits(first:20){totalCount nodes{editedAt editor{login}}}}}}'"
+        ],
+        "expected": "an absence claim rests on an observer that has demonstrated both directions",
+        "observed": "the claim '0. No body edit' rests on rest-events-edited (issues/72/events), a surface that cannot carry a body revision at all: `edited` in that payload is a COMMENT event. Read it instead with gh api graphql -f query='{repository(owner:\"OWNER\",name:\"REPO\"){issue(number:N){userContentEdits(first:20){totalCount nodes{editedAt editor{login}}}}}}' -- userContentEdits.totalCount counts the ORIGINAL revision: 0 is ABSENT, the first edit moves it 0 -> 2, and every later edit by one (ed3c/skill-concerns#102). So subtract one before calling anything an edit count, and read the editor logins in the same query - counted alone, an automation edit and a hand edit are the same number"
+      },
+      "verdict": "CONFIRMED",
+      "both_directions": "positive: the same call site on an issue whose body was edited must report the edit; negative: on an issue with no body edit it must report zero"
+    },
+    {
+      "id": "F02",
+      "catalogue_class": "free-exit",
+      "subject": {
+        "path": "receipts/all-exit-receipts.json",
+        "sha256": "a059de5a5485e175835bf6dd3bb04bb79c3597c03f2dae99250c11e743fb99c9"
+      },
+      "experiment": {
+        "commands": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class free-exit",
+          "grep -c HOST_OBSERVED <bundle>/receipts/*.json"
+        ],
+        "expected": "some entry is refused when its ground is only a declaration",
+        "observed": "all 3 entries take the HOST_OBSERVED exit and the file is still green"
+      },
+      "verdict": "CONFIRMED",
+      "both_directions": "positive: the all-exit fixture is reported; negative: a file whose entries name producers that exist is not"
+    },
+    {
+      "id": "F03",
+      "catalogue_class": "trusted-current-literal",
+      "subject": {
+        "path": "issues/filed-84-draft.md",
+        "sha256": "67ac9ce5f91e0217e875cee87f02a73b7879f12a163543f2eb011c734dff3d1a"
+      },
+      "experiment": {
+        "commands": [
+          "git -C <throwaway-clone> status --porcelain",
+          "python3 <throwaway-clone>/<producer>",
+          "git -C <throwaway-clone> diff --stat -- <artifact>"
+        ],
+        "expected": "skill_tree_sha256_evaluated is bound to the state it recorded",
+        "observed": "skill_tree_sha256_evaluated is re-derived at run time from load_json(admission)[\"skill_tree_sha256\"]"
+      },
+      "verdict": "CONFIRMED",
+      "both_directions": "positive: the live-read assignment is reported; negative: an assignment from a frozen constant is not"
+    },
+    {
+      "id": "F04",
+      "catalogue_class": "duplicate-discovery",
+      "subject": {
+        "path": "reports/lane-report-72.md",
+        "sha256": "a8d223522b8b3c4966dd517090cf64bf8415bdba5c44382916efd1a61b4a4482"
+      },
+      "experiment": {
+        "commands": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class duplicate-discovery",
+          "grep -rn '<diagnostic>' <bundle>"
+        ],
+        "expected": "a known defect is read back from where it was filed",
+        "observed": "RECEIPT_PRODUCER_ABSENT@skills/control-code-intel/receipts.json is discovered independently by reports/lane-report-72.md, issues/filed-84-draft.md"
+      },
+      "verdict": "CONFIRMED",
+      "both_directions": "positive: the repeated fingerprint is reported with both artifacts; negative: distinct fingerprints are not"
+    },
+    {
+      "id": "F05",
+      "catalogue_class": "spec-first-lifecycle",
+      "subject": {
+        "path": "receipts/hand-set-producers.json",
+        "sha256": "40ae1d3262758d784e397646e8a38058c0767a8c848d6da9da9541bab41dd5f6"
+      },
+      "experiment": {
+        "commands": [
+          "python3 scripts/shadow_driver.py --bundle <bundle> --catalogue domain/catalogue.json --class spec-first-lifecycle",
+          "ls <bundle>/<declared-producer-path>"
+        ],
+        "expected": "the evidence.index-freshness-canary.producer a declaration names exists in the tree that declares it",
+        "observed": "evidence.index-freshness-canary.producer names scripts/gen_receipts.py, which is absent"
+      },
+      "verdict": "CONFIRMED",
+      "both_directions": "positive: the absent producer is reported; negative: a producer path that resolves is not"
+    }
+  ],
+  "read_only": {
+    "before": "1f88ef2dfa675f7c5ab34ec882c15ac8415d1446372cfae3bd2a336b415e4e67",
+    "after": "1f88ef2dfa675f7c5ab34ec882c15ac8415d1446372cfae3bd2a336b415e4e67",
+    "held": true
+  },
+  "outcome": "changed"
+}
