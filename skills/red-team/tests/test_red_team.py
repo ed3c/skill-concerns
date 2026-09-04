@@ -226,6 +226,14 @@ class RedTeamEvals(unittest.TestCase):
         produced = driver.ledger_record(report)
         produced.pop("run_id")
         committed.pop("run_id")
+        self.assertNotIn(
+            "artifacts_swept",
+            committed,
+            "a record taken before ed3c/skill-concerns#167 carries no sweep size and "
+            "reads as UNDENOMINATED; filling one in now is the guessed denominator that "
+            "atom refuses, so the absence is asserted rather than quietly tolerated",
+        )
+        produced.pop("artifacts_swept")
         self.assertEqual(committed, produced)
 
     def test_the_finding_block_drops_into_an_issue_body_and_passes_the_dry_run(self) -> None:
@@ -1293,6 +1301,219 @@ class RedTeamEvals(unittest.TestCase):
                     validator.validate(copy, REPO_ROOT)[:3],
                 )
 
+    # ------------------------------------------------- the curve's denominator
+
+    @staticmethod
+    def _denominated(*rows: tuple[str, int, int], station: str = STATION) -> dict:
+        return {
+            "records": [
+                {
+                    "subject": station,
+                    "wave": wave,
+                    "hits": {"blind-observer": hits},
+                    "artifacts_swept": swept,
+                }
+                for wave, hits, swept in rows
+            ]
+        }
+
+    def test_the_producer_fills_the_denominator_from_its_own_walk(self) -> None:
+        """The sweep size is measured by the walker, and reachable on no flag.
+
+        ed3c/skill-concerns#167's load-bearing clause: the producer is the only
+        party that knows its own sweep size, so a denominator that could arrive
+        as an argument is a denominator that can be typed - which is the record
+        shape ed3c/skill-concerns#130's tie already refuses. The count is
+        re-derived here from `bundle_files` rather than restated, and the
+        fixture's own file count is asserted so the arm is not comparing the
+        producer with itself.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        walked = sum(
+            len(driver.bundle_files(WAVE_17, kind)) for kind in driver.ARTIFACT_KINDS
+        )
+        self.assertEqual(
+            len([path for path in WAVE_17.rglob("*") if path.is_file()]), walked
+        )
+        self.assertEqual(walked, report["artifacts_swept"])
+        self.assertEqual(walked, driver.ledger_record(report)["artifacts_swept"])
+        self.assertNotIn(
+            "swept",
+            driver.build_parser().format_help(),
+            "a flag for the denominator is a way to supply it, and the whole claim "
+            "is that only the walk can",
+        )
+
+    def test_the_declared_record_schema_is_what_the_producer_emits(self) -> None:
+        """The schema in the ledger and the row the producer builds, tied.
+
+        `record_schema` was prose until this arm: a field could be declared and
+        never emitted, or emitted and never declared, and the file that tells a
+        reader what a record carries would be the last thing to find out.
+        """
+        report = driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        self.assertEqual(
+            sorted(domain("run-ledger.json")["record_schema"]),
+            sorted(driver.ledger_record(report)),
+        )
+
+    def test_a_doubled_sweep_halves_the_rate_and_doubled_hits_double_it(self) -> None:
+        """Both planted directions, on the same station, against the same base."""
+        base = self._denominated(("wave-17", 4, 8))
+        self.assertEqual([("wave-17", 0.5)], driver.curve_rates(base, STATION))
+        self.assertEqual(
+            [("wave-17", 0.25)],
+            driver.curve_rates(self._denominated(("wave-17", 4, 16)), STATION),
+            "a doubled sweep with identical hits halves the rate",
+        )
+        self.assertEqual(
+            [("wave-17", 1.0)],
+            driver.curve_rates(self._denominated(("wave-17", 8, 8)), STATION),
+            "identical sweeps with doubled hits double it",
+        )
+        self.assertEqual(
+            driver.curve(base, STATION),
+            driver.curve(self._denominated(("wave-17", 4, 16)), STATION),
+            "the raw series must not move when only the sweep did; that is what "
+            "makes the rate a second reading rather than a reinterpretation",
+        )
+
+    def test_a_record_without_a_sweep_size_is_undenominated_never_guessed(self) -> None:
+        """Historical rows stay raw, and a partial sum is refused as a guess."""
+        ledger = domain("run-ledger.json")
+        rates = driver.curve_rates(ledger, driver.DEFAULT_SUBJECT)
+        self.assertEqual(
+            [wave for wave, _ in driver.curve(ledger, driver.DEFAULT_SUBJECT)],
+            [wave for wave, _ in rates],
+        )
+        self.assertTrue(all(rate is None for _, rate in rates), rates)
+        self.assertIn(driver.UNDENOMINATED, "\n".join(driver.curve_findings(ledger)))
+
+        mixed = {
+            "records": [
+                {
+                    "subject": STATION,
+                    "wave": "wave-17",
+                    "hits": {"blind-observer": 2},
+                    "artifacts_swept": 4,
+                },
+                {"subject": STATION, "wave": "wave-17", "hits": {"blind-observer": 2}},
+            ]
+        }
+        self.assertEqual(
+            [("wave-17", None)],
+            driver.curve_rates(mixed, STATION),
+            "dividing a wave's whole recurrence by part of its sweep reads as a rate "
+            "and is an artefact, so one undenominated record undenominates the wave",
+        )
+        self.assertEqual(
+            [("wave-17", None)],
+            driver.curve_rates(self._denominated(("wave-17", 2, 0)), STATION),
+            "a pass with nothing to walk has no rate",
+        )
+
+    def test_the_floor_guard_and_all_stations_return_still_decide_on_the_raw_series(
+        self,
+    ) -> None:
+        """ed3c/skill-concerns#153's two properties, pinned against the new column.
+
+        The discriminating arm is a station whose RATE falls hard while its raw
+        count climbs: R7 must still report it, because ed3c/skill-concerns#167
+        asks for the rate BESIDE the series and explicitly not for a
+        reinterpretation of the curve. The floor guard and the every-station
+        return are re-measured in the same ledger so neither can be quietly
+        traded away for the new reading.
+        """
+        rising = {
+            "records": [
+                *self._denominated(
+                    ("wave-17", 1, 2), ("wave-18", 2, 8), ("wave-19", 3, 30),
+                    station="station-a",
+                )["records"],
+                *self._denominated(
+                    ("wave-17", 4, 4), ("wave-18", 3, 4), ("wave-19", 0, 4),
+                    station="station-b",
+                )["records"],
+                *self._denominated(
+                    ("wave-17", 0, 4), ("wave-18", 0, 4), ("wave-19", 0, 4),
+                    station="station-c",
+                )["records"],
+            ]
+        }
+        rates = [rate for _, rate in driver.curve_rates(rising, "station-a")]
+        self.assertLess(
+            rates[-1], rates[0], "the arm is vacuous unless station-a's rate falls"
+        )
+        findings = driver.curve_findings(rising)
+        self.assertEqual(
+            ["station-a"],
+            [finding.split(":")[1] for finding in findings],
+            "station-a rose on the raw series and must still report; station-b "
+            "declined and station-c is resting on the floor",
+        )
+        self.assertIn("[1, 2, 3]", findings[0])
+        self.assertIn("0.1", findings[0])
+
+    def test_a_hand_edited_denominator_reds_the_producers_own_tie(self) -> None:
+        """The denominator is a walk, so a typed one fails the same tie as any column.
+
+        The existing tie is the one every fixture record stands on:
+        `ledger_record(run(<committed fixture>))` reproduces the committed row.
+        The positive arm runs first, so the negative arm is not passing on a
+        comparison that never held.
+        """
+        produced = driver.ledger_record(
+            driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        )
+        rerun = driver.ledger_record(
+            driver.run(WAVE_17, catalogue(), "wave-17", "admission-fixture")
+        )
+        for row in (produced, rerun):
+            row.pop("run_id")
+        self.assertEqual(rerun, produced)
+        edited = dict(produced, artifacts_swept=produced["artifacts_swept"] * 2)
+        self.assertNotEqual(rerun, edited)
+
+        artifact = self._persist(WAVE_17)
+        body = json.loads(artifact.read_text(encoding="utf-8"))
+        body["artifacts_swept"] = 1
+        artifact.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertTrue(
+            any(
+                "artifacts_swept" in error
+                for error in driver.saved_report_errors(body)
+            ),
+            driver.saved_report_errors(body),
+        )
+        ledger = self._empty_ledger("denominator-ledger.json")
+        self.assertEqual(
+            2,
+            driver.main(
+                ["--from-report", str(artifact), "--ledger", str(ledger), "--append-record"]
+            ),
+        )
+        self.assertEqual([], json.loads(ledger.read_text(encoding="utf-8"))["records"])
+
+    def test_a_ledger_denominator_that_is_not_a_count_reds(self) -> None:
+        """The shape guard, both directions."""
+        copy = self.copy()
+        path = copy / "domain" / "run-ledger.json"
+        for planted in ("many", -3, True):
+            with self.subTest(planted=planted):
+                body = domain("run-ledger.json")
+                body["records"][-1]["artifacts_swept"] = planted
+                path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+                self.assertTrue(
+                    any(
+                        "is not a count a walk could have returned" in error
+                        for error in validator.validate(copy, REPO_ROOT)
+                    )
+                )
+        body = domain("run-ledger.json")
+        body["records"][-1]["artifacts_swept"] = 4
+        path.write_text(json.dumps(body, indent=2) + "\n", encoding="utf-8")
+        self.assertEqual([], validator.validate(copy, REPO_ROOT))
+
     def test_every_recipe_runs_through_the_drivers_own_parser(self) -> None:
         """A recipe naming a flag the driver has not got is not runnable.
 
@@ -1446,6 +1667,8 @@ class RedTeamEvals(unittest.TestCase):
         produced = driver.ledger_record(report)
         produced.pop("run_id")
         committed.pop("run_id")
+        self.assertNotIn("artifacts_swept", committed)
+        produced.pop("artifacts_swept")
         self.assertEqual(committed, produced)
 
     def test_a_clean_bundle_at_the_station_still_appends_its_record(self) -> None:

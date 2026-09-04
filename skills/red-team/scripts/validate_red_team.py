@@ -1128,6 +1128,15 @@ def check_ledger(skill_root: Path, targets: set[str], errors: list[str]) -> dict
                 f"domain/observation-topology.json declares {sorted(targets)}"
             )
         errors.extend(derived_column_errors(position, record))
+        swept = record.get("artifacts_swept")
+        if swept is not None and (
+            not isinstance(swept, int) or isinstance(swept, bool) or swept < 0
+        ):
+            errors.append(
+                f"run record {position} artifacts_swept {swept!r} is not a count a walk "
+                "could have returned; the denominator is measured by the producer, never "
+                "supplied, and a record predating it carries none rather than a guess"
+            )
         try:
             stamp = datetime.fromisoformat(str(record.get("run_id")))
         except ValueError:
@@ -1693,6 +1702,21 @@ def selftest() -> int:
             "the_same_pass_appended_twice_reds",
             repeated_run_id,
             "is already carried by an earlier record",
+        )
+
+        def typed_denominator(copy: Path) -> None:
+            edit_json(
+                copy,
+                "domain/run-ledger.json",
+                lambda body: body["records"][-1].__setitem__(
+                    "artifacts_swept", "about forty"
+                ),
+            )
+
+        mutate(
+            "denominator_that_is_not_a_count_reds",
+            typed_denominator,
+            "is not a count a walk could have returned",
         )
 
         def unpersistable_row_carrying_a_measurement(copy: Path) -> None:
