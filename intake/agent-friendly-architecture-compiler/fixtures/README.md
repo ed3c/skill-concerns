@@ -20,6 +20,13 @@ reproduces the source blob SHAs above). The machine-checkable record of that ide
 `../source-lock.json` (schema per `contracts/source-lock.schema.json`, same shape every other
 `intake/*` directory uses); this table is the human-readable summary, not the source of truth.
 
+That record is **not currently executed either**, and for the same reason as the guard below.
+`scripts/check_admissions.py` recomputes a lock's `locked_files` digests only from a
+`registry.json` row, and this candidate has none, so appending a byte to either file above
+leaves `check_admissions.py` at exit 0 — measured, not inferred. The pins are what makes the
+identity re-derivable by hand; the registry row is what makes anything re-derive it. Both
+land together under issue #19, which is why P11 is an open acceptance row and not a done one.
+
 ## Red-corpus receipt
 
 `skills/agent-friendly-architecture-compiler/scripts/validate_rendered_contract.py`
@@ -41,10 +48,18 @@ either the template stopped being the pre-guard artifact or the guard stopped re
 `validate_rendered_contract.py` — that script lives only on the un-merged draft branch
 `agent/agent-friendly-architecture-compiler` (head `4d27bfa4edc34b32b4b088fd3df0b40ab2a420c0`
 at the time this fixture material was frozen). Nothing in this repository today would go red
-if the template above were edited to pass. The guard becomes self-enforcing only once issue
-#19 lands the compiler and its guard under `skills/`; until then the `exit=1, 22 findings`
-receipt above is a one-time snapshot, reproducible only by re-running that script against that
-branch while it still exists at that SHA, not a standing check.
+if the template above were edited to pass. Until then the `exit=1, 22 findings` receipt above
+is a one-time snapshot, reproducible only by re-running that script against that branch while
+it still exists at that SHA, not a standing check.
+
+Landing the bundle under `skills/` is **not** the condition that ends that. A bundle can land
+with a `run_all.SKILL_CHECKS` row that never names this file, and this paragraph would read as
+satisfied while nothing re-ran the guard against this corpus — the executable-route-hollow
+shape `scripts/check_skill_bundles.py` exists to refuse, one directory over. The guard becomes
+self-enforcing when that row **executes `validate_rendered_contract.py` against this template
+and expects a non-zero exit**. Under ed3c/skill-concerns#72 that row cannot arrive in one
+landing either: a first-ever admission is two, a `policy/bootstrap-admissions.json` entry
+first and the bundle plus its permanent row second. Issue #19 owns both.
 
 ## Non-claims
 
