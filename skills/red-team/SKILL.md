@@ -113,8 +113,8 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 ## R4. A finding is a record with an experiment block, not prose with a number
 
 - Signal: about to write "finding 3: X looks wrong" into a report.
-- Action: emit a record - catalogue class, subject at an exact sha256, an experiment block carrying the verbatim command sequence with expected and observed, a verdict, and the both-directions status - and let the validator judge it. The block's grammar is fixed so it drops VERBATIM into an issue body's observer-demonstration section and survives that gate's stripping; the monitor manufactures admission-grade evidence and the dispatcher files with it.
-- Why: an observer's silence is evidence only after it has demonstrated both directions, and a finding whose observed half is missing cannot show that it did - the blind probe reported a truthful zero for two waves because nothing in the record's shape demanded the other direction. The same separation is what a lane result needs one level up: a 117-byte payload reading "Still in progress. Yielding now" was counted as one of twelve completed results because the completion signal was trusted instead of judged.
+- Action: emit a record - catalogue class, subject at an exact sha256, an experiment block carrying the verbatim command sequence with expected and observed, a verdict with the ground it was produced from, and the both-directions status - and let the validator judge it. The block's grammar is fixed so it drops VERBATIM into an issue body's observer-demonstration section and survives that gate's stripping; the monitor manufactures admission-grade evidence and the dispatcher files with it. The verdict is COMPUTED from a filed adjudication, never assigned: a disposition names the subject sha256 it disposed of and its ground, `--adjudications` hands the pass its file, and a run reports which of the declared states it reached and how many of each.
+- Why: an observer's silence is evidence only after it has demonstrated both directions, and a finding whose observed half is missing cannot show that it did - the blind probe reported a truthful zero for two waves because nothing in the record's shape demanded the other direction. The same separation is what a lane result needs one level up: a 117-byte payload reading "Still in progress. Yielding now" was counted as one of twelve completed results because the completion signal was trusted instead of judged. And a declaration of three verdicts in front of a producer that could write one is that shape aimed at this bundle's own field: hand triage disposed of the hits the instrument could not, off the record, because the record had nowhere to put a disposition that came back the other way.
 - evidence: blind-observer, trusted-current-literal, yielded-non-report
 
 ## R5. Escalation is one signal to the dispatcher, from a bounded list of classes
@@ -156,7 +156,11 @@ Every clause is trigger-shaped: **Signal** (when to think of it) ->
 
 The driver emits exactly these, and only these:
 
-- `CATALOGUE_CLASS_HIT` - a catalogue class matched and its experiment confirmed it (R2).
+- `CATALOGUE_CLASS_HIT` - a catalogue class matched and the pass reached a verdict on it (R2/R4). The verdict is the finding's, not this line's: since ed3c/skill-concerns#152 a hit can come back confirmed, refuted or inconclusive, and a diagnostic asserting "confirmed it" was the mono-state instrument speaking.
+- `ADJUDICATION_STALE` - a filed disposition bound to a subject sha256 this pass did not read; a triage is bound to the bytes it read (R4).
+- `ADJUDICATION_UNGROUNDED` - a filed disposition with a missing field, a verdict outside the declared states, no ground, or two dispositions of one hit (R4).
+- `VERDICT_PRODUCER_COLLAPSED` - the driver assigns a verdict as a literal, so the declared states have no producer again (R4).
+- `NEIGHBOUR_ABSENCE_STALE` - a page in this bundle calls a neighbour unadmitted whose own admission receipt reads ADMITTED; an absence claim outlives what it was true about, and this one is settled by bytes in this repository (Non-claims).
 - `CURVE_NOT_DECLINING` - three post-admission waves without a falling recurrence (R7).
 - `SUBJECT_MUTATED` - the bundle digest moved during a reader-only pass; the report is untrusted (R3).
 - `FINDING_MALFORMED` - a finding the validator's schema rejects (R4).
@@ -185,6 +189,7 @@ Concern layers:
 python3 scripts/shadow_driver.py --bundle <dir> --wave <name> --boundary <name>   # SHADOW: reader-only
 python3 scripts/shadow_driver.py --bundle <dir> --subject <station> --append-record  # one station's record
 python3 scripts/shadow_driver.py --bundle <dir> --class <class-id>                # one class's recipe
+python3 scripts/shadow_driver.py --bundle <dir> --adjudications <file.json>       # dispositions -> verdicts
 python3 scripts/shadow_driver.py --bundle <dir> --append-record                   # append one run record
 python3 scripts/shadow_driver.py --bundle <dir> --save-report <file>              # persist the pass's own report
 python3 scripts/shadow_driver.py --from-report <file> --append-record             # append after the wave landed

@@ -577,7 +577,195 @@ class RedTeamEvals(unittest.TestCase):
         grown = driver.add_class(catalogue(), entry)
         self.assertEqual(len(grown["classes"]), len(catalogue()["classes"]) + 1)
 
+    # ------------------------------------- the verdict field (skill-concerns#152)
+
+    def _dispositions(self, name: str, *rows: dict) -> Path:
+        path = self.scratch / f"adjudications-{name}.json"
+        path.write_text(
+            json.dumps({"schema_version": 1, "adjudications": list(rows)}, indent=2),
+            encoding="utf-8",
+        )
+        return path
+
+    def _disposition(self, finding: dict, verdict: str, ground: str) -> dict:
+        return {
+            "catalogue_class": finding["catalogue_class"],
+            "subject": dict(finding["subject"]),
+            "verdict": verdict,
+            "ground": ground,
+        }
+
+    def _wave_17(self, filed: dict | None = None) -> dict:
+        return driver.run(
+            WAVE_17, catalogue(), "wave-17", "admission-fixture", filed=filed
+        )
+
+    def test_an_unadjudicated_hit_reaches_confirmed_and_claims_no_ground(self) -> None:
+        """The default, unchanged: #152 makes no claim any committed CONFIRMED was wrong.
+
+        What is new is that CONFIRMED is a branch over an input rather than the
+        only string the code can write. The branch it took is legible from the
+        ABSENCE of the field: a finding carrying `adjudication` carries a
+        judgment somebody made, and this one claims none rather than filing a
+        stock sentence saying so.
+        """
+        report = self._wave_17()
+        self.assertTrue(report["findings"])
+        self.assertEqual(
+            {"CONFIRMED": len(report["findings"]), "REFUTED": 0, "INCONCLUSIVE": 0},
+            report["verdicts"],
+        )
+        for finding in report["findings"]:
+            self.assertNotIn("adjudication", finding)
+            self.assertEqual([], validator.finding_errors(finding))
+
+    def test_a_report_produced_before_the_adjudication_field_still_derives_a_row(
+        self,
+    ) -> None:
+        """ed3c/skill-concerns#158's committed artifact, read by #152's schema.
+
+        The two atoms of this wave meet here. #158 committed
+        `persisted-report-roundtrip.json` as its own direct readback and
+        `saved_report_errors` runs every finding in it through
+        `finding_errors`; #152 adds the ground a verdict was produced from. A
+        ground required of every finding would have made that artifact - five
+        CONFIRMED findings produced before the field existed - retroactively
+        malformed, and `--from-report` over the bundle's own committed proof
+        would exit 2 with SAVED_REPORT_UNGROUNDED. The requirement lands on the
+        verdicts that departed from the machine's reading instead, so the
+        artifact stays derivable and the ground stays real.
+        """
+        artifact = (
+            SKILL_ROOT / "domain" / "persisted-reports" / "persisted-report-roundtrip.json"
+        )
+        persisted = json.loads(artifact.read_text(encoding="utf-8"))
+        self.assertTrue(
+            all("adjudication" not in finding for finding in persisted["findings"]),
+            "the artifact this arm is about is the one produced before the field existed",
+        )
+        self.assertEqual([], driver.saved_report_errors(persisted))
+        # The other direction, on the identical bytes: a non-default verdict in
+        # that same artifact owes a ground, and the same call refuses it.
+        refuted = json.loads(artifact.read_text(encoding="utf-8"))
+        refuted["findings"][0]["verdict"] = "REFUTED"
+        self.assertTrue(
+            any("states no ground" in error for error in driver.saved_report_errors(refuted)),
+            driver.saved_report_errors(refuted),
+        )
+
+    def test_a_refuted_disposition_reaches_refuted_in_a_run(self) -> None:
+        """The state the wave-24 discards needed and could not receive.
+
+        Demonstrated by a RUN whose record carries it, never by constructing the
+        record - a test that builds a `REFUTED` dict passes against a mono-state
+        instrument, which is the whole reason #152 exists.
+        """
+        target = self._wave_17()["findings"][0]
+        filed = driver.load_adjudications(
+            self._dispositions(
+                "refuted",
+                self._disposition(
+                    target,
+                    "REFUTED",
+                    "the class's recipe ran against these exact bytes and came back the "
+                    "other way; the match is a coincidence of shape",
+                ),
+            )
+        )
+        report = self._wave_17(filed)
+        reached = {finding["id"]: finding for finding in report["findings"]}
+        self.assertEqual("REFUTED", reached[target["id"]]["verdict"])
+        self.assertEqual(1, report["verdicts"]["REFUTED"])
+        self.assertEqual([], validator.finding_errors(reached[target["id"]]))
+        self.assertIn("came back the other way", reached[target["id"]]["adjudication"])
+
+    def test_an_inconclusive_disposition_reaches_inconclusive_in_a_run(self) -> None:
+        """The third state, produced the same way and counted separately."""
+        target = self._wave_17()["findings"][0]
+        filed = driver.load_adjudications(
+            self._dispositions(
+                "inconclusive",
+                self._disposition(
+                    target,
+                    "INCONCLUSIVE",
+                    "the subject the recipe needs was triaged ABSENT at this boundary, so "
+                    "neither direction was reached",
+                ),
+            )
+        )
+        report = self._wave_17(filed)
+        reached = {finding["id"]: finding for finding in report["findings"]}
+        self.assertEqual("INCONCLUSIVE", reached[target["id"]]["verdict"])
+        self.assertEqual(1, report["verdicts"]["INCONCLUSIVE"])
+        self.assertEqual(0, report["verdicts"]["REFUTED"])
+
+    def test_the_demonstration_block_carries_the_verdict_and_its_ground(self) -> None:
+        """A verdict a reader cannot trace to a ground is prose with a state name."""
+        target = self._wave_17()["findings"][0]
+        filed = driver.load_adjudications(
+            self._dispositions(
+                "rendered",
+                self._disposition(target, "REFUTED", "the recipe came back negative here"),
+            )
+        )
+        finding = {
+            item["id"]: item for item in self._wave_17(filed)["findings"]
+        }[target["id"]]
+        block = driver.render_demonstration(finding)
+        self.assertIn("- verdict: REFUTED", block)
+        self.assertIn("- adjudication: the recipe came back negative here", block)
+
     # ---------------------------------------------------------------- negative
+
+    def test_a_disposition_bound_to_other_bytes_blocks_the_pass(self) -> None:
+        """A triage carried forward onto changed bytes is not a verdict."""
+        target = self._wave_17()["findings"][0]
+        row = self._disposition(target, "REFUTED", "ran and came back negative")
+        row["subject"] = {**row["subject"], "sha256": "0" * 64}
+        report = self._wave_17(driver.load_adjudications(self._dispositions("stale", row)))
+        self.assertEqual("blocked", report["outcome"])
+        self.assertEqual([], report["findings"])
+        self.assertTrue(
+            report["refusal"].startswith(driver.ADJUDICATION_STALE), report["refusal"]
+        )
+
+    def test_a_verdict_with_no_ground_blocks_the_pass(self) -> None:
+        """A bare state name is the number that was typed, one level up."""
+        target = self._wave_17()["findings"][0]
+        report = self._wave_17(
+            driver.load_adjudications(
+                self._dispositions("ungrounded", self._disposition(target, "REFUTED", "   "))
+            )
+        )
+        self.assertEqual("blocked", report["outcome"])
+        self.assertIn("states no ground", report["refusal"])
+
+    def test_a_verdict_outside_the_declared_states_blocks_the_pass(self) -> None:
+        """The tuple is the vocabulary for the input too, not only for the output."""
+        target = self._wave_17()["findings"][0]
+        report = self._wave_17(
+            driver.load_adjudications(
+                self._dispositions(
+                    "outside", self._disposition(target, "PROBABLY", "it looked wrong")
+                )
+            )
+        )
+        self.assertEqual("blocked", report["outcome"])
+        self.assertTrue(
+            report["refusal"].startswith(driver.ADJUDICATION_UNGROUNDED), report["refusal"]
+        )
+
+    def test_two_dispositions_of_one_hit_are_refused_rather_than_resolved(self) -> None:
+        """Picking one silently is how a disagreement becomes a verdict nobody made."""
+        target = self._wave_17()["findings"][0]
+        path = self._dispositions(
+            "double",
+            self._disposition(target, "REFUTED", "the recipe came back negative"),
+            self._disposition(target, "CONFIRMED", "on second thought the match stands"),
+        )
+        with self.assertRaises(driver.AdjudicationRefused) as raised:
+            driver.load_adjudications(path)
+        self.assertIn("adjudicated twice", str(raised.exception))
 
     def test_an_unadjudicated_class_cannot_legislate_the_catalogue(self) -> None:
         """BUILD fold-in behind the landed ed3c/skill-concerns#93 gate.
@@ -1798,7 +1986,7 @@ class RedTeamEvals(unittest.TestCase):
         while watching nothing, which is the gap class it exists to record.
         """
         rows = domain("residual-sensor-register.json")["rows"]
-        self.assertEqual(6, len(rows))
+        self.assertEqual(7, len(rows))
         for row in rows:
             with self.subTest(row=row["id"]):
                 readback = REPO_ROOT / row["sensor"]["readback"]
